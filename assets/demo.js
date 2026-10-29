@@ -12,7 +12,10 @@
   let saved = null;
   try { saved = localStorage.getItem(KEY); } catch (e) {}
   const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  let theme = saved || (prefersDark ? "dark" : "light");
+  const forced = new URLSearchParams(location.search).get("theme");
+  let theme = (forced === "dark" || forced === "light")
+    ? forced
+    : (saved || (prefersDark ? "dark" : "light"));
 
   function applyTheme(t, syncFrame = true) {
     theme = t === "dark" ? "dark" : "light";

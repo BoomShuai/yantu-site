@@ -26,7 +26,9 @@
   let saved = null;
   try { saved = localStorage.getItem(KEY); } catch (e) {}
   const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  apply(saved || (prefersDark ? "dark" : "light"));
+  // ?theme=light|dark 可强制指定，优先于本地记忆与系统偏好（便于分享固定主题的链接）
+  const forced = new URLSearchParams(location.search).get("theme");
+  apply(forced === "dark" || forced === "light" ? forced : (saved || (prefersDark ? "dark" : "light")));
 
   const btn = document.getElementById("themeToggle");
   if (btn) {
