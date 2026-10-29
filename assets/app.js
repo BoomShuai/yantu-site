@@ -41,6 +41,10 @@ const S = {
   paid: false,
   deliveryState: 0,    // 0 服务中 / 1 待确认 / 2 已完成
   schoolCat: "全部",
+  adminTab: "审核队列",
+  grade: "大三",
+  english: "CET-6",
+  hasProof: "已有",
 };
 
 /* ---------------- 图标 ---------------- */
@@ -194,7 +198,7 @@ function pageProfile() {
         <input class="input" value="${st.major}" /></div>
       <div class="field"><label>年级</label>
         <div class="two-col">
-          <div class="choice active">大三</div><div class="choice">大四</div>
+          ${["大三", "大四"].map((g) => `<div class="choice ${S.grade === g ? "active" : ""}" onclick="setPick('grade','${g}')">${g}</div>`).join("")}
         </div>
       </div>
       <div class="field"><label>目标入学年份</label>
@@ -214,12 +218,12 @@ function pageProfile() {
       </div>
       <div class="field"><label>英语成绩</label>
         <div class="two-col">
-          <div class="choice active">CET-6</div><div class="choice">CET-4</div>
+          ${["CET-6", "CET-4"].map((g) => `<div class="choice ${S.english === g ? "active" : ""}" onclick="setPick('english','${g}')">${g}</div>`).join("")}
         </div>
         <input class="input mt8" value="512" />
       </div>
       <div class="field"><label>是否已有排名证明</label>
-        <div class="two-col"><div class="choice active">已有</div><div class="choice">待开</div></div>
+        <div class="two-col">${["已有", "待开"].map((g) => `<div class="choice ${S.hasProof === g ? "active" : ""}" onclick="setPick('hasProof','${g}')">${g}</div>`).join("")}</div>
       </div>`;
   } else if (step === 2) {
     body = `
@@ -865,6 +869,8 @@ function fillBadRank() {
   const t = document.getElementById("rankTotal"); if (t) t.value = "10";
 }
 function setGoal(g) { S.goal = g; render(); }
+function setPick(field, v) { S[field] = v; render(); }
+function setAdminTab(t) { S.adminTab = t; render(); }
 function toggleVer() { S.proposalVer = S.proposalVer === "v2" ? "v1" : "v2"; render(); }
 function upgradeV2() { S.proposalVer = "v2"; render(); toast("方案已更新为 v2：价格 ¥420，需你重新确认"); }
 function switchProvider() { S.activeProvider = "wang"; go("#/provider"); render(); }
@@ -1181,7 +1187,7 @@ function pageWorkbench() {
 
 function pageAdmin() {
   const a = M.admin;
-  const tab = S.adminTab || "queue";
+  const tab = S.adminTab || a.tabs[0];
   return `
   <div class="page">
     <div class="quick-chips" style="overflow-x:auto">
@@ -1217,11 +1223,39 @@ function pageAdmin() {
             <button class="btn xs line" onclick="event.stopPropagation();toast('已记录：转入人工处置')">转入处置</button>
           </div>
         </div>`).join("")}
+    ` : tab === "订单" ? `
+      <div class="alert mt12"><span class="ico">📦</span>
+        <span>审核员<b>看不到完整聊天记录</b>，只看到命中规则的片段；无退款权限。</span></div>
+      ${[
+        ["T-20261030-118", "材料诊断 · 机械 · 985 学硕", "¥399", "待确认", "gray"],
+        ["T-20261029-097", "复试模拟 · 3 次", "¥259", "服务中", "green"],
+        ["T-20261027-063", "材料诊断 · 能源", "¥399", "已完成", "gray"],
+      ].map(([id, item, amt, st, tone]) => `
+        <div class="card tap" onclick="toast('演示：${id} 的订单详情与履约记录')">
+          <div class="row between"><span class="tiny dim num">${id}</span><span class="badge ${tone}">${st}</span></div>
+          <div class="row between mt8"><span class="small bold">${item}</span><span class="price" style="font-size:15px">${amt}</span></div>
+        </div>`).join("")}
+    ` : tab === "资讯" ? `
+      <div class="alert mt12"><span class="ico">📰</span>
+        <span>资讯只做<b>原样转载</b>并标注来源；不得改写院校原文，日期统一来源为准。</span></div>
+      ${["某高校机械工程学院 2027 推免通知", "某高校能源与动力工程学院 推免日程", "某高校材料科学与工程学院 复试办法"].map((t, i) => `
+        <div class="card tap" onclick="toast('演示：编辑${i === 0 ? "新建" : "复核"}资讯条目')">
+          <div class="row between"><span class="small bold" style="max-width:220px">${t}</span><span class="badge ${i === 2 ? "gray" : "green"}">${i === 2 ? "待复核" : "已发布"}</span></div>
+          <div class="tiny dim mt6">来源：学院官网 · 转载不改写</div>
+        </div>`).join("")}
     ` : `
-      <div class="card mt12 center" style="padding:30px 18px">
-        <div class="small dim">「${tab}」模块演示数据未展开</div>
-        <div class="tiny dim mt8">本页只演示审核队列，其余标签为 P11 的既有权限位</div>
-      </div>
+      <div class="alert mt12"><span class="ico">⚙</span>
+        <span>配置项变更<b>全部留痕</b>；名额上限、价格、抽成比例仅超级管理员可改。</span></div>
+      ${[
+        ["服务者名额上限 U", "3 单 / 周", "超管"],
+        ["材料诊断定价", "¥399", "超管"],
+        ["方案修改次数上限", "2 次", "超管"],
+        ["审核员权限", "仅审核 · 无退款", "只读"],
+      ].map(([k, v, who]) => `
+        <div class="list-row" onclick="toast('演示：${k} 的变更需超级管理员二次确认')">
+          <div class="grow"><div class="small bold">${k}</div><div class="tiny dim">当前 ${v}</div></div>
+          <span class="badge ${who === "只读" ? "gray" : ""}">${who}</span>
+        </div>`).join("")}
     `}
 
     <div class="tiny dim center mt16">所有处置留操作记录 · 审核员无退款与全部下载权限</div>

@@ -6,7 +6,7 @@
   --accent: #5a37d6;
   --ink: #1a1626;
   --ink-2: #5f5872;
-  --ink-3: #9b95ad;
+  --ink-3: #6f6887;
   --bg: #f7f5fc;
   --card: #ffffff;
   --line: #ece7f7;
@@ -22,10 +22,10 @@
   --warn-bg: #fff8e6;
   --warn-line: #f3d68d;
   --warn-ink: #8a5a00;
-  --danger: #d93f3f;
+  --danger: #c02f2f;
   --danger-soft: #fdeceb;
-  --ok-soft: #eefbf3;
-  --ok-ink: #12a150;
+  --ok-soft: #f0ebfe;
+  --ok-ink: #5a37d6;
   --nav-bg: rgba(244,245,247,.92);
   --sheet: #ffffff;
   --chip: #f2eefb;
@@ -204,6 +204,7 @@ a { color: inherit; text-decoration: none; }
 .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10.5px; color: var(--ink-3); font-weight: 500; }
 .tab svg { width: 23px; height: 23px; }
 .tab.active { color: var(--brand); font-weight: 600; }
+html[data-theme="dark"] .tab.active { color: var(--accent); }
 /* ---------- 徽标 ---------- */
 .badge {
   display: inline-flex; align-items: center; gap: 3px; padding: 2.5px 8px; border-radius: 8px;
@@ -216,8 +217,8 @@ a { color: inherit; text-decoration: none; }
 .tag { display: inline-block; padding: 3px 8px; border-radius: 7px; background: var(--fill); color: var(--ink-2); font-size: 11.5px; }
 /* 事实 / 推断 / 待核实 —— 两版共用语义色 */
 .ev { display: inline-flex; padding: 1.5px 6px; border-radius: 5px; font-size: 10px; font-weight: 600; vertical-align: middle; }
-.ev.fact { background: #e8f2ff; color: #1d6fd4; }
-.ev.infer { background: #f0ebff; color: #6a4bd6; }
+.ev.fact { background: #e8f2ff; color: #1a5fb4; }
+.ev.infer { background: #f0ebff; color: #5a37d6; }
 .ev.todo { background: var(--warn-bg); color: var(--warn-ink); }
 /* ---------- 首页 ---------- */
 .hero {
@@ -396,7 +397,7 @@ html[data-theme="dark"] {
   --brand: #6366f1; --brand-2: #818cf8; --brand-3: #4f46e5;
   --brand-soft: rgba(99, 102, 241, .16);
   --accent: #a5b4fc;
-  --ink: #e8ecf6; --ink-2: #a9b3c9; --ink-3: #6b7690;
+  --ink: #e8ecf6; --ink-2: #b3bdd1; --ink-3: #939db5;
   --bg: #0e1220; --card: #171c2e; --line: #262d45;
   --radius: 18px; --radius-l: 22px; --radius-s: 12px; --radius-btn: 14px;
   --shadow: 0 4px 16px rgba(0, 0, 0, .35);
@@ -404,7 +405,7 @@ html[data-theme="dark"] {
   --shadow-brand: 0 6px 20px rgba(99, 102, 241, .4);
   --warn-bg: rgba(232, 135, 30, .12); --warn-line: rgba(232, 135, 30, .34); --warn-ink: #f0b46a;
   --danger: #f87171; --danger-soft: rgba(248, 113, 113, .12);
-  --ok-soft: rgba(99, 102, 241, .16); --ok-ink: #a5b4fc;
+  --ok-soft: rgba(99, 102, 241, .18); --ok-ink: #c7d2fe;
 }
 html[data-theme="dark"] .hero {
   background: linear-gradient(150deg, #1e1b4b, #312e81 55%, #4338ca);
@@ -415,17 +416,18 @@ html[data-theme="dark"] .hero .btn.primary { background: #fff; color: #312e81; }
 html[data-theme="dark"] .hero .btn.line { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.28); color: #fff; }
 html[data-theme="dark"] .price { color: #a5b4fc; }
 html[data-theme="dark"] .badge { background: rgba(99,102,241,.18); color: #c7d2fe; }
-html[data-theme="dark"] .badge.green { background: rgba(34,197,94,.16); color: #86efac; }
+html[data-theme="dark"] .badge.green { background: rgba(99,102,241,.18); color: #c7d2fe; }
 html[data-theme="dark"] .badge.orange { background: rgba(232,135,30,.16); color: #f0b46a; }
 html[data-theme="dark"] .badge.red { background: rgba(248,113,113,.16); color: #fca5a5; }
-html[data-theme="dark"] .badge.gray { background: rgba(255,255,255,.08); color: #8b95ab; }
+html[data-theme="dark"] .badge.gray { background: rgba(255,255,255,.08); color: #9aa4bb; }
 html[data-theme="dark"] .ev.fact { background: rgba(96,165,250,.18); color: #93c5fd; }
 html[data-theme="dark"] .ev.infer { background: rgba(167,139,250,.18); color: #c4b5fd; }
 html[data-theme="dark"] .tag { background: rgba(255,255,255,.06); color: #a9b3c9; }
 html[data-theme="dark"] .case-logo { background: rgba(255,255,255,.07); color: #c7d2fe; }
 html[data-theme="dark"] .progress { background: rgba(255,255,255,.1); }
-html[data-theme="dark"] .steps4 .dot { background: rgba(255,255,255,.1); color: #6b7690; }
+html[data-theme="dark"] .steps4 .dot { background: rgba(255,255,255,.1); color: #9aa4bb; }
 html[data-theme="dark"] .steps4 .st.now .dot { background: #0e1220; color: #a5b4fc; }
+html[data-theme="dark"] .steps4 .st.done .dot { background: var(--brand-3); color: #fff; }
 html[data-theme="dark"] .steps4 .line { background: rgba(255,255,255,.12); }
 html[data-theme="dark"] .input, html[data-theme="dark"] textarea.input, html[data-theme="dark"] .choice {
   background: rgba(255,255,255,.04); border-color: #2d344d; color: #e8ecf6;
@@ -435,17 +437,26 @@ html[data-theme="dark"] .dr-item:hover, html[data-theme="dark"] .dr-item.on { ba
 html[data-theme="dark"] .nav-capsule { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.14); }
 html[data-theme="dark"] .tabbar, html[data-theme="dark"] .actionbar { background: #131829; }
 html[data-theme="dark"] .statusbar { color: #e8ecf6; }
+/* 深色下所有「品牌色文字」统一用 accent，保证半透明底上的可读性 */
+html[data-theme="dark"] .chat-head .ava,
+html[data-theme="dark"] .list-row .ico,
+html[data-theme="dark"] .tab.active,
+html[data-theme="dark"] .tab:active svg,
+html[data-theme="dark"] .dr-item.on { color: var(--accent); }
+html[data-theme="dark"] .badge,
+html[data-theme="dark"] .badge.green { color: #c7d2fe; }
+html[data-theme="dark"] .alert.danger { border-color: rgba(248,113,113,.32); }
 
 /* ---------- 在线状态（闲鱼式） ---------- */
 .presence { display: flex; align-items: center; gap: 5px; font-size: 11.5px; flex-wrap: wrap; }
 .presence i { width: 6px; height: 6px; border-radius: 50%; flex: none; }
-.presence .dot-on { background: #21c06a; box-shadow: 0 0 0 3px rgba(33, 192, 106, .16); }
+.presence .dot-on { background: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
 .presence .dot-off { background: var(--ink-3); }
-.presence .on { color: #15965a; font-weight: 600; }
+.presence .on { color: var(--brand-3); font-weight: 600; }
 .presence .off { color: var(--ink-3); }
 .presence .sep { color: var(--ink-3); }
-html[data-theme="dark"] .presence .on { color: #4ade80; }
-html[data-theme="dark"] .presence .dot-on { background: #4ade80; box-shadow: 0 0 0 3px rgba(74, 222, 128, .16); }
+html[data-theme="dark"] .presence .on { color: var(--accent); }
+html[data-theme="dark"] .presence .dot-on { background: var(--brand-2); box-shadow: 0 0 0 3px rgba(129, 140, 248, .2); }
 .presence.lg { font-size: 12.5px; }
 
 /* 会话头部：在线状态条 */
