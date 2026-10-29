@@ -1,22 +1,22 @@
 :root {
-  --brand: #07c160;
-  --brand-2: #12ce6c;
-  --brand-3: #05a44f;
-  --brand-soft: #e8f9ef;
-  --accent: #049c4e;
-  --ink: #121417;
-  --ink-2: #5b6572;
-  --ink-3: #9aa4b0;
-  --bg: #f4f5f7;
+  --brand: #6d4aef;
+  --brand-2: #8b6bf5;
+  --brand-3: #5a37d6;
+  --brand-soft: #f0ebfe;
+  --accent: #5a37d6;
+  --ink: #1a1626;
+  --ink-2: #5f5872;
+  --ink-3: #9b95ad;
+  --bg: #f7f5fc;
   --card: #ffffff;
-  --line: #edeff2;
+  --line: #ece7f7;
   --radius: 16px;
   --radius-l: 22px;
   --radius-s: 12px;
   --radius-btn: 14px;
   --shadow: 0 2px 10px rgba(18, 20, 23, .045);
   --shadow-l: 0 6px 22px rgba(18, 20, 23, .06);
-  --shadow-brand: 0 6px 18px rgba(7, 193, 96, .28);
+  --shadow-brand: 0 6px 18px rgba(109, 74, 239, .26);
   --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "HarmonyOS Sans SC", "MiSans", "Microsoft YaHei", sans-serif;
   --serif: var(--font);
   --warn-bg: #fff8e6;
@@ -24,8 +24,8 @@
   --warn-ink: #8a5a00;
   --danger: #d93f3f;
   --danger-soft: #fdeceb;
-  --ok-soft: #e8f9ef;
-  --ok-ink: #049c4e;
+  --ok-soft: #eefbf3;
+  --ok-ink: #12a150;
   --nav-bg: rgba(244,245,247,.92);
   --sheet: #ffffff;
   --chip: #f0f2f5;
@@ -224,8 +224,8 @@ a { color: inherit; text-decoration: none; }
   position: relative; overflow: hidden; margin-top: 4px; padding: 20px 18px 18px;
   border-radius: var(--radius-l); color: #fff;
   background: radial-gradient(340px 200px at 88% -10%, rgba(255, 255, 255, .3), transparent 60%),
-    linear-gradient(140deg, #07c160 0%, #12ce6c 52%, #05a44f 100%);
-  box-shadow: 0 16px 36px rgba(7, 193, 96, .3);
+    linear-gradient(140deg, #7d5cf0 0%, #8f6df7 52%, #5a37d6 100%);
+  box-shadow: 0 16px 36px rgba(109, 74, 239, .3);
 }
 .hero::after {
   content: ""; position: absolute; right: -38px; top: -46px; width: 150px; height: 150px;
@@ -239,7 +239,7 @@ a { color: inherit; text-decoration: none; }
 .hero p { margin-top: 8px; font-size: 12.5px; color: rgba(255, 255, 255, .86); line-height: 1.6; }
 .hero .btn-row { margin-top: 16px; display: flex; gap: 9px; position: relative; z-index: 2; }
 .hero .btn-row .btn { flex: 1; }
-.hero .btn.primary { background: #fff; color: #05a44f; box-shadow: 0 6px 16px rgba(0, 0, 0, .12); }
+.hero .btn.primary { background: #fff; color: #5a37d6; box-shadow: 0 6px 16px rgba(0, 0, 0, .12); }
 .hero .btn.line { background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .5); color: #fff; }
 .quick-chips { display: flex; gap: 8px; margin-top: 12px; }
 /* 通知条目 */

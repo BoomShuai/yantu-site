@@ -19,7 +19,7 @@
     const dark = theme === "dark";
     root.dataset.theme = theme;
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", dark ? "#0e1220" : "#f4f5f7");
+    if (meta) meta.setAttribute("content", dark ? "#0e1220" : "#f7f5fc");
     if (syncFrame) setFrameTheme();
   }
 

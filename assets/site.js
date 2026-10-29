@@ -11,7 +11,7 @@
     const dark = theme === "dark";
     root.dataset.theme = dark ? "dark" : "light";
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", dark ? "#0e1220" : "#f4f5f7");
+    if (meta) meta.setAttribute("content", dark ? "#0e1220" : "#f7f5fc");
     // 静态界面截图按主题切换
     document.querySelectorAll("img[data-shot]").forEach((img) => {
       const next = `assets/shots/${dark ? "dark" : "light"}-${img.dataset.shot}.jpg`;

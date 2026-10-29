@@ -4,24 +4,24 @@
    ============================================================ */
 
 :root {
-  --brand: #07c160;
-  --brand-2: #12ce6c;
-  --brand-3: #05a44f;
-  --brand-soft: #e8f9ef;
-  --accent: #049c4e;
-  --ink: #121417;
-  --ink-2: #5b6572;
-  --ink-3: #9aa4b0;
-  --bg: #f4f5f7;
+  --brand: #6d4aef;
+  --brand-2: #8b6bf5;
+  --brand-3: #5a37d6;
+  --brand-soft: #f0ebfe;
+  --accent: #5a37d6;
+  --ink: #1a1626;
+  --ink-2: #5f5872;
+  --ink-3: #9b95ad;
+  --bg: #f7f5fc;
   --card: #ffffff;
-  --line: #edeff2;
+  --line: #ece7f7;
   --radius: 16px;
   --radius-l: 22px;
   --radius-s: 12px;
   --radius-btn: 14px;
   --shadow: 0 2px 10px rgba(18, 20, 23, .045);
   --shadow-l: 0 6px 22px rgba(18, 20, 23, .06);
-  --shadow-brand: 0 6px 18px rgba(7, 193, 96, .28);
+  --shadow-brand: 0 6px 18px rgba(109, 74, 239, .26);
   --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "HarmonyOS Sans SC", "MiSans", "Microsoft YaHei", sans-serif;
   --serif: var(--font);
   --warn-bg: #fff8e6;
@@ -29,11 +29,11 @@
   --warn-ink: #8a5a00;
   --danger: #d93f3f;
   --danger-soft: #fdeceb;
-  --ok-soft: #e8f9ef;
-  --ok-ink: #049c4e;
-  --nav-bg: rgba(244,245,247,.92);
+  --ok-soft: #eefbf3;
+  --ok-ink: #12a150;
+  --nav-bg: rgba(247,245,252,.92);
   --sheet: #ffffff;
-  --chip: #f0f2f5;
+  --chip: #f2eefb;
 }
 
 html[data-theme="dark"] {

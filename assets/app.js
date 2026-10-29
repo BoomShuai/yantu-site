@@ -22,7 +22,7 @@ function setTheme(t) {
   document.querySelectorAll("[data-theme-btn]").forEach((b) =>
     b.classList.toggle("on", (b.dataset.themeBtn === "dark") === dark));
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", dark ? "#0e1220" : "#f4f5f7");
+  if (meta) meta.setAttribute("content", dark ? "#0e1220" : "#f7f5fc");
   try { localStorage.setItem("yantu-theme", dark ? "dark" : "light"); } catch (e) {}
   // 通知外层官网
   try { window.parent.postMessage({ type: "yantu-theme", theme: dark ? "dark" : "light" }, "*"); } catch (e) {}
@@ -787,7 +787,7 @@ function renderNav(name) {
   nav.className = "navbar";
   const capsule = `<span class="nav-capsule"><span class="dot"></span><span class="dot"></span><span class="ring"></span></span>`;
   nav.innerHTML = cfg.brand
-    ? `<span class="nav-brand">研途<small>保研服务</small></span>${capsule}`
+    ? `<span class="nav-brand">同路<small>保研服务</small></span>${capsule}`
     : `<button class="nav-back" onclick="back()">${ICON.back}</button><span class="nav-title">${cfg.title || ""}</span>${capsule}`;
 }
 
