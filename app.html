@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#f4f5f7" />
+<title>研途 · 界面演示</title>
+<link rel="stylesheet" href="assets/theme.css" />
+</head>
+<body>
+<div class="app-wrap">
+  <div class="stage">
+    <div class="phone">
+      <div class="screen">
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="sb-icons">
+            <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 2.2c2.3 0 4.4.9 6 2.4l1.2-1.2A10.4 10.4 0 0 0 8 .5 10.4 10.4 0 0 0 .8 3.4L2 4.6a8.6 8.6 0 0 1 6-2.4Zm0 3.3c1.3 0 2.5.5 3.4 1.3l1.2-1.2A6.6 6.6 0 0 0 8 3.7 6.6 6.6 0 0 0 3.4 5.6l1.2 1.2c.9-.8 2.1-1.3 3.4-1.3Zm0 3.2c.5 0 1 .2 1.3.5L8 10.6 6.7 9.2c.3-.3.8-.5 1.3-.5Z"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="20" height="11" rx="3" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="14" height="8" rx="1.6" fill="currentColor"/><path d="M22 4v4c1.1-.3 1.8-1.1 1.8-2S23.1 4.3 22 4Z" fill="currentColor" opacity=".5"/></svg>
+          </span>
+        </div>
+        <header class="navbar" id="navbar"></header>
+        <main id="app"></main>
+        <div class="actionbar" id="actionbar"></div>
+        <nav class="tabbar" id="tabbar"></nav>
+
+        <button class="fab-demo" id="fabDemo" type="button">场景</button>
+        <div class="mask" id="mask"></div>
+        <aside class="drawer" id="drawer">
+          <div class="dr-head">
+            <h4>跳转场景</h4>
+            <button class="dr-close" id="drClose" type="button">关闭</button>
+          </div>
+          <div class="dr-body" id="drBody"></div>
+          <div class="dr-foot">演示用浮层 · 上线版本移除</div>
+        </aside>
+        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
