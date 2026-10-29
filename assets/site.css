@@ -1,3 +1,16 @@
+
+/* ---------- 基础排印（原本来自 theme.css，现独立） ---------- */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; }
+body {
+  font-family: var(--font);
+  font-size: 15px; line-height: 1.55; color: var(--ink); background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4, p { margin: 0; }
+button { font-family: inherit; border: 0; background: none; cursor: pointer; color: inherit; font-size: inherit; }
+a { color: inherit; text-decoration: none; }
+
 /* ============================================================
    site.css — 官网外壳（与演示页隔离，互不影响）
    主题变量来自 theme.css 的 :root 与 html[data-theme="dark"]
@@ -149,9 +162,10 @@ html[data-theme="dark"] .phone-mini {
   content: ""; position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
   width: 74px; height: 18px; border-radius: 14px; background: #05070d; z-index: 5;
 }
+.phone-mini img,
 .phone-mini iframe {
-  width: 390px; height: 844px; border: 0; border-radius: 28px;
-  transform: scale(.641); transform-origin: top left;
+  width: 100%; height: 100%; object-fit: cover; object-position: top center;
+  border: 0; border-radius: 28px; display: block;
 }
 .float-card {
   position: absolute; background: var(--card); border-radius: 14px; padding: 11px 14px;
@@ -230,10 +244,13 @@ html[data-theme="dark"] .flow-tag { background: rgba(99,102,241,.2); color: #a5b
   height: 218px; overflow: hidden; position: relative; background: var(--brand-soft);
 }
 html[data-theme="dark"] .shot-img { background: rgba(99,102,241,.12); }
+.shot-img img,
 .shot-img iframe {
-  width: 390px; height: 844px; border: 0; position: absolute; top: 0; left: 50%;
-  transform: translateX(-50%) scale(.421); transform-origin: top center; pointer-events: none;
+  width: 100%; height: 100%; object-fit: cover; object-position: top center;
+  border: 0; display: block; pointer-events: none;
+  transition: transform .45s cubic-bezier(.2,.7,.3,1);
 }
+.shot:hover .shot-img img { transform: scale(1.035); }
 .shot-cap { padding: 11px 13px 13px; }
 .shot-cap b { font-size: 12.5px; display: block; }
 .shot-cap span { font-size: 10.5px; color: var(--ink-3); display: block; margin-top: 3px; }
@@ -336,7 +353,6 @@ html[data-theme="dark"] .trust-item:nth-child(n+4) .ti-ic {
   .sec-head { margin-bottom: 30px; }
   .shots { grid-template-columns: 1fr 1fr; gap: 10px; }
   .shot-img { height: 172px; }
-  .shot-img iframe { transform: translateX(-50%) scale(.333); }
   .trust-grid { grid-template-columns: 1fr; }
   .foot-in { flex-direction: column; }
   .foot-note { margin-top: 18px; padding-top: 15px; }

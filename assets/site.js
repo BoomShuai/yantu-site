@@ -12,13 +12,10 @@
     root.dataset.theme = dark ? "dark" : "light";
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute("content", dark ? "#0e1220" : "#f4f5f7");
-    // 同步给页面内所有演示 iframe
-    document.querySelectorAll("iframe").forEach((f) => {
-      try {
-        const q = new URL(f.src, location.href);
-        q.searchParams.set("theme", dark ? "dark" : "light");
-        if (f.src !== q.href) f.src = q.href;
-      } catch (e) {}
+    // 静态界面截图按主题切换
+    document.querySelectorAll("img[data-shot]").forEach((img) => {
+      const next = `assets/shots/${dark ? "dark" : "light"}-${img.dataset.shot}.jpg`;
+      if (img.getAttribute("src") !== next) img.setAttribute("src", next);
     });
   }
 
@@ -76,7 +73,7 @@
       <a class="shot" href="demo.html#/${s.k}">
         <div class="shot-img">
           <span class="shot-badge">${s.no}</span>
-          <iframe src="app.html?embed=1#/${s.k}" loading="lazy" title="${s.t}"></iframe>
+          <img src="assets/shots/light-${s.k}.jpg" data-shot="${s.k}" loading="lazy" alt="${s.t}界面" />
         </div>
         <div class="shot-cap">
           <b>${s.t}</b>
@@ -86,29 +83,6 @@
     ).join("");
     // 让新插入的 iframe 也带上主题
     apply(current());
-  }
-
-  /* ---------------- Hero 手机预览滚动 ---------------- */
-  const heroFrame = document.getElementById("heroFrame");
-  if (heroFrame) {
-    heroFrame.addEventListener("load", () => {
-      // 轻微自动滚动，制造"活着"的感觉
-      let y = 0, dir = 1;
-      const inner = () => {
-        try {
-          const d = heroFrame.contentDocument;
-          const app = d && d.getElementById("app");
-          if (!app) return;
-          const max = app.scrollHeight - app.clientHeight;
-          if (max <= 20) return;
-          y += dir * 0.6;
-          if (y > max) { y = max; dir = -1; }
-          if (y < 0) { y = 0; dir = 1; }
-          app.scrollTop = y;
-        } catch (e) {}
-      };
-      setInterval(inner, 60);
-    });
   }
 
   /* ---------------- 平滑锚点 ---------------- */

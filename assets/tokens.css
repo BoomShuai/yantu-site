@@ -1,0 +1,55 @@
+/* ============================================================
+   tokens.css — 只含设计变量，不含任何组件样式
+   官网 / 演示容器 / 手机界面 三处共用，互不冲突
+   ============================================================ */
+
+:root {
+  --brand: #07c160;
+  --brand-2: #12ce6c;
+  --brand-3: #05a44f;
+  --brand-soft: #e8f9ef;
+  --accent: #049c4e;
+  --ink: #121417;
+  --ink-2: #5b6572;
+  --ink-3: #9aa4b0;
+  --bg: #f4f5f7;
+  --card: #ffffff;
+  --line: #edeff2;
+  --radius: 16px;
+  --radius-l: 22px;
+  --radius-s: 12px;
+  --radius-btn: 14px;
+  --shadow: 0 2px 10px rgba(18, 20, 23, .045);
+  --shadow-l: 0 6px 22px rgba(18, 20, 23, .06);
+  --shadow-brand: 0 6px 18px rgba(7, 193, 96, .28);
+  --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "HarmonyOS Sans SC", "MiSans", "Microsoft YaHei", sans-serif;
+  --serif: var(--font);
+  --warn-bg: #fff8e6;
+  --warn-line: #f3d68d;
+  --warn-ink: #8a5a00;
+  --danger: #d93f3f;
+  --danger-soft: #fdeceb;
+  --ok-soft: #e8f9ef;
+  --ok-ink: #049c4e;
+  --nav-bg: rgba(244,245,247,.92);
+  --sheet: #ffffff;
+  --chip: #f0f2f5;
+}
+
+html[data-theme="dark"] {
+  --brand: #6366f1; --brand-2: #818cf8; --brand-3: #4f46e5;
+  --brand-soft: rgba(99, 102, 241, .16);
+  --accent: #a5b4fc;
+  --ink: #e8ecf6; --ink-2: #a9b3c9; --ink-3: #6b7690;
+  --bg: #0e1220; --card: #171c2e; --line: #262d45;
+  --radius: 18px; --radius-l: 22px; --radius-s: 12px; --radius-btn: 14px;
+  --shadow: 0 4px 16px rgba(0, 0, 0, .35);
+  --shadow-l: 0 10px 28px rgba(0, 0, 0, .45);
+  --shadow-brand: 0 6px 20px rgba(99, 102, 241, .4);
+  --warn-bg: rgba(232, 135, 30, .12); --warn-line: rgba(232, 135, 30, .34); --warn-ink: #f0b46a;
+  --danger: #f87171; --danger-soft: rgba(248, 113, 113, .12);
+  --ok-soft: rgba(99, 102, 241, .16); --ok-ink: #a5b4fc;
+  --nav-bg: rgba(14, 18, 32, .9);
+  --sheet: #171c2e;
+  --chip: rgba(255, 255, 255, .07);
+}

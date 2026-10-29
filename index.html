@@ -7,7 +7,7 @@
 <meta name="description" content="研途 · AI 保研服务平台。先弄清自己的情况，再找到能真正帮上忙的人。定位诊断、服务者匹配、售前确认、平台付款。" />
 <title>研途 · AI 保研服务平台</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-<link rel="stylesheet" href="assets/theme.css" />
+<link rel="stylesheet" href="assets/tokens.css" />
 <link rel="stylesheet" href="assets/site.css" />
 </head>
 <body>
@@ -58,7 +58,10 @@
 
     <div class="hero-art">
       <div class="phone-mini">
-        <iframe id="heroFrame" src="app.html?embed=1#/home" title="研途首页预览" loading="lazy"></iframe>
+        <picture>
+          <source srcset="assets/shots/dark-home.jpg" media="(prefers-color-scheme: dark)" />
+          <img class="hero-shot" id="heroShot" src="assets/shots/light-home.jpg" data-shot="home" alt="研途首页界面" />
+        </picture>
       </div>
       <div class="float-card fc1">
         <div class="fc-num">3<span>/3</span></div>
