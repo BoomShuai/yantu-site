@@ -48,7 +48,8 @@ const ICON = {
   back: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
   home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.8 9.2V20h12.4V9.2"/><path d="M9.8 20v-5.6h4.4V20"/></svg>',
   school: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.4l9 4.4 9-4.4L12 3Z"/><path d="M5.8 10.2v5.3c0 1.4 2.8 2.5 6.2 2.5s6.2-1.1 6.2-2.5v-5.3"/><path d="M21 7.4v5"/></svg>',
-  me: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8.4" r="3.5"/><path d="M4.9 19.8c.7-3.4 3.5-5.2 7.1-5.2s6.4 1.8 7.1 5.2"/></svg>'
+  me: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8.4" r="3.5"/><path d="M4.9 19.8c.7-3.4 3.5-5.2 7.1-5.2s6.4 1.8 7.1 5.2"/></svg>',
+  tutor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="4.6" width="18.4" height="12.4" rx="2"/><path d="M7.5 20.4h9"/><path d="M12 17v3.4"/><path d="M7.4 9.6h5.2"/><path d="M7.4 12.8h8"/></svg>'
 };
 
 /* ---------------- 屏单（与文档 01–11 一一对应） ---------------- */
@@ -67,7 +68,9 @@ const SCREENS = [
   { no: "12", key: "me", title: "我的", prd: "P03 · 档案/订单" },
   { no: "13", key: "noticeDetail", title: "通知详情", prd: "P09 · 版本变更" },
   { no: "14", key: "workbench", title: "服务者工作台", prd: "P10 · 容量/排班" },
-  { no: "15", key: "admin", title: "管理后台", prd: "P11 · 审核队列" }
+  { no: "15", key: "admin", title: "管理后台", prd: "P11 · 审核队列" },
+  { no: "16", key: "tutor", title: "辅导端", prd: "服务者视角 · 接单容量" },
+  { no: "17", key: "about", title: "关于与设置", prd: "上架必需 · 隐私/协议/版本" }
 ];
 const NAV = {
   home: { brand: true },
@@ -84,9 +87,11 @@ const NAV = {
   me: { title: "我的" },
   noticeDetail: { title: "通知详情" },
   workbench: { title: "服务者工作台" },
-  admin: { title: "管理后台" }
+  admin: { title: "管理后台" },
+  tutor: { hidden: true },
+  about: { title: "关于与设置" }
 };
-const TABS = { home: "home", school: "school", me: "me" };
+const TABS = { home: "home", school: "school", tutor: "tutor", me: "me" };
 
 /* ---------------- 工具 ---------------- */
 function go(hash) {
@@ -322,6 +327,10 @@ function pageProvider() {
         <div class="grow">
           <div class="row" style="gap:7px"><span class="bold" style="font-size:16px">${p.name}</span>
             <span class="badge">已核验</span></div>
+          <div class="presence mt6">${p.presence.state === "online"
+            ? `<i class="dot-on"></i><span class="on">${p.presence.text}</span>`
+            : `<i class="dot-off"></i><span class="off">${p.presence.text}</span>`}
+            <span class="sep">·</span><span class="dim">${p.presence.replyIn}</span></div>
           <div class="tiny dim mt6">${p.brief}</div>
           <div class="n-meta">${p.tags.map((t) => `<span class="tag">${t}</span>`).join("")}</div>
         </div>
@@ -363,7 +372,18 @@ function pagePresale() {
   const p = provider();
   return `
   <div class="page">
-    <div class="alert info"><span class="ico">🛡</span>
+    <div class="chat-head">
+      <div class="ava">陈</div>
+      <div class="grow">
+        <div class="nm">${p.name} · 售前沟通</div>
+        <div class="presence mt6">${p.presence.state === "online"
+          ? `<i class="dot-on"></i><span class="on">${p.presence.text}</span>`
+          : `<i class="dot-off"></i><span class="off">${p.presence.text}</span>`}
+          <span class="sep">·</span><span class="dim">${p.presence.replyIn}</span></div>
+      </div>
+    </div>
+
+    <div class="alert info mt12"><span class="ico">🛡</span>
       <span>本次沟通与需求 <b>${M.student.key}</b> 绑定，聊天记录仅用于本次服务。</span></div>
 
     <div class="mt16">
@@ -574,12 +594,12 @@ function pageQuota() {
     <div class="sec-head"><h3><span class="sec-num">11</span>这些功能不受影响</h3></div>
     <div class="card">
       ${[
-        ["🗂", "历史定位结果", "随时回看，不限次数"],
-        ["💬", "售前沟通", "与已联系的服务者继续沟通"],
-        ["📦", "已有订单", "查看交付与进度"],
-        ["📰", "院校资讯", "全部内容免额度浏览"]
-      ].map(([i, t, d], idx) => `
-        <div class="list-row" style="${idx ? "" : "padding-top:2px"}">
+        ["🗂", "历史定位结果", "随时回看，不限次数", "#/diagnosis"],
+        ["💬", "售前沟通", "与已联系的服务者继续沟通", "#/presale"],
+        ["📦", "已有订单", "查看交付与进度", "#/delivery"],
+        ["📰", "院校资讯", "全部内容免额度浏览", "#/school"]
+      ].map(([i, t, d, go], idx) => `
+        <div class="list-row" onclick="go('${go}')" style="${idx ? "" : "padding-top:2px"}">
           <div class="ico">${i}</div>
           <div class="grow"><div class="small bold">${t}</div><div class="tiny dim">${d}</div></div>
           <span class="tiny dim">›</span>
@@ -633,6 +653,126 @@ function pageNoCandidate() {
       </div>
     </div>
   </div>`;
+}
+
+/* ============================================================
+   辅导端（服务者视角）
+   ============================================================ */
+function pageTutor() {
+  const t = M.tutor;
+  const rest = Math.max(0, t.capacity.u - t.capacity.l - t.capacity.h);
+  return `
+  <div class="page">
+    <div class="card mt6">
+      <div class="row between">
+        <div class="row" style="gap:10px">
+          <div class="case-logo" style="width:46px;height:46px;font-size:16px">陈</div>
+          <div>
+            <div class="bold" style="font-size:15.5px">${t.me.name}</div>
+            <div class="tiny dim mt6">${t.me.role} · ${t.me.since}</div>
+          </div>
+        </div>
+        <span class="badge green">${t.me.state}</span>
+      </div>
+      <div class="presence mt10"><i class="dot-on"></i><span class="on">${t.presence.text}</span>
+        <span class="sep">·</span><span class="dim">${t.presence.replyIn}</span></div>
+      <div class="divider"></div>
+      <div class="row" style="text-align:center">
+        ${t.stats.map((x) => `<div class="grow">
+          <div class="bold num" style="font-size:17px">${x.v}</div>
+          <div class="xs dim">${x.k}</div></div>`).join("")}
+      </div>
+    </div>
+
+    <div class="sec-head"><h3><span class="sec-num">T1</span>接单容量</h3><span class="link">剩余 ${rest}</span></div>
+    <div class="card">
+      <div class="row" style="text-align:center">
+        <div class="grow"><div class="bold num" style="font-size:18px">${t.capacity.u}</div><div class="xs dim">上限 U</div></div>
+        <div class="grow"><div class="bold num" style="font-size:18px">${t.capacity.l}</div><div class="xs dim">已付费 L</div></div>
+        <div class="grow"><div class="bold num" style="font-size:18px">${t.capacity.h}</div><div class="xs dim">占位 H</div></div>
+        <div class="grow"><div class="bold num" style="font-size:18px;color:var(--accent)">${rest}</div><div class="xs dim">剩余</div></div>
+      </div>
+      <div class="tiny dim mt10">剩余 = max(0, U − L − H) · 满额即不进入推荐</div>
+    </div>
+
+    <div class="sec-head"><h3><span class="sec-num">T2</span>常用操作</h3></div>
+    <div class="card">
+      ${t.actions.map((a, i) => `
+        <div class="list-row" onclick="go('${a.go}')" style="${i === 0 ? "padding-top:2px" : ""}">
+          <div class="ico">${a.ico}</div>
+          <div class="grow"><div class="small bold">${a.t}</div><div class="tiny dim mt6">${a.d}</div></div>
+          <span class="tiny dim">›</span>
+        </div>`).join("")}
+    </div>
+
+    <div class="sec-head"><h3><span class="sec-num">T3</span>接单规则</h3></div>
+    <div class="card">
+      ${t.rules.map((r) => `<div class="kv"><span class="k" style="flex:1;padding-right:8px;line-height:1.6">${r}</span></div>`).join("")}
+    </div>
+
+    <div class="card mt12" style="border:1px dashed var(--line)">
+      <div class="small bold">${t.apply.t}</div>
+      <div class="tiny dim mt6">${t.apply.d}</div>
+      <button class="btn full mt10" onclick="toast('已提交入驻申请：材料核验通常 1 个工作日')">${t.apply.btn}</button>
+    </div>
+
+    <div class="tiny dim center mt16">辅导端与学员端共用同一套账号 · 切换不改变数据</div>
+  </div>`;
+}
+
+/* ============================================================
+   关于与设置（应用上架必需）
+   ============================================================ */
+function pageAbout() {
+  const a = M.about;
+  return `
+  <div class="page">
+    <div class="card center mt6" style="padding:22px 16px">
+      <div class="logo-mark" style="width:48px;height:48px;border-radius:14px;font-size:20px;margin:0 auto">同</div>
+      <div class="bold mt10" style="font-size:16px">同路</div>
+      <div class="tiny dim mt6">AI 保研服务平台 · v${a.version}（${a.build}）</div>
+    </div>
+
+    ${a.groups.map((g, gi) => `
+      <div class="sec-head"><h3><span class="sec-num">A${gi + 1}</span>${g.t}</h3></div>
+      <div class="card">
+        ${g.items.map((it, i) => `
+          <div class="list-row" onclick="aboutDetail('${it.go}')" style="${i === 0 ? "padding-top:2px" : ""}">
+            <div class="grow"><div class="small bold">${it.k}</div><div class="tiny dim mt6">${it.d}</div></div>
+            <span class="tiny dim">›</span>
+          </div>`).join("")}
+      </div>`).join("")}
+
+    <div class="alert mt12"><span class="ico">⚠</span>
+      <span>用户隐私政策、用户服务协议、第三方共享清单为<b>应用商店上架必需项</b>，正式提审前需由主体方补齐法务文本（D07）。</span></div>
+
+    <div class="tiny dim center mt16">同路 · 演示版本，内容为示意</div>
+  </div>`;
+}
+
+function aboutDetail(k) {
+  const a = M.about;
+  if (k === "changelog") {
+    openSheet("版本更新", a.changelog.map((c) => `
+      <div class="card" style="margin-bottom:10px">
+        <div class="row between"><span class="bold small">v${c.v}</span><span class="tiny dim">${c.d}</span></div>
+        <div class="mt8">${c.log.map((l) => `<div class="tiny dim" style="line-height:1.75">· ${l}</div>`).join("")}</div>
+      </div>`).join(""));
+    return;
+  }
+  const txt = {
+    appinfo: ["应用详情", "名称：同路<br>定位：AI 保研服务平台<br>形态：微信小程序<br>版本：v" + a.version + "（" + a.build + "）<br>主体：待填（D07）<br>客服：站内消息 · 交易安全审核"],
+    developer: ["开发者信息", "开发者主体：待填（D07）<br>注册地址：待填<br>联系邮箱：待填<br><br>个人主体无法开通微信支付，需企业或个体工商户主体（D07 待决）。"],
+    privacy: ["用户隐私政策", "本政策说明同路如何收集、使用、存储与共享你的个人信息。<br><br><b>一、收集范围</b><br>· 账号信息：微信昵称、头像、OpenID<br>· 建档信息：院校、专业、名次与总人数、目标方向<br>· 材料文件：成绩单、排名证明、个人陈述等（你主动上传）<br>· 沟通记录：站内会话内容<br><br><b>二、使用目的</b><br>仅用于定位诊断、服务者匹配、订单履约与交易安全审核。<br><br><b>三、保存期限</b><br>账号存续期间保存；注销后 7 个工作日内删除或匿名化。<br><br><b>四、你的权利</b><br>可随时查看、更正、导出、删除个人信息，或在「账号注销」中申请注销。<br><br><b>五、未成年人</b><br>未满 18 周岁需监护人同意后使用。<br><br>正式文本以主体方法务版本为准。"],
+    terms: ["用户服务协议", "<b>一、服务性质</b><br>同路提供信息匹配与交易撮合服务，辅导服务由服务者个人提供。<br><br><b>二、名额规则</b><br>服务者接单量有上限；满额时系统不显示可约。推荐本身不锁名额，付款前进行二次校验，校验失败全额退回。<br><br><b>三、方案确认</b><br>方案需双方确认后生效；方案版本变更时，旧版本确认自动作废。<br><br><b>四、退款</b><br>服务开始前可全额退款；服务开始后按已交付比例结算。<br><br><b>五、禁止行为</b><br>禁止在站内交换微信、手机号、二维码等站外联系方式，违者订单可能被拦截。<br><br>正式文本以主体方法务版本为准。"],
+    sdk: ["第三方信息共享清单", "· <b>微信登录</b>：获取 OpenID、昵称、头像，用于账号识别<br>· <b>微信支付</b>：获取订单号与支付结果，用于订单履约<br>· <b>微信订阅消息</b>：获取消息推送结果，用于名额释放、订单状态通知<br><br>除上述场景外，不向任何第三方提供你的个人信息。"],
+    collect: ["个人信息收集清单", "· 微信昵称 / 头像 — 用于展示与识别 — 账号存续期间<br>· 院校 / 专业 / 名次 / 总人数 — 用于定位匹配 — 账号存续期间<br>· 上传材料文件 — 用于诊断与交付 — 服务结束 90 天后删除<br>· 站内会话 — 用于履约与安全审核 — 账号存续期间<br><br>可随时在「隐私与授权管理」中撤回授权。"],
+    cancel: ["账号注销", "注销前需先完结服务中订单。<br><br><b>注销后</b><br>· 个人信息在 7 个工作日内删除或匿名化<br>· 交易记录按法规要求保留 3 年<br>· 已支付订单不影响服务者已完成的服务<br><br>如需注销，请点下方按钮提交申请。"],
+    feedback: ["意见反馈", "遇到的问题、想加的功能、界面上的建议，都可以直接告诉我们。<br><br>提审前反馈会优先处理影响使用的阻塞问题。"]
+  }[k] || ["详情", "暂无内容"];
+
+  openSheet(txt[0], `<div class="small" style="line-height:1.85">${txt[1]}</div>
+    <button class="btn full mt16" onclick="closeSheet();toast('已记录你的反馈')">我知道了</button>`);
 }
 
 /* ============================================================
@@ -750,7 +890,8 @@ const PAGES = {
   home: pageHome, profile: pageProfile, diagnosis: pageDiagnosis, provider: pageProvider,
   presale: pagePresale, proposal: pageProposal, checkout: pageCheckout, delivery: pageDelivery,
   school: pageSchool, quota: pageQuota, nocandidate: pageNoCandidate,
-  me: pageMe, noticeDetail: pageNoticeDetail, workbench: pageWorkbench, admin: pageAdmin
+  me: pageMe, noticeDetail: pageNoticeDetail, workbench: pageWorkbench, admin: pageAdmin,
+  tutor: pageTutor, about: pageAbout
 };
 
 function render() {
@@ -759,7 +900,7 @@ function render() {
 
   renderNav(name);
   document.getElementById("tabbar").innerHTML = TABS[name]
-    ? [["home", "首页", ICON.home, "#/home"], ["school", "院校资讯", ICON.school, "#/school"], ["me", "我的", ICON.me, "#/me"]]
+    ? [["home", "首页", ICON.home, "#/home"], ["school", "院校资讯", ICON.school, "#/school"], ["tutor", "辅导端", ICON.tutor, "#/tutor"], ["me", "我的", ICON.me, "#/me"]]
         .map(([k, t, ic, href]) =>
           `<button class="tab ${TABS[name] === k ? "active" : ""}" onclick="go('${href}')">${ic}<span>${t}</span></button>`).join("")
     : "";
@@ -823,6 +964,18 @@ function closeDrawer() {
   document.getElementById("drawer").classList.remove("show");
   document.getElementById("mask").classList.remove("show");
 }
+function openSheet(title, html) {
+  const t = document.getElementById("bsTitle"), b = document.getElementById("bsBody"), sh = document.getElementById("bsheet"), m = document.getElementById("sheetMask");
+  if (!t || !b || !sh || !m) return;
+  t.textContent = title; b.innerHTML = html; b.scrollTop = 0;
+  sh.classList.add("show"); m.classList.add("show");
+}
+function jumpAbout(k) { go("#/about"); setTimeout(() => aboutDetail(k), 220); }
+function closeSheet() {
+  const sh = document.getElementById("bsheet"), m = document.getElementById("sheetMask");
+  if (sh) sh.classList.remove("show");
+  if (m) m.classList.remove("show");
+}
 function jump(k) { closeDrawer(); go("#/" + k); }
 
 /* ---------------- 启动 ---------------- */
@@ -845,6 +998,8 @@ document.querySelectorAll("#segTheme button").forEach((b) =>
 const on = (id, ev, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(ev, fn); };
 on("btnReset", "click", resetDemo);
 on("fabDemo", "click", openDrawer);
+on("bsClose", "click", closeSheet);
+on("sheetMask", "click", closeSheet);
 on("drClose", "click", closeDrawer);
 on("mask", "click", closeDrawer);
 
@@ -853,7 +1008,7 @@ window.addEventListener("keydown", (e) => {
   if (e.key === "v" || e.key === "V") setTheme(currentTheme() === "dark" ? "light" : "dark");
   if (e.key === "d" || e.key === "D") openDrawer();
   if (e.key === "r" || e.key === "R") resetDemo();
-  if (e.key === "Escape") closeDrawer();
+  if (e.key === "Escape") { closeDrawer(); closeSheet(); }
   if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
     const cur = (location.hash.replace(/^#\/?/, "") || "home").split("/")[0];
     const i = SCREENS.findIndex((s) => s.key === cur);
@@ -909,8 +1064,8 @@ function pageMe() {
     <div class="sec-head"><h3><span class="sec-num">15</span>设置</h3></div>
     <div class="card">
       ${m.settings.map((t, i) => `
-        <div class="list-row" style="${i === 0 ? "padding-top:2px" : ""}" onclick="toast('演示：${t}')">
-          <div class="grow small">${t}</div><span class="tiny dim">›</span>
+        <div class="list-row" style="${i === 0 ? "padding-top:2px" : ""}" onclick="${t.go === "page" ? `go('${t.k}')` : t.go === "about" ? `jumpAbout('${t.k}')` : `toast('${t.k}')`}">
+          <div class="grow small">${t.t}</div><span class="tiny dim">›</span>
         </div>`).join("")}
     </div>
 
@@ -943,7 +1098,7 @@ function pageNoticeDetail() {
 
     <div class="sec-head"><h3><span class="sec-num">17</span>材料清单</h3></div>
     <div class="card">
-      ${d.need.map((n, i) => `<div class="list-row" style="${i === 0 ? "padding-top:2px" : ""}">
+      ${d.need.map((n, i) => `<div class="list-row" onclick="toast('${n.replace(/"/g,"")}：以院校官方原文要求为准，本平台不代填')" style="${i === 0 ? "padding-top:2px" : ""}">
         <div class="grow small">${n}</div><span class="tiny dim">查看要求 ›</span></div>`).join("")}
     </div>
 
@@ -1002,13 +1157,13 @@ function pageWorkbench() {
     <div class="sec-head"><h3><span class="sec-num">20</span>待处理</h3></div>
     <div class="card">
       ${w.todo.map((t, i) => `
-        <div class="list-row" style="${i === 0 ? "padding-top:2px" : ""}">
+        <div class="list-row" onclick="${t.go ? `go('${t.go}')` : `toast('已记录：${t.act}（演示）')`}" style="${i === 0 ? "padding-top:2px" : ""}">
           <div class="ico">${t.urgent ? "!" : "·"}</div>
           <div class="grow">
             <div class="small bold">${t.t}</div>
             <div class="tiny dim mt6">${t.d}</div>
           </div>
-          <span class="tiny" style="color:var(--accent)">处理 ›</span>
+          <span class="tiny" style="color:var(--accent)">${t.act} ›</span>
         </div>`).join("")}
     </div>
 

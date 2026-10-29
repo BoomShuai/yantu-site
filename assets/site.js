@@ -63,7 +63,10 @@
     { k: "diagnosis", no: "03", t: "定位结果", d: "事实 / 推断 / 待核实" },
     { k: "provider", no: "04", t: "服务者详情", d: "满额不显示可约" },
     { k: "proposal", no: "06", t: "服务方案", d: "改价则旧确认失效" },
-    { k: "delivery", no: "08", t: "服务交付", d: "全部版本保留" }
+    { k: "delivery", no: "08", t: "服务交付", d: "全部版本保留" },
+    { k: "presale", no: "05", t: "售前沟通", d: "导师最近在线时间" },
+    { k: "tutor", no: "16", t: "辅导端", d: "服务者接单与结算" },
+    { k: "about", no: "17", t: "关于与设置", d: "隐私政策 · 上架必需" }
   ];
 
   const wrap = document.getElementById("shots");

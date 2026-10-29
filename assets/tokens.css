@@ -34,6 +34,9 @@
   --nav-bg: rgba(247,245,252,.92);
   --sheet: #ffffff;
   --chip: #f2eefb;
+  --fill: #faf8fe;
+  --fill-2: #f1edfa;
+  --hair: #e8e2f4;
 }
 
 html[data-theme="dark"] {
@@ -52,4 +55,7 @@ html[data-theme="dark"] {
   --nav-bg: rgba(14, 18, 32, .9);
   --sheet: #171c2e;
   --chip: rgba(255, 255, 255, .07);
+  --fill: rgba(255, 255, 255, .04);
+  --fill-2: rgba(255, 255, 255, .075);
+  --hair: rgba(255, 255, 255, .1);
 }
