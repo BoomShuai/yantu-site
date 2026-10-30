@@ -732,7 +732,7 @@ function pageAbout() {
   return `
   <div class="page">
     <div class="card center mt6" style="padding:22px 16px">
-      <div class="logo-mark" style="width:48px;height:48px;border-radius:14px;font-size:20px;margin:0 auto">同</div>
+      <img class="about-logo" src="assets/logo.svg" alt="同路" />
       <div class="bold mt10" style="font-size:16px">同路</div>
       <div class="tiny dim mt6">AI 保研服务平台 · v${a.version}（${a.build}）</div>
     </div>
@@ -934,7 +934,7 @@ function renderNav(name) {
   nav.className = "navbar";
   const capsule = `<span class="nav-capsule"><span class="dot"></span><span class="dot"></span><span class="ring"></span></span>`;
   nav.innerHTML = cfg.brand
-    ? `<span class="nav-brand">同路<small>保研服务</small></span>${capsule}`
+    ? `<span class="nav-brand"><img class="nav-logo" src="assets/logo.svg" alt="" />同路<small>保研服务</small></span>${capsule}`
     : `<button class="nav-back" onclick="back()">${ICON.back}</button><span class="nav-title">${cfg.title || ""}</span>${capsule}`;
 }
 

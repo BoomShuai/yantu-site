@@ -35,16 +35,16 @@ body {
   display: flex; align-items: center; gap: 26px;
 }
 .logo { display: flex; align-items: center; gap: 9px; flex: none; }
-.logo-mark {
-  width: 30px; height: 30px; border-radius: 9px; flex: none;
-  background: linear-gradient(145deg, var(--brand-2), var(--brand-3));
-  color: #fff; font-size: 15px; font-weight: 800;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: var(--shadow-brand);
+/* 品牌 Logo：官方矢量图标，紫金渐变自带辨识度，不加底色块 */
+.logo-img {
+  width: 32px; height: 30px; flex: none;
+  object-fit: contain;
+  /* 浅色底上让淡紫尾端略深一点，避免边缘糊掉 */
+  filter: saturate(1.06) contrast(1.04);
 }
-html[data-theme="dark"] .logo-mark {
-  background: linear-gradient(145deg, #6366f1, #4338ca);
-  box-shadow: 0 4px 16px rgba(99, 102, 241, .4);
+html[data-theme="dark"] .logo-img {
+  /* 黑夜底上补一点亮度，避免深紫部分沉底 */
+  filter: saturate(1.1) brightness(1.16);
 }
 .logo-txt { font-size: 15px; font-weight: 800; letter-spacing: .3px; line-height: 1.1; }
 .logo-txt small {
@@ -305,6 +305,11 @@ html[data-theme="dark"] .trust-item:nth-child(n+4) .ti-ic {
 /* ---------------- CTA ---------------- */
 .cta { padding: 76px 0; text-align: center; }
 .cta-in { max-width: 620px; margin: 0 auto; padding: 0 22px; }
+.cta-logo {
+  display: block; width: 96px; height: 90px; margin: 0 auto 20px;
+  object-fit: contain; filter: saturate(1.06) contrast(1.04);
+}
+html[data-theme="dark"] .cta-logo { filter: saturate(1.1) brightness(1.16); }
 .cta h2 { font-size: clamp(22px, 2.6vw, 28px); margin-bottom: 11px; letter-spacing: -.3px; }
 .cta p { font-size: 14px; color: var(--ink-3); margin-bottom: 26px; line-height: 1.7; }
 
