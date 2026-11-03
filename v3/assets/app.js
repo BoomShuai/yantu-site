@@ -560,6 +560,7 @@ function toggleSchoolFavorite(id) {
 }
 function setSchoolView(v){S.schoolView=v;render();}
 function setProviderView(v){S.providerView=v;render();}
+function setAdminTab(t){S.adminTab=t;render();}
 function setProviderFilter(v){S.providerFilter=v;render();}
 function selectProvider(id){S.activeProvider=id;go("#/provider");}
 function searchMentors(e){e.preventDefault();S.providerSearch=document.getElementById("tl-provider-search").value.trim();render();}
@@ -929,8 +930,7 @@ function openDrawer() {
         <span class="no dim">${s.no}</span> ${s.title} <span class="tiny dim">· ${s.prd}</span>
       </button>`).join("") +
     `<div class="dr-group">演示控制</div>
-     <button class="dr-item" onclick="resetDemo()">↺ 重置演示数据</button>
-     <button class="dr-item" onclick="closeDrawer();setTheme(currentTheme()==='dark'?'light':'dark')">◑ 白天 / 黑夜</button>`;
+     <button class="dr-item" onclick="resetDemo()">↺ 重置演示数据</button>`;
   document.getElementById("drawer").classList.add("show");
   document.getElementById("mask").classList.add("show");
 }

@@ -85,7 +85,6 @@
     const isGuest=role==='guest';const isMentor=role==='mentor';
     const hint=isGuest?'可以问我保研的基本流程、材料与常识。游客不提供个人匹配。':isMentor?'可以问我如何梳理辅导方向、设计服务流程；学生需求在「我的」工作台查看。':'直接说说你的背景与诉求。我会根据已知信息逐个补问，等你确认后再开启个性化功能。';
     return `<section class="tl-v3-ai">
-      <div class="tl-v3-ai-top"><span class="tl-v3-logo"><img src="assets/tonglu-logo.svg" alt="同路" /></span><span><b>同路 AI 助手</b><small>${isGuest?'游客体验':isMentor?'服务者空间':'学生空间'} · 本地对话演示</small></span></div>
       <div class="tl-v3-chatlog" id="tl-v2-chat" aria-live="polite">${messages.length?aiMessagesHtml():`<div class="tl-v3-welcome"><div class="tl-v3-orb">✦</div><h1>你好，欢迎来到同路</h1><p>${hint}</p></div>`}</div>
       ${profileConfirmInline()}
       <form class="tl-v3-form" onsubmit="sendTongluChat(event)"><textarea id="tl-v2-chat-input" maxlength="800" rows="2" aria-label="给同路 AI 助手输入消息" placeholder="${isGuest?'问问保研流程…':isMentor?'询问服务规划…':'自由描述你的 BG、目标或困惑…'}" required></textarea><button type="submit" aria-label="发送">↑</button></form>
