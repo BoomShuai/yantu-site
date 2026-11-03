@@ -9,6 +9,14 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 <link rel="stylesheet" href="assets/tokens.css" />
 <link rel="stylesheet" href="assets/site.css" />
+<style>
+  .v3-entry { background: linear-gradient(100deg, #fdfbff, #f7f1ff 55%, #fbf6ec); }
+  html[data-theme="dark"] .v3-entry { background: linear-gradient(100deg, rgba(99,102,241,.16), rgba(139,107,245,.11) 55%, rgba(184,147,90,.12)); border-color: #2b3350; }
+  html[data-theme="dark"] .v3-entry b { color: #e8ecf6; }
+  html[data-theme="dark"] .v3-entry .v3-sub { color: #939db5; }
+  .v3-entry:hover { filter: brightness(1.015); }
+  @media (max-width: 640px) { .v3-entry { margin: 10px 12px 0 !important; } }
+</style>
 </head>
 <body>
 
@@ -24,6 +32,7 @@
       <a href="#screens">界面</a>
       <a href="#trust">为什么可信</a>
       <a href="#faq">常见问题</a>
+      <a href="v3/">三身份版</a>
     </nav>
     <div class="nav-right">
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换昼夜">
@@ -34,6 +43,16 @@
     </div>
   </div>
 </header>
+
+<!-- ============ 三身份融合版入口 ============ -->
+<a class="v3-entry" href="v3/" style="display:flex;align-items:center;gap:11px;max-width:1120px;margin:14px auto 0;padding:11px 15px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:inherit">
+  <img src="v3/assets/tonglu-logo.svg" alt="" width="26" height="26" style="flex:none" />
+  <span style="flex:1;min-width:0">
+    <b style="display:block;font-size:13.5px;color:var(--ink)">三身份融合版（紫金）· 可交互</b>
+    <span class="v3-sub" style="display:block;font-size:12px;color:var(--ink-3);margin-top:2px">学生 / 服务者 / 游客 三种身份可切换，含加载动画与全部页面交互</span>
+  </span>
+  <span style="flex:none;font-size:12.5px;font-weight:700;color:#6d4aef">打开 →</span>
+</a>
 
 <!-- ============ Hero ============ -->
 <section class="hero" id="top">
