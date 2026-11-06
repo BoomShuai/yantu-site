@@ -362,8 +362,8 @@
     if(TL.applications.length>oldLength){showNext('已保存投递记录，时间线可关联你填写的截止日','查看计划',()=>go('#/me'));}
   };
 
-  const allowedGuest=new Set(['choose','guestHome','guestSchools','guestProviders','guestMe']);
-  const allowedMentor=new Set(['choose','mentorHome','mentorDemands','mentorProfile','mentorMe','school','providers','provider','noticeDetail','workbench','admin','messages']);
+  const allowedGuest=new Set(['choose','guestHome','guestSchools','guestProviders','guestMe','experience','dataCenter']);
+  const allowedMentor=new Set(['choose','mentorHome','mentorDemands','mentorProfile','mentorMe','school','providers','provider','noticeDetail','workbench','admin','messages','experience','dataCenter']);
   const studentForbidden=new Set(['mentorHome','mentorDemands','mentorProfile','mentorMe','guestHome','guestSchools','guestProviders','guestMe']);
   const mentorTabs=[['首页','mentorHome',ICON.home],['院校资讯','school',ICON.school],['服务者','providers',ICON.users],['我的','mentorMe',ICON.me]];
   const guestTabs=[['首页','guestHome',ICON.home],['院校资讯','guestSchools',ICON.school],['服务者','guestProviders',ICON.users],['登录','guestMe',ICON.me]];
@@ -470,6 +470,7 @@
   }
   // 状态桥：V4 页面层（assets/v4.js）需要复用本层的角色、档案与推荐逻辑。
   window.__TL={get role(){return role;},get bg(){return studentBG;},profileReady,hasBackground,H,
+    persistBG,persistMentor:draft=>{mentorDraft={...mentorDraft,...draft};try{localStorage.setItem(K,JSON.stringify(mentorDraft));return true;}catch(e){toast("本地保存失败");return false;}},get mentorDraft(){return mentorDraft;},
     planTasks:()=>planTasks,consults:()=>consults,recommendationWeight,recommendationReason,
     setRole:r=>{role=r;},openNext:(m,l,p)=>showNext(m,l,()=>go('#/'+p))};
   // Enter the role gateway on every new load. Local draft and saved lists remain separate.

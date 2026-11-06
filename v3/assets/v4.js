@@ -222,11 +222,6 @@
       '<label class="v4-field"><span>角色</span><input class="v4-input" id="v4c-role" placeholder="如：队长 / 结构设计" /></label></div>' +
       '<label class="v4-field"><span>结果 <i>选填</i></span><input class="v4-input" id="v4c-result" placeholder="如：省赛二等奖" /></label>' +
       '<div class="v4-actions"><button class="v4-btn line" type="button" onclick="v4Add(\'contests\')">添加这段竞赛</button></div></div>' +
-      '<div class="v4-card"><div class="v4-head"><h3>材料上传</h3><span class="v4-count">最多 5 份</span></div>' +
-      '<label class="v4-upload"><b>选择文件或拖入</b><small>简历 / 个人陈述 / 成绩单 / 排名证明</small><input type="file" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="v4AddFiles(event)" /></label>' +
-      fileHtml() + extractedHtml() +
-      fold("解析规则与隐私范围", "<p><b>当前版本：</b>只读取文件名与大小，用于演示「识别 → 确认 → 写入」的流程，正文不会被读取，文件也不会离开你的浏览器。</p><p><b>正式版本：</b>需先单独授权，按字段最小化提取（教育背景、排名、英语、科研条目），原文加密存储、可随时删除，不用于训练。</p><p><b>不会做的事：</b>不把材料提供给未经你授权的服务者，不用材料内容猜测你未填写的结论。</p>") +
-      '</div>' +
       '<p class="v4-note">补得越多，定位建议里的「依据」和「差距」越具体；不补也能看到基于已有 BG 的通用排序。</p>' +
       '</div>';
   };
@@ -595,8 +590,8 @@
       '<div class="v4-kicker">PRIVACY</div><h1 class="v4-h1">隐私政策摘要</h1>' +
       '<p class="v4-sub">演示版本没有服务器，所有内容都保存在你自己的浏览器里。下面是正式版会遵守的规则。</p>' +
       '<div class="v4-card">' +
-      fold("我们收集哪些信息", "<p><b>你主动填写：</b>BG 描述、年级、目标、申请目标、科研与竞赛经历。</p><p><b>你主动上传：</b>简历、个人陈述、成绩单等材料（演示版只读取文件名与大小）。</p><p><b>使用过程：</b>浏览、收藏、投递记录、意向顺序。</p>", true) +
-      fold("存放在哪里、保存多久", "<p>演示版保存在浏览器 localStorage，你可以随时清理浏览器数据删除；不留存在任何服务器。</p><p>正式版计划：账号数据加密存储，材料原文单独加密，删除账号后 30 天内清除备份。</p>") +
+      fold("我们收集哪些信息", "<p><b>你主动填写：</b>BG 描述、年级、目标、申请目标、科研与竞赛经历。</p><p><b>你主动上传：</b>简历、个人陈述、成绩单等材料（演示版 PDF/Word 只读取文件名与大小；TXT/MD 可在本地读取文字并参与字段提取）。</p><p><b>使用过程：</b>浏览、收藏、投递记录、意向顺序。</p>", true) +
+      fold("存放在哪里、保存多久", "<p>演示版保存在浏览器 localStorage，你可以随时清理浏览器数据删除；不留存在任何服务器。</p><p>正式版计划：账号数据加密存储，材料原文单独加密，具体删除周期和备份处理规则应在上线前明确并公示。</p>") +
       fold("谁会看到你的材料", "<p>只有你在售前沟通里明确授权的服务者能看到该次需求相关材料，授权可随时撤回。</p><p>平台审核人员仅查看与核验相关的必要字段，不查看完整材料正文。</p>") +
       fold("不会用于什么", "<p>不用于训练模型；不向第三方出售或共享；不基于材料内容推断你未填写的结论；不在未经授权时向服务者展示你的联系方式。</p>") +
       fold("你的权利", "<p>可以查看、更正、导出与删除你的资料；可以撤回材料授权；可以注销账号。</p><p>演示版中，清空浏览器数据即可删除全部本地记录。</p>") +
@@ -652,6 +647,9 @@
   [["A1", "reviews", "服务评价与我的评价"], ["A2", "about", "关于同路 · 能提供什么"], ["A3", "privacy", "隐私政策摘要"], ["A4", "feedback", "意见与问题反馈"]].forEach(function (s) {
     if (!SCREENS.some(function (x) { return x.key === s[1]; })) SCREENS.push({ no: s[0], key: s[1], title: s[2], prd: "V4" });
   });
+
+  /* 供智能建档层读取规范表单数据；所有改动仍须用户确认。 */
+  window.__TLV4 = { state: V4S, persist: save };
 
   /* ---------------- 14. 渲染后修正：底部标签高亮 ---------------- */
   var v3Render = render;

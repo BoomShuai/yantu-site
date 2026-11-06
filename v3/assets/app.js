@@ -713,7 +713,7 @@ function pageNoCandidate() {
       <div style="font-size:30px">⌕</div>
       <div class="bold mt12" style="font-size:16px">暂时没有匹配的服务者</div>
       <div class="small dim mt8" style="line-height:1.7">
-        你的需求是「材料诊断 · 机械 · 985 学硕」，<br/>当前没有满足全部条件的已核验服务者。
+        你的需求是「材料诊断 · 机械 · 985 学硕」，<br/>当前没有满足全部条件的服务者。
       </div>
     </div>
 
