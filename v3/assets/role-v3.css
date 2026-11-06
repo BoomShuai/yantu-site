@@ -5,6 +5,9 @@ body[data-chat-home="yes"] #app .tl-v3-home{flex:1;display:flex;flex-direction:c
 .tl-v3-chatlog{flex:1;min-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:13px 2px;scrollbar-width:thin;scrollbar-color:#e9ddf4 transparent}
 .tl-v3-welcome{margin:auto 0;display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 12px}.tl-v3-orb{width:66px;height:66px;border-radius:22px;display:grid;place-items:center;background:linear-gradient(145deg,#eee2fa,#fff4dc);color:#8263b5;font-size:30px;margin-bottom:12px}.tl-v3-welcome h1{font-size:19px;color:#4b356b;margin:2px 0 8px}.tl-v3-welcome p{max-width:310px;color:#897c97;font-size:12px;line-height:1.85;margin:0}
 .tl-v3-chatlog .tl-v2-msg{max-width:90%;font-size:12px;line-height:1.65;flex-shrink:0;overflow-wrap:anywhere}
+/* V3 对话面板是白底，V2 的白字气泡在这里会看不见，这里重新定色 */
+.tl-v3-chatlog .tl-v2-msg.bot{background:#f7f2fc;color:#443259;border:1px solid #ece0f6;border-bottom-left-radius:5px}
+.tl-v3-chatlog .tl-v2-msg.mine{background:#7d5cc0;color:#fff;border:0;border-bottom-right-radius:5px}
 .tl-v3-form{display:flex;gap:8px;align-items:flex-end;border:1px solid #e6dcec;border-radius:16px;background:#faf8fd;padding:9px;flex:none;box-shadow:0 3px 12px rgba(77,52,111,.025)}
 .tl-v3-form textarea{flex:1;min-width:0;resize:vertical;max-height:108px;min-height:45px;outline:0;border:0;background:transparent;font:inherit;font-size:16px;line-height:1.5;color:#3e3155}
 .tl-v3-form button{flex:none;width:39px;height:39px;border-radius:13px;background:#8667bb;color:#fff;font-size:19px;font-weight:800}
