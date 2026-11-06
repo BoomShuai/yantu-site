@@ -21,32 +21,101 @@
   function read(id){const e=$(id);return e?String(e.value||''):'';}
   function getText(k){return read('v5-'+k+'-text')||state[k].text;}
   function one(text,regex){const m=String(text).match(regex);return m?clip(m[1],90):'';}
-  function excerpt(text,rx){const ss=String(text).split(/[。；;\n]/).map(x=>x.trim());return clip(ss.find(x=>rx.test(x))||'',240);}
+  /* 简历常把多个字段挤在一行，取值后要在下一个字段名处截断 */
+  const NEXT_LABEL=/本科|当前|年级|排名|成绩|科研|竞赛|目标|研究方向|意向|姓名|称呼|就读|升学|去向|擅长|个人|案例|学历|专业|院校|学校|电话|邮箱|经历|成果|GPA|荣誉|奖项/i;
+  const NEXT_LABEL_HARD=/(?:本科院校|本科专业|当前年级|目标院校|目标专业|研究方向|意向方向|升学去向|成绩|排名|GPA|电话|邮箱|获奖|荣誉|科研经历|竞赛经历|实习经历|实践经历|个人陈述|自我评价|获奖经历)/;
+  const LABEL_PREFIX=/^(?:本科院校|本科学校|本科专业|当前年级|专业排名|年级排名|排名|成绩|目标院校|目标专业|意向专业|研究方向|意向方向|升学去向|姓名|称呼|学校|院校|专业|年级|目标|科研经历|竞赛经历|获奖经历|实践经历|实习经历|教育背景|个人陈述|自我评价)\s*[：:]\s*/;
+  function val(s){
+    let v=String(s||'').replace(LABEL_PREFIX,'').trim();
+    if(!v)return '';
+    const i=v.search(NEXT_LABEL);
+    if(i>0)v=v.slice(0,i);
+    return clip(v.replace(/[\s：:，,、。；;]+$/,'').replace(/\s{2,}/g,' ').trim(),90);
+  }
+  /* 简历里的字段常连成一行，按标点切不开时再用下一个字段名切 */
+  function excerpt(text,rx){
+    const segs=String(text).split(/[。；;\n]/).map(x=>x.trim()).filter(Boolean);
+    for(const seg of segs){
+      if(!rx.test(seg))continue;
+      let hit=seg;
+      const at=hit.search(rx);
+      if(at>0)hit=hit.slice(at);
+      const cut=hit.slice(1).search(NEXT_LABEL_HARD);
+      if(cut>0)hit=hit.slice(0,cut+1);
+      return clip(hit.replace(LABEL_PREFIX,'').replace(/\s{2,}/g,' ').trim(),160);
+    }
+    return '';
+  }
   function detectGrade(text){const m=String(text).match(/(?:大|本科)\s*([一二三四五12345])/);if(!m)return '';const n={'1':'大一','2':'大二','3':'大三','4':'大四','5':'大五','一':'大一','二':'大二','三':'大三','四':'大四','五':'大五'};return n[m[1]]||'';}
-  function detectGoals(text){const out=[];if(/保研|推免|夏令营|预推免|升学/.test(text))out.push('保研');if(/竞赛|比赛|建模|挑战杯/.test(text))out.push('竞赛');if(/科研|论文|研究|课题/.test(text))out.push('科研');if(/课程|英语|学业|绩点/.test(text))out.push('学业');return out.join('、');}
+  /* 只从表达意愿的句子里读目标；简历里“科研经历/竞赛经历”是经历，不是诉求 */
+  function detectGoals(text){
+    const t=String(text||'');
+    const segs=t.split(/[。；;\n]/).map(x=>x.trim()).filter(Boolean);
+    const INTENT=/想|希望|打算|计划|目标|诉求|准备|争取|冲刺|方向是|我要|求助|需要/g;
+    // 简历常把整段挤成一句，只截取表达意愿的前后一小段，避免把“竞赛经历”误读成诉求
+    const hits=[];
+    segs.forEach(seg=>{
+      INTENT.lastIndex=0;let m;
+      while((m=INTENT.exec(seg))&&hits.length<8){
+        hits.push(seg.slice(Math.max(0,m.index-16),m.index+70));
+        if(m.index===INTENT.lastIndex)INTENT.lastIndex++;
+      }
+    });
+    const src=hits.length?hits.join('。'):t;
+    const out=[];
+    if(/保研|推免|夏令营|预推免|升学|考研/.test(src))out.push('保研');
+    if(/竞赛|比赛|建模|挑战杯|蓝桥杯/.test(src))out.push('竞赛');
+    if(/科研|论文|课题|实验室|大创/.test(src))out.push('科研');
+    if(/英语|雅思|托福|六级|学业|绩点|课程/.test(src))out.push('学业');
+    if(/实习|就业|求职|工作/.test(src))out.push('实习');
+    return out.join('、');
+  }
   function guessSchool(text){return one(text,/(?:本科(?:院校|学校|就读于|毕业于)?|就读于|毕业于|我(?:是|在|来自))\s*[：:\s]*([\u4e00-\u9fa5]{2,18}?(?:大学|学院))/);}
-  function parseStudent(text){
-    const school=one(text,/本科(?:院校|学校)\s*[：:]\s*([^，,。；;\n]{2,30})/)||guessSchool(text);
-    const major=one(text,/本科专业\s*[：:\s]*([^，,。；;\n]{2,28})/)||one(text,/(?:大学|学院)([\u4e00-\u9fa5]{2,20}?)(?:专业|系)/)||one(text,/我(?:是|读)\s*([^，,。；;\n]{2,24}?)(?:专业|方向)/);
+  const EN={school:/(?:university|college|institute)\b/i,major:/\b(?:major|program)\b/i,grade:/\b(?:freshman|sophomore|junior|senior|grade\s*\d|year\s*[1-5])\b/i,rank:/\brank(?:ed|ing)?\b|\bGPA\b/i};
+  function parseStudentEN(text){
+    const t=String(text||'');
+    const school=one(t,/((?:[A-Z][A-Za-z.&'-]*\s+){0,5}(?:University|College|Institute)(?:\s+of\s+(?:[A-Z][A-Za-z.&'-]*\s*){1,4})?)/);
+    const major=(one(t,/\b(?:Major|Program)\s*[:：]\s*([A-Za-z ,&'-]{2,40})/i)||'').split(/\b(?:Grade|Year|Rank|GPA|School|University|Goal|Email|Phone)\b/i)[0].replace(/[\s,]+$/,'');
+    const gradeRaw=one(t,/\b(Freshman|Sophomore|Junior|Senior)\b/i);
+    const gradeMap={freshman:'大一',sophomore:'大二',junior:'大三',senior:'大四'};
+    const g=(gradeRaw||'').toLowerCase();
     return {
+      school,major,
+      grade:gradeMap[g]||detectGrade(t),
+      rank:one(t,/\bRank(?:ed|ing)?\s*[:：]?\s*([\d.]+\s*(?:%|\/\s*\d+)?)/i)||one(t,/\bGPA\s*[:：]?\s*([\d.]+(?:\s*\/\s*[\d.]+)?)/i),
+      research:excerpt(t,/research|project|lab|thesis/i),
+      contest:excerpt(t,/contest|competition|award|prize|honou?r/i),
+      goals:detectGoals(t),
+      targetSchool:one(t,/(?:Target(?:\s+School)?|Apply(?:ing)?\s+to)\s*[:：]\s*((?:[A-Z][A-Za-z.&'-]*\s+){0,5}(?:University|College|Institute))/i),
+      targetMajor:'',direction:''
+    };
+  }
+  function parseStudent(text){
+    const out={};
+    const school=val(one(text,/本科(?:院校|学校)\s*[：:]\s*([^，,。；;\n]{2,30})/))||val(guessSchool(text));
+    const major=val(one(text,/本科专业\s*[：:\s]*([^，,。；;\n]{2,28})/))||val(one(text,/(?:大学|学院)([\u4e00-\u9fa5]{2,20}?)(?:专业|系)/))||val(one(text,/我(?:是|读)\s*([^，,。；;\n]{2,24}?)(?:专业|方向)/));
+    Object.assign(out,{
       school,major,grade:detectGrade(text),
-      rank:one(text,/(排名(?:前|第)?\s*[\d.]+(?:\s*%|\s*\/\s*\d+|\s*名)?)/)||one(text,/(GPA\s*[:：]?\s*[\d.]+)/i),
+      rank:one(text,/(?:专业|年级)?排名\s*[：:的]?\s*((?:前|第)?\s*[\d.]+\s*(?:%|\/\s*\d+|名|\/\s*\d+\s*名)?)/)||one(text,/(GPA\s*[:：]?\s*[\d.]+(?:\s*\/\s*[\d.]+)?)/i),
       research:excerpt(text,/科研|课题|研究|大创|论文|实验室/),
       contest:excerpt(text,/竞赛|比赛|建模|获奖|国奖|省奖/),
       goals:detectGoals(text),
-      targetSchool:one(text,/(?:目标院校|申请院校|想去|希望去|保研到)\s*[：:\s]*([\u4e00-\u9fa5]{2,18}?(?:大学|学院))/),
-      targetMajor:one(text,/(?:目标专业|申请专业|意向专业)\s*[：:]\s*([^，,。；;\n]{2,28})/),
-      direction:one(text,/(?:研究方向|意向方向)\s*[：:]\s*([^，,。；;\n]{2,30})/)
-    };
+      targetSchool:val(one(text,/(?:目标院校|申请院校|想去|希望去|保研到)\s*[：:\s]*([\u4e00-\u9fa5]{2,18}?(?:大学|学院))/)),
+      targetMajor:val(one(text,/(?:目标专业|申请专业|意向专业)\s*[：:]\s*([^，,。；;\n]{2,28})/)),
+      direction:val(one(text,/(?:研究方向|意向方向)\s*[：:]\s*([^，,。；;\n]{2,30})/))
+    });
+    // 中文规则读不到时，再试英文简历写法；仍然为空就保持空，不编造
+    if(!out.school&&!out.major&&EN.school.test(String(text))){const en=parseStudentEN(text);Object.keys(en).forEach(k=>{if(en[k]&&!out[k])out[k]=en[k];});}
+    return out;
   }
   function parseMentor(text){
     return {
-      name:one(text,/(?:称呼|姓名|我叫)\s*[：:\s]*([^，,。；;\n]{2,14})/),
-      school:one(text,/(?:本科(?:院校|学校|毕业于)|毕业于)\s*[：:\s]*([\u4e00-\u9fa5]{2,18}?(?:大学|学院))/)||guessSchool(text),
-      major:one(text,/本科专业\s*[：:\s]*([^，,。；;\n]{2,30})/)||one(text,/(?:大学|学院)([\u4e00-\u9fa5]{2,18}?)(?:专业|系)/),
-      destination:one(text,/(?:保研到|升学去向|就读于|考入)\s*[：:\s]*([^，,。；;\n]{2,38})/),
+      name:val(one(text,/(?:称呼|姓名|我叫)\s*[：:\s]*([^，,。；;\n]{2,14})/)),
+      school:val(one(text,/(?:本科(?:院校|学校|毕业于)|毕业于)\s*[：:\s]*([\u4e00-\u9fa5]{2,18}?(?:大学|学院))/))||val(guessSchool(text)),
+      major:val(one(text,/本科专业\s*[：:\s]*([^，,。；;\n]{2,30})/))||val(one(text,/(?:大学|学院)([\u4e00-\u9fa5]{2,18}?)(?:专业|系)/)),
+      destination:val(one(text,/(?:保研到|升学去向|就读于|考入)\s*[：:\s]*([^，,。；;\n]{2,38})/)),
       achievements:excerpt(text,/论文|竞赛|国奖|省奖|获奖|科研|SCI|SSCI/i),
-      services:one(text,/(?:擅长|服务方向|辅导方向|提供)\s*[：:\s]*([^，,。；;\n]{2,80})/)||excerpt(text,/材料诊断|院校规划|科研辅导|面试辅导|申请指导/),
+      services:val(one(text,/(?:擅长|服务方向|辅导方向|提供)\s*[：:\s]*([^，,。；;\n]{2,80})/))||excerpt(text,/材料诊断|院校规划|科研辅导|面试辅导|申请指导/),
       served:one(text,/(?:辅导过|服务过|指导过|辅导)\s*(\d+\s*(?:位|名|人)\s*(?:学生|同学)?)/),
       results:excerpt(text,/录取|上岸|去向|最终结果|保研成功/),
       experience:one(text,/(?:个人经验(?:是)?|我的经验(?:是)?|经验是)\s*[：:\s]*([^。；;\n]{2,120})/)||excerpt(text,/个人经验|方法|策略|心得|经验|复盘/),
@@ -80,7 +149,7 @@
       return '<label class="v5-field"><span>'+E(label)+'</span>'+(large.has(id)?'<textarea id="v5-'+k+'-'+id+'" rows="2" maxlength="420">'+E(value)+'</textarea>':'<input id="v5-'+k+'-'+id+'" maxlength="150" value="'+E(value)+'" placeholder="未识别，可自行补充">')+'</label>';
     }).join('');
     return '<section class="v5-preview"><div class="v5-section-head"><b>资料草稿</b><span>确认后保存</span></div>'+
-      '<p class="v5-sub">根据文字描述整理的本地演示草稿。无需对照原文；如需使用，可修改后确认保存。PDF / Word 正文暂不识别。</p>'+
+      '<p class="v5-sub">'+E(s.source?('来源：'+s.source+'。'):'')+'下面是本地规则识别出的字段，逐项核对或改写，确认后才写入档案。识别不到的字段留空即可，不会替你编造。</p>'+
       '<div class="v5-preview-fields">'+body+'</div>'+
       '<div class="v5-followup"><b>建议补充追问</b><p>'+E(missingQuestion(k,s.fields))+'</p></div>'+
       (k==='mentor'?'<div class="v5-trust"><b>信息状态：</b>个人申报 / 待平台核验。AI 自动整理 ≠ 证书、学历、服务结果核验。平台完成服务次数：—（未来从真实订单自动统计）。</div>':'')+
@@ -90,23 +159,23 @@
   }
   function fileRows(k){
     const files=state[k].files;
-    if(!files.length)return '<p class="v5-sub">尚未选择简历。可先用文字描述，之后再补。</p>';
-    return files.map((f,i)=>'<div class="v5-file"><span>▤</span><div><b>'+E(f.name)+'</b><small>'+E(f.status)+'</small></div><button type="button" onclick="v5RemoveFile(\''+k+'\','+i+')">移除</button></div>').join('');
+    if(!files.length)return '<p class="v5-sub">还没有选择简历。上传后会在本机读出正文并自动整理字段，也可以用文字描述。</p>';
+    return files.map((f,i)=>'<div class="v5-file'+(f.ok?' v5-file-ok':'')+'"><span>'+(f.ok?'✓':'▤')+'</span><div><b>'+E(f.name)+'</b><small>'+E(f.status)+'</small></div><button type="button" onclick="v5RemoveFile(\''+k+'\','+i+')">移除</button></div>').join('');
   }
   function intakeCard(k){
     const s=state[k], mentor=k==='mentor';
     const guide=mentor?'可以写：本科院校与专业、升学去向、科研成果、擅长辅导方向、曾服务对象的类型、具体帮助、结果和个人经验。不要提交其他学生的实名资料。':'可以写：本科院校、专业、年级、排名、科研竞赛、目标院校及你最希望解决的问题，不要求按固定顺序。';
     return '<div class="v5-card" id="v5-intake"><div class="v5-eyebrow">AI PROFILE STUDIO · 本地体验</div><h2>'+(mentor?'智能完善服务者资料':'用你习惯的方式完善 BG')+'</h2>'+
-      '<p class="v5-sub">规范表单仍保留在下方。上传简历后先显示文件状态，不展开核对界面；自由文字和语音可按需整理为草稿。</p>'+
+      '<p class="v5-sub">上传 PDF / Word / TXT 简历后，会在本机浏览器里读出正文并自动识别院校、专业、年级、排名、科研竞赛等信息，识别结果可直接核对修改。规范表单仍保留在下方。</p>'+
       '<div class="v5-input-modes"><span><b>01</b> 自由描述</span><span><b>02</b> 上传简历</span><span><b>03</b> 语音口述</span></div>'+
-      '<label class="v5-field"><span>自由输入 · 想写什么都可以</span><textarea id="v5-'+k+'-text" rows="5" maxlength="6000" placeholder="'+E(guide)+'" oninput="v5KeepText(\''+k+'\',this.value)">'+E(s.text)+'</textarea></label>'+
+      '<label class="v5-field"><span>自由输入 · 想写什么都可以</span><textarea id="v5-'+k+'-text" rows="5" maxlength="12000" placeholder="'+E(guide)+'" oninput="v5KeepText(\''+k+'\',this.value)">'+E(s.text)+'</textarea></label>'+
       '<div class="v5-voicebar"><button type="button" class="v5-btn v5-secondary" onclick="v5Voice(\''+k+'\')">语音转文字</button><span id="v5-'+k+'-voice-status">支持情况取决于手机浏览器，必要时可直接打字</span></div>'+
-      '<label class="v5-upload"><b>选择简历 / 经历说明文件</b><small>PDF / Word / TXT / MD，最多 5 份，单份不超过 8 MB</small><input type="file" accept=".pdf,.doc,.docx,.txt,.md" multiple onchange="v5ChooseFiles(\''+k+'\',event)" /></label>'+
+      '<label class="v5-upload"><b>上传简历，自动识别信息</b><small>PDF / Word(.docx) / TXT / MD，最多 5 份，单份不超过 8 MB</small><input type="file" accept=".pdf,.docx,.txt,.md" multiple onchange="v5ChooseFiles(\''+k+'\',event)" /></label>'+
       fileRows(k)+
-      '<div class="v5-local">隐私提示：此演示不会上传简历文件；TXT / MD 可在本地读取文字。PDF / Word 仅登记文件信息，须接入后端解析与大模型后才能自动识别正文。语音识别可能使用浏览器或系统的语音服务，请勿输入真实敏感资料。</div>'+
-      '<button type="button" class="v5-btn v5-primary" onclick="v5Analyze(\''+k+'\')">整理文字资料（演示）</button>'+
+      '<div class="v5-local">隐私提示：简历只在你自己的浏览器里解析，不上传服务器、不联网发送。扫描件 PDF（图片型）和旧版 .doc 读不出正文，请改用可复制文字的 PDF、.docx 或直接粘贴。语音识别由浏览器提供，请勿输入身份证号等敏感信息。</div>'+
+      '<button type="button" class="v5-btn v5-primary" onclick="v5Analyze(\''+k+'\')">识别并整理上面这段文字</button>'+
       formatPreview(k)+
-      '<div class="v5-bottom-note"><b>正式版预留：</b>文档解析 → 模型结构化提取 → 缺失项追问 → 用户确认 → 安全保存。未经平台核验的信息不显示认证标识。</div></div>';
+      '<div class="v5-bottom-note"><b>本地解析说明：</b>浏览器端读取正文 → 规则识别字段 → 缺失项追问 → 你确认 → 存到本机。识别结果可能不完整，一律以你核对后的内容为准；未经平台核验的信息不会显示认证标识。</div></div>';
   }
   function syncFields(k){
     if(!state[k].preview)return;
@@ -114,43 +183,66 @@
     if(k==='mentor'&&$('v5-mentor-intro'))state.mentor.intro=clip($('v5-mentor-intro').value,600);
     persist();
   }
-  window.v5KeepText=function(k,value){if(!state[k])return;const changed=state[k].text!==clip(value,6000);state[k].text=clip(value,6000);if(changed&&state[k].preview){state[k].preview=false;const el=document.querySelector('.v5-preview');if(el)el.remove();}persist();};
+  window.v5KeepText=function(k,value){if(!state[k])return;const changed=state[k].text!==clip(value,12000);state[k].text=clip(value,12000);if(changed&&state[k].preview){state[k].preview=false;const el=document.querySelector('.v5-preview');if(el)el.remove();}persist();};
   window.v5RemoveFile=function(k,i){if(!state[k])return;state[k].files.splice(i,1);persist();render();};
   window.v5ChooseFiles=async function(k,event){
-    const selected=Array.from(event.target.files||[]);if(!selected.length)return;
-    let out=[];
+    const input=event.target;const selected=Array.from(input.files||[]);if(!selected.length)return;
+    const X=window.TongluExtract;
+    if(!X){toast('文件解析脚本未加载，请刷新页面后重试');return;}
+    let added=0,read=0,failed=[];
     for(const f of selected){
       if(state[k].files.length>=5){toast('最多保留 5 份文件');break;}
-      if(f.size>8*1024*1024){toast('请使用不超过 8 MB 的文件');continue;}
-      if(!/\.(pdf|doc|docx|txt|md)$/i.test(f.name)){toast('目前仅支持选择 PDF、Word、TXT 或 MD');continue;}
-      const isText=/\.(txt|md)$/i.test(f.name);
-      state[k].files.push({name:clip(f.name,100),status:isText?'可本地读取文字':'待接入后端解析 PDF / Word 正文'});
-      if(isText){try{out.push((await f.text()).slice(0,4500));}catch(e){toast('文本读取失败，请复制内容到输入框');}}
+      if(f.size>8*1024*1024){toast(f.name+' 超过 8 MB，请压缩后再试');continue;}
+      if(!/\.(pdf|docx|doc|txt|md)$/i.test(f.name)){toast(f.name+'：目前支持 PDF、Word(.docx)、TXT、MD');continue;}
+      const row={name:clip(f.name,100),status:'正在本地读取正文…',ok:false,chars:0};
+      state[k].files.push(row);added++;persist();render();
+      try{
+        const res=await X.fromFile(f);
+        row.status='已读取 '+res.text.replace(/\s/g,'').length+' 字 · 本地解析，未上传';
+        row.ok=true;row.chars=res.text.replace(/\s/g,'').length;row.kind=res.kind;
+        state[k].text=clip([state[k].text,res.text.trim()].filter(Boolean).join('\n'),12000);
+        read++;
+      }catch(err){
+        row.status=(err&&err.message)||'读取失败';
+        failed.push(f.name);
+      }
+      persist();render();
     }
-    if(out.length){state[k].text=clip([state[k].text,...out].filter(Boolean).join('\n'),6000);}state[k].preview=false;
-    persist();render();toast(out.length?'已读取文本，暂不自动展开核对；需要时可整理为草稿':'已记录文件，PDF/Word 正文尚未解析');
+    try{input.value='';}catch(e){}
+    if(read){
+      // 读到正文后立刻做一次结构化整理，用户上传完就能看到识别结果
+      v5Analyze(k,{silent:true});
+      toast('已在本地读出简历正文，并整理出 '+countFields(k)+' 项信息，请核对');
+      const el=$('v5-intake');if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
+    } else if(added&&failed.length){
+      toast('有文件读不出正文（可能是扫描件），可改为粘贴文字');
+    } else if(added){
+      toast('已记录文件，但没读到正文');
+    }
   };
+  function countFields(k){const f=state[k].fields||{};return Object.keys(f).filter(x=>f[x]).length;}
   window.v5Voice=function(k){
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!SR){toast('当前浏览器不支持此语音入口，请使用文字输入');return;}
     if(voice){try{voice.stop();}catch(e){}voice=null;return;}
     let rec=new SR();voice=rec;rec.lang='zh-CN';rec.interimResults=false;rec.continuous=false;
     const status=$('v5-'+k+'-voice-status');if(status)status.textContent='正在倾听…再次点击可停止';
-    rec.onresult=e=>{const t=Array.from(e.results).map(v=>v[0]&&v[0].transcript||'').join(' ');state[k].text=clip((state[k].text+'\n'+t).trim(),6000);state[k].preview=false;persist();render();toast('已转为文字，可继续补充描述');};
+    rec.onresult=e=>{const t=Array.from(e.results).map(v=>v[0]&&v[0].transcript||'').join(' ');state[k].text=clip((state[k].text+'\n'+t).trim(),12000);state[k].preview=false;persist();render();toast('已转为文字，可继续补充描述');};
     rec.onerror=e=>{toast('语音识别未完成：'+(e.error||'请检查麦克风权限'));};
     rec.onend=()=>{voice=null;const s=$('v5-'+k+'-voice-status');if(s)s.textContent='语音已结束，可继续打字';};
     try{rec.start();}catch(e){voice=null;toast('无法启动语音，请检查麦克风权限');}
   };
-  window.v5Analyze=function(k){
-    const text=getText(k);if(!text.trim()){toast('请先输入或粘贴文字；PDF/Word 当前无法直接解析正文');return;}
-    state[k].text=clip(text,6000);
+  window.v5Analyze=function(k,opts){
+    const text=getText(k);if(!text.trim()){toast('请先输入或粘贴文字，或上传一份可读的简历');return;}
+    state[k].text=clip(text,12000);
     const parsed=k==='student'?parseStudent(text):parseMentor(text);
     const existing=state[k].fields||{};
     state[k].fields={...existing};
     Object.keys(parsed).forEach(field=>{if(parsed[field])state[k].fields[field]=parsed[field];});
     state[k].preview=true;state[k].confirmed=false;state[k].intro='';
-    state[k].source=state[k].files.some(f=>/可本地读取/.test(f.status))?'文字描述 + 本地 TXT/MD':'自由文字 / 语音转写';
+    state[k].source=state[k].files.some(f=>f.ok)?'简历正文（本地解析）':'自由文字 / 语音转写';
     state[k].question=missingQuestion(k,state[k].fields);persist();render();
+    if(opts&&opts.silent)return;
     const el=$('v5-intake');if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
     toast('已整理文字草稿；如需保存，请确认必要字段');
   };
@@ -213,14 +305,16 @@
   const oldProviders=PAGES.providers;
   PAGES.providers=function(){
     const html=oldProviders();
-    if(T.role!=='student'||!T.profileReady()||S.providerView==='saved'||S.v4Search||S.providerFilter!=='全部'||S.v4Identity!=='全部')return html;
+    // 只在“全部服务者”默认视图下插入推荐；用户一旦搜索或筛选，就把列表交还给他自己
+    if(T.role!=='student'||S.providerView==='saved'||S.v4Search||S.providerFilter!=='全部'||S.v4Identity!=='全部')return html;
+    const ready=T.profileReady();
     const picks=M.providers.slice().sort((a,b)=>{
       const available=(remain(b)>0?1:0)-(remain(a)>0?1:0);
       return available||T.recommendationWeight(b)-T.recommendationWeight(a);
     }).slice(0,3);
     if(!picks.length)return html;
-    const rec='<div class="v5-recommended v4-card flat"><div class="v4-head"><h3>优先为你推荐</h3><span class="v4-count">'+picks.length+' 位 · 规则演示</span></div>'+
-      '<p class="v5-sub">基于你确认的 BG 和服务方向做关键词排序，不代表录取概率、正式匹配度或服务者核验结果。</p>'+
+    const rec='<div class="v5-recommended v4-card flat"><div class="v4-head"><h3>'+(ready?'优先为你推荐':'可以先看这几位')+'</h3><span class="v4-count">'+picks.length+' 位 · 本地规则排序</span></div>'+
+      '<p class="v5-sub">'+(ready?'基于你确认的 BG 和服务方向做关键词排序。':'还没确认档案，先按年级与目标的关键词做粗排；补齐 BG 后顺序会跟着变。')+'不代表录取概率、正式匹配度或服务者核验结果。</p>'+
       picks.map(p=>'<button type="button" class="v5-pick" onclick="v4Open(\''+p.id+'\')"><span class="v5-avatar">'+E(p.name.slice(0,1))+'</span><span><b>'+E(p.name)+'</b><small>'+E(T.recommendationReason(p))+'</small></span><strong>详情 ›</strong></button>').join('')+'</div>';
     return html.replace('<div class="tl-switch">',rec+'<div class="tl-switch">');
   };

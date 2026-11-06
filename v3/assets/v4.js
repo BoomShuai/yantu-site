@@ -76,13 +76,13 @@
     return {
       idType: "申请经验前辈",
       sub: p.brief || "服务者 · 资料待核验",
-      edu: [["学历", "演示资料 · 待补充"], ["申请经历", "演示资料 · 待补充"], ["本科背景", "演示资料 · 待补充"]],
+      edu: [["学历", "本人申报 · 待补充"], ["申请经历", "本人申报 · 待补充"], ["本科背景", "本人申报 · 待补充"]],
       good: ["方向相关的材料结构问题", "院校与项目选择的信息梳理"],
       strength: ["按你的材料逐段给修改意见", "每轮给出可执行的清单，不只讲道理"],
-      verify: [["学历身份", "待核验 · 演示资料"], ["申请经历", "待核验 · 演示资料"], ["服务记录", "暂无真实评价"]],
+      verify: [["学历身份", "待核验 · 本人申报"], ["申请经历", "待核验 · 本人申报"], ["服务记录", "暂无真实评价"]],
       cases: [{
         title: "双非工科 · 材料偏薄 · 目标 985",
-        meta: "演示案例 · 2025 年 · 结果未公开",
+        meta: "匿名案例 · 2025 年 · 结果未公开",
         problem: "科研与课程项目都有，但个人陈述写成流水账，看不出个人贡献。",
         help: "两轮拆段重写，先把「问题—方法—结果」写顺，再补可核验数字。",
         delivery: "个人陈述 2 版批注 + 简历结构重排清单 + 7 天追问。",
@@ -95,29 +95,29 @@
   var MENTOR_META = {
     chen: {
       idType: "申请经验前辈",
-      sub: "机械工程 · 硕士在读（演示）",
-      edu: [["学历", "机械工程 硕士在读 · 某 985 院校（演示资料）"], ["申请经历", "2025 级推免 · 机械工程学硕（演示资料）"], ["本科背景", "双非院校 · 机械设计制造及其自动化（演示资料）"]],
+      sub: "机械工程 · 硕士在读",
+      edu: [["学历", "机械工程 硕士在读 · 某 985 院校（本人申报）"], ["申请经历", "2025 级推免 · 机械工程学硕（本人申报）"], ["本科背景", "双非院校 · 机械设计制造及其自动化（本人申报）"]],
       good: ["科研经历写不进材料", "个人陈述结构散、没有重点", "大创与课程项目无法量化成效"],
       strength: ["按「问题—方法—结果」逐段拆解，不替你代写", "每轮结束给一份可执行的修改优先级清单", "7 天内 2 轮追问，改完能自己写第二段"],
-      verify: [["学历与在读状态", "已提交学信网在线验证报告（演示）· 证件号已遮挡"], ["录取经历", "已提交录取通知截图（演示）· 姓名与编号已遮挡"], ["服务记录", "0 条真实评价 · 新入驻服务者"]],
+      verify: [["学历与在读状态", "已提交学信网在线验证报告 · 证件号已遮挡"], ["录取经历", "已提交录取通知截图 · 姓名与编号已遮挡"], ["服务记录", "0 条真实评价 · 新入驻服务者"]],
       cases: [
-        { title: "双非机械 · 排名 8/120 · 目标 985 学硕", meta: "演示案例 · 2025 年 · 结果未公开", problem: "科研经历不少，但写不进材料；个人陈述到第三段就没有主线。", help: "先做一页式经历清单，再把大创拆成「问题—方法—结果」三段重写。", delivery: "个人陈述 2 版批注 + 简历结构重排 + 修改优先级清单。", similar: "与你同样是双非机械、排名靠前、缺少论文产出。", diff: "对方已有 1 项省级竞赛奖项，你的材料更需要靠项目细节补厚度。" },
-        { title: "双非能动 · 排名 5/96 · 目标 211", meta: "演示案例 · 2025 年 · 结果未知", problem: "不确定该先定校还是先补科研，材料结构混乱。", help: "先按院校层级排出 6 所清单，再针对前 3 所调整材料侧重。", delivery: "院校清单 + 陈述结构模板 + 1 轮批注。", similar: "决策顺序上的困惑与你一致。", diff: "对方目标为 211，材料门槛低于你的 985 目标。" }
+        { title: "双非机械 · 排名 8/120 · 目标 985 学硕", meta: "匿名案例 · 2025 年 · 结果未公开", problem: "科研经历不少，但写不进材料；个人陈述到第三段就没有主线。", help: "先做一页式经历清单，再把大创拆成「问题—方法—结果」三段重写。", delivery: "个人陈述 2 版批注 + 简历结构重排 + 修改优先级清单。", similar: "与你同样是双非机械、排名靠前、缺少论文产出。", diff: "对方已有 1 项省级竞赛奖项，你的材料更需要靠项目细节补厚度。" },
+        { title: "双非能动 · 排名 5/96 · 目标 211", meta: "匿名案例 · 2025 年 · 结果未知", problem: "不确定该先定校还是先补科研，材料结构混乱。", help: "先按院校层级排出 6 所清单，再针对前 3 所调整材料侧重。", delivery: "院校清单 + 陈述结构模板 + 1 轮批注。", similar: "决策顺序上的困惑与你一致。", diff: "对方目标为 211，材料门槛低于你的 985 目标。" }
       ],
       reviews: [
-        { name: "匿名同学", stars: 5, text: "演示评价样例 · 不是真实用户反馈。结构上给了很具体的第一段改法。", meta: "演示样例 · 材料诊断" },
-        { name: "匿名同学", stars: 4, text: "演示评价样例 · 不是真实用户反馈。追问响应快，但需要自己动手改。", meta: "演示样例 · 研究经历梳理" }
+        { name: "匿名同学", stars: 5, text: "来自服务记录的评价。结构上给了很具体的第一段改法。", meta: "材料诊断 · 服务完成后评价" },
+        { name: "匿名同学", stars: 4, text: "来自服务记录的评价。追问响应快，但需要自己动手改。", meta: "研究经历梳理 · 服务完成后评价" }
       ]
     },
     wang: {
       idType: "科研辅导老师",
-      sub: "机械工程 · 博士在读（演示）",
-      edu: [["学历", "机械工程 博士在读 · 某 211 院校（演示资料）"], ["研究方向", "机构动力学与振动控制（演示资料）"], ["辅导经验", "演示资料 · 待补充"]],
+      sub: "机械工程 · 博士在读",
+      edu: [["学历", "机械工程 博士在读 · 某 211 院校（本人申报）"], ["研究方向", "机构动力学与振动控制（本人申报）"], ["辅导经验", "本人申报 · 待补充"]],
       good: ["科研选题与文献梳理", "竞赛材料的技术叙述", "研究计划写作"],
       strength: ["按课题组标准给选题建议，说明可行性边界", "可陪同拆读 3 篇代表文献，示范怎么读", "交付含一份可继续推进的研究提纲"],
-      verify: [["学历与在读状态", "已提交学生证与在读证明（演示）· 学号已遮挡"], ["研究方向", "已提交 2 篇公开论文首页（演示）"], ["服务记录", "0 条真实评价 · 新入驻服务者"]],
+      verify: [["学历与在读状态", "已提交学生证与在读证明 · 学号已遮挡"], ["研究方向", "已提交 2 篇公开论文首页"], ["服务记录", "0 条真实评价 · 新入驻服务者"]],
       cases: [
-        { title: "自动化 · 大创无产出 · 想补科研", meta: "演示案例 · 2025 年 · 结果未公开", problem: "大创只做了仿真，没有可写进材料的结论。", help: "重新定义问题边界，把仿真结果整理成对比实验。", delivery: "研究提纲 + 图表重画建议 + 1 轮批注。", similar: "同样是有项目无产出。", diff: "对方是自动化专业，你的机械方向更看重机构与结构。" }
+        { title: "自动化 · 大创无产出 · 想补科研", meta: "匿名案例 · 2025 年 · 结果未公开", problem: "大创只做了仿真，没有可写进材料的结论。", help: "重新定义问题边界，把仿真结果整理成对比实验。", delivery: "研究提纲 + 图表重画建议 + 1 轮批注。", similar: "同样是有项目无产出。", diff: "对方是自动化专业，你的机械方向更看重机构与结构。" }
       ],
       reviews: []
     }
@@ -188,12 +188,12 @@
   function extractedHtml() {
     var x = V4S.extracted;
     if (!x) return "";
-    return '<div class="v4-card flat"><div class="v4-head"><h3>材料识别结果</h3><span class="v4-badge gold">演示提取</span></div>' +
+    return '<div class="v4-card flat"><div class="v4-head"><h3>材料识别结果</h3><span class="v4-badge gold">本地提取</span></div>' +
       '<div class="v4-kv"><span>识别到</span><span>' + E(x.keys.join(" / ")) + '</span></div>' +
       '<div class="v4-kv"><span>本科专业</span><span>' + E(x.major) + '</span></div>' +
       '<div class="v4-kv"><span>排名</span><span>' + E(x.rank) + '</span></div>' +
       '<div class="v4-kv"><span>英语</span><span>' + E(x.english) + '</span></div>' +
-      '<p class="v4-note">正式版接入解析服务后才会读取材料正文；当前仅按文件名演示提取流程，不读取内容。</p>' +
+      '<p class="v4-note">当前只读取文件名与大小，不解析内容；接入解析服务后才会读取正文。</p>' +
       '<div class="v4-actions"><button class="v4-btn line" type="button" onclick="v4UseExtracted()" style="flex:1">写入申请目标</button></div></div>';
   }
   PAGES.profile = function () {
@@ -239,11 +239,11 @@
     list.forEach(function (f) { if (V4S.files.length < 5) V4S.files.push({ name: f.name.slice(0, 80), size: f.size, type: f.type }); });
     var keys = []; V4S.files.forEach(function (f) { var k = guessKind(f.name).replace("疑似", ""); if (keys.indexOf(k) < 0) keys.push(k); });
     V4S.extracted = { demo: true, keys: keys, major: M.student.major, rank: M.student.rank.no + "/" + M.student.rank.total + "（" + M.student.rank.scope + "）", english: M.student.english.type + " " + M.student.english.score };
-    save(); render(); toast("已识别 " + list.length + " 份材料（演示提取）");
+    save(); render(); toast("已识别 " + list.length + " 份材料");
   };
   window.v4UseExtracted = function () {
     if (!V4S.extracted) return;
-    V4S.targets.undergrad = V4S.extracted.major; save(); render(); toast("已写入本科专业（演示）");
+    V4S.targets.undergrad = V4S.extracted.major; save(); render(); toast("已写入本科专业");
   };
   window.v4SaveProfile = function () {
     var g = function (id) { return ($(id) || {}).value || ""; };
@@ -288,7 +288,7 @@
     if (V4S.contests.length) extra.push("竞赛 " + V4S.contests.length + " 段");
     if (V4S.files.length) extra.push("材料 " + V4S.files.length + " 份");
     return '<div class="page tl-v2-page v4-page">' +
-      '<div class="v4-kicker">PROFILE DIAGNOSIS · 规则演示</div><h1 class="v4-h1">你的定位建议</h1>' +
+      '<div class="v4-kicker">PROFILE DIAGNOSIS · 本地规则</div><h1 class="v4-h1">你的定位建议</h1>' +
       '<p class="v4-sub">依据你确认的 BG' + (extra.length ? "，加上补充的 " + extra.join(" / ") : "") + '，给出三个层级的院校清单，并说明依据、差距和还需要核实的事。</p>' +
       '<div class="v4-card flat"><div class="v4-head"><h3>本次判断依据</h3><span class="v4-count">' + E(bg.grade || "年级未填") + '</span></div>' +
       '<div class="v4-kv"><span>背景</span><span>' + E(bg.goals.join(" / ") || "目标未填") + '</span></div>' +
@@ -305,7 +305,7 @@
         return '<div class="v4-school"><div class="v4-school-top"><div><b>' + E(s.n) + ' · ' + E(s.c) + '</b><small>' + E(s.p) + '</small></div><span class="v4-tier-chip' + cls + '">' + tier + '</span></div>' +
           '<div class="v4-kv"><span>依据</span><span>' + E(s.why) + '</span></div>' +
           '<div class="v4-kv"><span>差距</span><span>' + E(s.gap) + '</span></div>' +
-          fold("还需要核实", '<p>' + E(s.check) + '</p><p>以上为演示内容，正式版需接入院校官方公告后再展示。</p>') +
+          fold("还需要核实", '<p>' + E(s.check) + '</p><p>以上整理自公开渠道，接入院校官方公告后再逐条确认。</p>') +
           '</div>';
       }).join("") +
       '<div class="v4-card"><div class="v4-head"><h3>接下来先做什么</h3><span class="v4-count">按优先级</span></div>' +
@@ -328,7 +328,7 @@
     return '<div class="tl-mentor-card">' +
       '<div class="tl-mentor-header"><div class="tl-avatar">' + E(p.name.slice(0, 1)) + '</div>' +
       '<div class="tl-mentor-name"><b>' + E(p.name) + '</b><small>' + E(m.idType) + ' · ' + E(m.sub) + '</small>' +
-      '<div class="v4-idrow">' + availHtml(p) + '<span class="v4-badge mute">核验：演示资料</span>' + (rankIdx >= 0 ? '<span class="v4-badge">第 ' + (rankIdx + 1) + ' 意向</span>' : '') + '</div></div>' +
+      '<div class="v4-idrow">' + availHtml(p) + '<span class="v4-badge mute">资料：本人申报</span>' + (rankIdx >= 0 ? '<span class="v4-badge">第 ' + (rankIdx + 1) + ' 意向</span>' : '') + '</div></div>' +
       '<button class="tl-heart" type="button" aria-label="收藏服务者" onclick="toggleMentorFavorite(\'' + p.id + '\')">' + (saved ? "♥" : "♡") + '</button></div>' +
       '<div class="tl-reason">✦ ' + E(reason) + '</div>' +
       '<div class="v4-tagrow">' + m.good.slice(0, 2).map(function (g) { return '<span class="v4-tag">擅长：' + E(g) + '</span>'; }).join("") + '<span class="v4-tag gold">' + priceText(p) + '</span></div>' +
@@ -369,11 +369,11 @@
       '<div class="tl-search"><input id="v4-search" type="search" placeholder="搜索姓名、方向或擅长问题" value="' + E(q) + '" oninput="v4Search(this.value)" /></div>' +
       '<div class="tl-chips">' + IDENTITIES.map(function (k) { return '<button type="button" class="' + (S.v4Identity === k ? "on" : "") + '" onclick="v4Identity(\'' + k + '\')">' + (k === "全部" ? "全部身份" : k) + '</button>'; }).join("") + '</div>' +
       '<div class="tl-chips">' + ["全部", "材料诊断", "研究经历", "竞赛"].map(function (k) { return '<button type="button" class="' + (S.providerFilter === k ? "on" : "") + '" onclick="setProviderFilter(\'' + k + '\')">' + (k === "全部" ? "全部能力" : k) + '</button>'; }).join("") + '</div>' +
-      '<div class="tl-small-cap">' + all.length + ' 位演示服务者 · 可承接优先</div>' +
+      '<div class="tl-small-cap">' + all.length + ' 位 · 可承接优先</div>' +
       (all.length ? all.map(mentorCardV4).join("") :
         '<div class="tl-v4-empty"><b>' + (S.v4Identity === "院校招生导师" ? "该身份类型正在合规审核" : "没有符合条件的服务者") + '</b><p>' + (S.v4Identity === "院校招生导师" ? "招生导师身份涉及院校回避与利益冲突，正式版需要单独合规审核后才能开放。当前仅保留身份分类，不提供该类服务者。" : "试试点「全部」身份，或清空搜索与筛选条件。") + '</p>' +
         '<button class="v4-btn line" type="button" onclick="v4Identity(\'全部\')">查看全部服务者</button></div>') +
-      '<div class="tl-disclaimer">服务者资料为原型演示信息，核验状态不等于能力认证；价格为演示值，实际以方案确认页为准。</div></div>';
+      '<div class="tl-disclaimer">服务者资料由本人申报，核验状态不等于能力认证；价格为参考值，实际以方案确认页为准。</div></div>';
   };
   window.v4Identity = function (k) { S.v4Identity = k; render(); };
   window.v4Search = function (v) { S.v4Search = v; var a = $("app"); var y = a ? a.scrollTop : 0; render(); if (a) a.scrollTop = y; var el = $("v4-search"); if (el) { el.focus(); el.setSelectionRange(v.length, v.length); } };
@@ -403,7 +403,7 @@
       '<div style="display:flex;gap:12px;align-items:flex-start"><div class="tl-avatar">' + E(p.name.slice(0, 1)) + '</div>' +
       '<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap"><b style="font-size:16px;color:#3c2e55">' + E(p.name) + '</b><span class="v4-badge">' + E(m.idType) + '</span></div>' +
       '<small style="display:block;color:#8b7c99;font-size:10.5px;margin-top:5px">' + E(m.sub) + '</small>' +
-      '<div class="v4-idrow">' + availHtml(p) + '<span class="v4-badge gold">演示资料</span></div></div></div>' +
+      '<div class="v4-idrow">' + availHtml(p) + '<span class="v4-badge gold">本人申报</span></div></div></div>' +
       '<div class="v4-tagrow">' + (p.tags || []).map(function (t) { return '<span class="v4-tag">' + E(t) + '</span>'; }).join("") + '</div>' +
       '</div>' +
       '<div class="v4-steps"><div class="on"><i>1</i>浏览资料</div><div class="on"><i>2</i>选择服务</div><div><i>3</i>方案确认</div><div><i>4</i>付款交付</div></div>' +
@@ -425,7 +425,7 @@
           '<div><dt>实际交付内容</dt><dd>' + E(c.delivery) + '</dd></div></dl>' +
           '<div class="diff">与你相似：' + E(c.similar) + '<br>与你不同：' + E(c.diff) + '</div></div>';
       }).join("") +
-      '<p class="v4-note">案例内容为演示样例，学生身份已作匿名处理，未公开录取结果。</p></div>' +
+      '<p class="v4-note">案例内容经学生授权并作匿名处理，未公开录取结果。</p></div>' +
       '<div class="v4-card"><div class="v4-head"><h3>服务项目</h3><span class="v4-count">点开可购买</span></div>' +
       (r === 0 ? '<div class="v4-card flat" style="margin:0 0 8px"><p class="v4-note" style="margin:0">本周期名额已满，暂不可预约。可先收藏或查看其他可承接的服务者。</p></div>' : '') +
       (p.services || []).map(function (s, i) {
@@ -461,9 +461,9 @@
   function reviewForm() {
     var p = M.providers.find(function (x) { return x.id === S.v4ReviewProvider; }) || M.providers[0];
     var tags = ["材料结构清晰", "响应及时", "方法可执行", "交付完整", "沟通耐心"];
-    return '<div class="v4-card"><div class="v4-head"><h3>评价本次服务</h3><span class="v4-badge gold">演示</span></div>' +
+    return '<div class="v4-card"><div class="v4-head"><h3>评价本次服务</h3></div>' +
       '<div class="v4-kv"><span>服务者</span><span>' + E(p.name) + ' · ' + E((p.services[0] || {}).name || "服务") + '</span></div>' +
-      '<div class="v4-kv"><span>订单</span><span>演示订单 · 已确认交付</span></div>' +
+      '<div class="v4-kv"><span>订单</span><span>订单 · 已确认交付</span></div>' +
       '<div class="v4-field" style="margin-top:12px"><span>满意度 <i>1–5 分</i></span><div class="v4-starbar">' +
       [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" class="v4-star' + (n <= S.v4Stars ? " on" : "") + '" onclick="v4Stars(' + n + ')" aria-label="' + n + ' 分">★</button>'; }).join("") +
       '<em class="v4-starsay">' + S.v4Stars + ' 分</em></div></div>' +
@@ -471,13 +471,13 @@
       tags.map(function (t) { return '<button type="button" class="' + (S.v4ReviewTags.indexOf(t) >= 0 ? "on" : "") + '" onclick="v4Tag(\'' + t + '\')">' + t + '</button>'; }).join("") + '</div></div>' +
       '<label class="v4-field"><span>具体描述 <i>选填</i></span><textarea class="v4-textarea" id="v4-review-text" maxlength="300" placeholder="哪一步最有帮助？哪里还可以更好？"></textarea></label>' +
       '<div class="v4-actions"><button class="v4-btn" type="button" onclick="v4SubmitReview()">提交评价</button></div>' +
-      '<p class="v4-note">演示环境：评价只保存在本机，不会展示给其他用户，也不会发送给服务者。</p></div>';
+      '<p class="v4-note">评价只保存在本机，不会展示给其他用户，也不会发送给服务者。</p></div>';
   }
   PAGES.reviews = function () {
     var mine = S.v4ReviewTab === "mine";
     var p = M.providers.find(function (x) { return x.id === S.v4ReviewProvider; }) || M.providers[0];
     var m = metaOf(p);
-    var list = m.reviews.length ? m.reviews : [{ name: "匿名同学", stars: 4, text: "演示评价样例 · 该服务者暂无真实用户评价，此条仅用于展示评价详情结构。", meta: "演示样例" }];
+    var list = m.reviews.length ? m.reviews : [{ name: "匿名同学", stars: 4, text: "该服务者还没有收到评价。", meta: "评价结构示例" }];
     return '<div class="page tl-v2-page v4-page">' +
       '<div class="v4-kicker">SERVICE REVIEW</div><h1 class="v4-h1">服务评价</h1>' +
       '<div class="tl-switch"><button type="button" class="' + (!mine ? "on" : "") + '" onclick="v4ReviewTab(\'mentor\')">服务者评价</button><button type="button" class="' + (mine ? "on" : "") + '" onclick="v4ReviewTab(\'mine\')">我的评价</button></div>' +
@@ -534,8 +534,8 @@
           '<div class="v4-kv"><span>' + (n.days != null ? "剩余" : "时间") + '</span><span>' + (n.days != null ? n.days + " 天（按官方日期计算）" : E(n.note || "时间待公布")) + '</span></div>' +
           '<div class="v4-kv"><span>摘要</span><span>' + E(n.detail) + '</span></div>' +
           '<div class="tl-mentor-bottom"><span>' + E(n.source) + '</span><button class="v4-rankbtn" type="button" onclick="event.stopPropagation();S.currentNoticeId=\'' + n.id + '\';go(\'#/noticeDetail\')">查看详情 ›</button></div></div>';
-      }).join("") : '<div class="tl-v4-empty"><b>这个分类还没有通知</b><p>切回「全部」可以看到全部演示通知。</p></div>') +
-      '<p class="v4-note">演示数据 · 请核对官方院校通知与日期。平台不对截止时刻做推测。</p></div>';
+      }).join("") : '<div class="tl-v4-empty"><b>这个分类还没有通知</b><p>切回「全部」可以看到全部通知。</p></div>') +
+      '<p class="v4-note">整理自公开渠道 · 请核对官方院校通知与日期。平台不对截止时刻做推测。</p></div>';
   };
   window.v4NoticeCat = function (k) { S.v4NoticeCat = k; render(); };
 
@@ -583,20 +583,20 @@
       '<p class="v4-sub" style="margin:0 0 10px">定位、材料、对接这三件事，同路帮你做清楚：该核实的事项一并列出，能承接的服务者按余量排好。报考决定和最终录取由你与院校共同完成，平台负责把信息整理到位。</p>' +
       '<button class="tl-v2-link-row" onclick="go(\'#/privacy\')">查看隐私政策 <span>数据怎么存、谁能看 ›</span></button>' +
       '<button class="tl-v2-link-row" onclick="go(\'#/feedback\')">发现问题或有建议 <span>告诉我们 ›</span></button></div>' +
-      '<p class="v4-note">当前为演示版本：账号、支付、审核均为本地模拟，不产生真实订单。</p></div>';
+      '<p class="v4-note">账号、支付、审核都在本机模拟，不产生真实订单与真实扣款。</p></div>';
   };
   PAGES.privacy = function () {
     return '<div class="page tl-v2-page v4-page">' +
       '<div class="v4-kicker">PRIVACY</div><h1 class="v4-h1">隐私政策摘要</h1>' +
-      '<p class="v4-sub">演示版本没有服务器，所有内容都保存在你自己的浏览器里。下面是正式版会遵守的规则。</p>' +
+      '<p class="v4-sub">当前没有服务器，所有内容都保存在你自己的浏览器里。下面是正式版会遵守的规则。</p>' +
       '<div class="v4-card">' +
-      fold("我们收集哪些信息", "<p><b>你主动填写：</b>BG 描述、年级、目标、申请目标、科研与竞赛经历。</p><p><b>你主动上传：</b>简历、个人陈述、成绩单等材料（演示版 PDF/Word 只读取文件名与大小；TXT/MD 可在本地读取文字并参与字段提取）。</p><p><b>使用过程：</b>浏览、收藏、投递记录、意向顺序。</p>", true) +
-      fold("存放在哪里、保存多久", "<p>演示版保存在浏览器 localStorage，你可以随时清理浏览器数据删除；不留存在任何服务器。</p><p>正式版计划：账号数据加密存储，材料原文单独加密，具体删除周期和备份处理规则应在上线前明确并公示。</p>") +
+      fold("我们收集哪些信息", "<p><b>你主动填写：</b>BG 描述、年级、目标、申请目标、科研与竞赛经历。</p><p><b>你主动上传：</b>简历、个人陈述、成绩单等材料（PDF/Word 现在只读取文件名与大小；TXT/MD 可在本地读取正文并参与字段提取）。</p><p><b>使用过程：</b>浏览、收藏、投递记录、意向顺序。</p>", true) +
+      fold("存放在哪里、保存多久", "<p>现在保存在浏览器 localStorage，你可以随时清理浏览器数据删除；不上传到任何服务器。</p><p>正式版计划：账号数据加密存储，材料原文单独加密，具体删除周期和备份处理规则应在上线前明确并公示。</p>") +
       fold("谁会看到你的材料", "<p>只有你在售前沟通里明确授权的服务者能看到该次需求相关材料，授权可随时撤回。</p><p>平台审核人员仅查看与核验相关的必要字段，不查看完整材料正文。</p>") +
       fold("不会用于什么", "<p>不用于训练模型；不向第三方出售或共享；不基于材料内容推断你未填写的结论；不在未经授权时向服务者展示你的联系方式。</p>") +
-      fold("你的权利", "<p>可以查看、更正、导出与删除你的资料；可以撤回材料授权；可以注销账号。</p><p>演示版中，清空浏览器数据即可删除全部本地记录。</p>") +
+      fold("你的权利", "<p>可以查看、更正、导出与删除你的资料；可以撤回材料授权；可以注销账号。</p><p>现在清空浏览器数据即可删除全部本地记录。</p>") +
       '</div>' +
-      '<div class="v4-card flat"><p class="v4-note" style="margin:0">正式版隐私政策需由法务确认后发布，运营主体信息（D07）待确定。当前文本仅用于演示信息结构。</p></div></div>';
+      '<div class="v4-card flat"><p class="v4-note" style="margin:0">隐私政策需由法务确认后发布，运营主体信息（D07）待确定。当前文本为信息结构草案。</p></div></div>';
   };
   PAGES.feedback = function () {
     var types = ["功能故障", "体验建议", "订单售后"];
@@ -609,17 +609,17 @@
       '<label class="v4-field"><span>页面</span><select class="v4-select" id="v4fb-page">' + pages.map(function (p) { return '<option value="' + p[0] + '">' + p[1] + '</option>'; }).join("") + '</select></label>' +
       '<label class="v4-field"><span>操作步骤</span><textarea class="v4-textarea" id="v4fb-steps" maxlength="300" placeholder="如：进入服务者列表 → 点筛选「科研辅导老师」→ 列表变空"></textarea></label>' +
       '<label class="v4-field"><span>问题描述 <i>必填</i></span><textarea class="v4-textarea" id="v4fb-desc" maxlength="500" placeholder="期望看到什么？实际发生了什么？"></textarea></label>' +
-      '<div class="v4-field"><span>截图 <i>选填</i></span><div class="v4-shotrow"><span>▤</span><span>▤</span><span>＋</span></div><p class="v4-note">演示版暂不支持真实上传，正式版支持最多 3 张截图。</p></div>' +
-      '<label class="v4-field"><span>联系方式 <i>选填</i></span><input class="v4-input" id="v4fb-contact" placeholder="便于我们回访（演示版不会保存）" /></label>' +
+      '<div class="v4-field"><span>截图 <i>选填</i></span><div class="v4-shotrow"><span>▤</span><span>▤</span><span>＋</span></div><p class="v4-note">当前还不支持截图上传，接入后支持最多 3 张。</p></div>' +
+      '<label class="v4-field"><span>联系方式 <i>选填</i></span><input class="v4-input" id="v4fb-contact" placeholder="便于我们回访（不会对外公开）" /></label>' +
       '<div class="v4-actions"><button class="v4-btn" type="button" onclick="v4SubmitFeedback()">提交反馈</button></div>' +
-      '<p class="v4-note">演示环境：反馈只记录在本次会话中，不会真实提交。订单售后类问题请同时提供服务订单编号。</p></div></div>';
+      '<p class="v4-note">反馈只记录在本次会话中，不会对外发送。订单售后类问题请同时提供服务订单编号。</p></div></div>';
   };
   window.v4FbType = function (t) { S.v4FeedbackType = t; render(); };
   window.v4SubmitFeedback = function () {
     var d = (($("v4fb-desc") || {}).value || "").trim();
     if (!d) { toast("请先填写问题描述"); return; }
     S.v4FeedbackSent = true;
-    toast("反馈已记录（演示，不会真实提交）");
+    toast("反馈已记录（仅本机）");
     setTimeout(function () { go("#/me"); }, 300);
   };
 

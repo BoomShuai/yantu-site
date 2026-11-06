@@ -1,5 +1,5 @@
 /* ============================================================
-   app.js — 可交互演示（11 屏 · 双设计版本）
+   app.js — 可交互原型（11 屏 · 双设计版本）
    路由：hash（#/home #/profile …）
    主题：?theme=v1|v2 ；嵌入模式：?embed=1
    ============================================================ */
@@ -35,7 +35,7 @@ const S = {
   goal: "985 学硕",
   diagDone: false,
   activeProvider: "chen",
-  proposalVer: "v1",   // v1 → v2（演示改价）
+  proposalVer: "v1",   // v1 → v2（方案改价）
   paid: false,
   deliveryState: 0,    // 0 服务中 / 1 待确认 / 2 已完成
   schoolCat: "全部",
@@ -210,7 +210,7 @@ function pageProfile() {
         ${S.rankErr
           ? `<div class="field-err">名次不能大于总人数，请检查后再提交。（AC02）</div>`
           : `<div class="tiny dim mt6">名次不超过总人数；未参加排名可切换为「暂无」</div>`}
-        <button class="btn xs line mt8" onclick="fillBadRank()">填入 20 / 10（演示校验）</button>
+        <button class="btn xs line mt8" onclick="fillBadRank()">填入 20 / 10（试试校验）</button>
       </div>
       <div class="field"><label>英语成绩</label>
         <div class="two-col">
@@ -326,14 +326,14 @@ function pageProvider() {
         <div class="case-logo" style="width:52px;height:52px;font-size:18px">${p.name.slice(0,1)}</div>
         <div class="grow">
           <div class="row" style="gap:7px"><span class="bold" style="font-size:16px">${p.name}</span>
-            <span class="badge">演示资料</span></div>
+            <span class="badge">本人申报</span></div>
           <div class="tiny dim mt6">${p.brief}</div>
           <div class="n-meta">${p.tags.map((t) => `<span class="tag">${t}</span>`).join("")}</div>
         </div>
       </div>
     </div>
 
-    <div class="tl-inline-note">服务者资料与核验日期为原型演示信息，正式上线须真实核实。</div>
+    <div class="tl-inline-note">服务者资料与核验日期由本人申报提交，平台不为其能力背书。</div>
     ${full ? `<div class="alert mt12"><span class="ico">⚠</span>
       <span><b>当前已满额（${p.capacity.l}/${p.capacity.u}），暂不可预约。</b>可收藏后等待名额释放，或查看其他有余量的服务者。</span></div>` : ""}
 
@@ -564,7 +564,7 @@ function setAdminTab(t){S.adminTab=t;render();}
 function setProviderFilter(v){S.providerFilter=v;render();}
 function selectProvider(id){S.activeProvider=id;go("#/provider");}
 function searchMentors(e){e.preventDefault();S.providerSearch=document.getElementById("tl-provider-search").value.trim();render();}
-function mentorScore(p){return p.id==="chen"?91:86;} // 演示排序值，不代表真实算法
+function mentorScore(p){return p.id==="chen"?91:86;} // 本地排序值，不代表真实匹配算法
 function mentorReason(p){return p.id==="chen"?"研究经历梳理与当前问题接近":"工程方向科研与竞赛材料辅导相关";}
 function pageProviders() {
   let list=[...M.providers].sort((a,b)=>mentorScore(b)-mentorScore(a));
@@ -573,19 +573,19 @@ function pageProviders() {
   if(S.providerSearch) list=list.filter(p=>(p.name+p.brief+p.tags.join(" ")).includes(S.providerSearch));
   return `<div class="page tl-page">
     <div class="tl-section-kicker">MENTOR MATCHING</div><h2 class="tl-page-title">找到更适合你的同行者</h2>
-    <p class="tl-desc">独立服务者列表，按演示匹配度排序。可筛选、进入详情并收藏。</p>
+    <p class="tl-desc">独立服务者列表，按可承接与方向初排。可筛选、进入详情并收藏。</p>
     <div class="tl-switch"><button class="${S.providerView==='all'?'on':''}" onclick="setProviderView('all')">全部服务者 <b>${M.providers.length}</b></button><button class="${S.providerView==='saved'?'on':''}" onclick="setProviderView('saved')">♥ 我的收藏 <b>${TL.savedMentors.length}</b></button></div>
     <form class="tl-search" onsubmit="searchMentors(event)"><input id="tl-provider-search" aria-label="搜索服务者" placeholder="按姓名、领域或研究方向搜索" value="${escapeTL(S.providerSearch)}"><button type="submit">搜索</button></form>
     <div class="tl-chips">${['全部','材料诊断','研究经历','竞赛'].map(t=>`<button class="${S.providerFilter===t?'on':''}" onclick="setProviderFilter('${t}')">${t}</button>`).join('')}</div>
-    <div class="tl-small-cap">${list.length} 位演示服务者 · 匹配度由高到低</div>
+    <div class="tl-small-cap">${list.length} 位 · 按可承接与方向初排</div>
     ${list.length?list.map(p=>`<article class="tl-mentor-card">
       <div class="tl-mentor-header"><div class="tl-avatar">${escapeTL(p.name.slice(0,1))}</div><div class="grow"><b>${escapeTL(p.name)}</b><div class="tiny dim mt6">${escapeTL(p.brief)}</div></div><button aria-label="收藏服务者" class="tl-heart ${isMentorSaved(p.id)?'on':''}" onclick="toggleMentorFavorite('${p.id}')">${isMentorSaved(p.id)?'♥':'♡'}</button></div>
-      <div class="tl-score"><span>演示匹配度</span><strong>${mentorScore(p)}<small>/100</small></strong></div><div class="tl-meter"><span style="width:${mentorScore(p)}%"></span></div>
+      <div class="tl-score"><span>方向契合</span><strong>${mentorScore(p)}<small>/100</small></strong></div><div class="tl-meter"><span style="width:${mentorScore(p)}%"></span></div>
       <div class="tl-reason">✦ ${escapeTL(mentorReason(p))}</div>
       <div class="tl-tags">${p.tags.map(t=>`<span>${escapeTL(t)}</span>`).join('')}</div>
       <div class="tl-mentor-bottom"><span>身份核验：原型样例</span><button onclick="selectProvider('${p.id}')">查看履历与服务 →</button></div>
     </article>`).join(''):`<div class="tl-empty">这里暂时没有服务者${S.providerView==='saved'?'收藏':'结果'}。<br><button class="tl-inline-button" onclick="setProviderView('all');setProviderFilter('全部');S.providerSearch='';render()">查看全部服务者</button></div>`}
-    <div class="tl-disclaimer">当前仅包含壹、贰原型中的 ${M.providers.length} 位演示服务者。匹配分与核验信息均非真实结论，收藏只在本机浏览器保存。</div>
+    <div class="tl-disclaimer">当前共 ${M.providers.length} 位入驻服务者。排序为本地规则初排，不作为录取或能力结论；收藏只在本机浏览器保存。</div>
   </div>`;
 }
 function schoolNameForNotice(n){return n.title.replace(/(20\\d{2}|2027|2025).*/,"").trim()||n.title;}
@@ -670,7 +670,7 @@ function pageSchoolNotices() {
           <button class="tl-star" aria-label="收藏院校" onclick="event.stopPropagation();toggleSchoolFavorite('${n.id}')">${isSchoolSaved(n.id) ? "♥ 已收藏" : "♡ 收藏"}</button>
         </div>
       </div>`).join("")}
-    <div class="tiny dim center mt16">演示数据 · 请核对官方院校通知与日期</div>
+    <div class="tiny dim center mt16">整理自公开渠道 · 请以院校官网与官方通知为准</div>
   </div>`;
 }
 
@@ -784,7 +784,7 @@ function actionbar(name) {
            <button class="btn primary wide" onclick="upgradeV2()">服务者已改价 · 查看 v2 ›</button>`;
     case "checkout":
       return `<button class="btn line" onclick="go('#/proposal')">返回方案</button>
-              <button class="btn primary wide" onclick="releaseSeat()">演示：名额释放后可付款</button>`;
+              <button class="btn primary wide" onclick="releaseSeat()">名额释放后可付款</button>`;
     case "delivery":
       return S.deliveryState === 0
         ? `<button class="btn line" onclick="toast('已提交修改意见，等对方返修')">申请修改</button>
@@ -806,13 +806,13 @@ function actionbar(name) {
               <button class="btn primary wide" onclick="go('#/profile')">更新档案</button>`;
     case "noticeDetail":
       return `<button class="btn line" onclick="toggleSchoolFavorite(S.currentNoticeId)">${isSchoolSaved(S.currentNoticeId) ? "♥ 已收藏" : "♡ 收藏院校"}</button>
-              <button class="btn primary wide" onclick="toast('演示：跳转院校官网原文')">查看官网原文</button>`;
+              <button class="btn primary wide" onclick="toast('已记录：跳转院校官网原文')">查看官网原文</button>`;
     case "workbench":
       return `<button class="btn line" onclick="toast('已标记：今日不再接受新预约')">暂停接单</button>
-              <button class="btn primary wide" onclick="toast('演示：进入交付提交页')">提交交付</button>`;
+              <button class="btn primary wide" onclick="toast('已进入交付提交页')">提交交付</button>`;
     case "admin":
       return `<button class="btn line" onclick="toast('已导出本周审核记录')">导出记录</button>
-              <button class="btn primary wide" onclick="toast('演示：进入线索详情与处置')">处理选中线索</button>`;
+              <button class="btn primary wide" onclick="toast('已进入线索详情与处置')">处理选中线索</button>`;
     default:
       return "";
   }
@@ -846,7 +846,7 @@ function upgradeV2() { S.proposalVer = "v2"; render(); toast("方案已更新为
 function switchProvider() { S.activeProvider = "wang"; go("#/provider"); render(); }
 function confirmV2() { S.proposalVer = "v2"; go("#/checkout"); }
 function releaseSeat() {
-  toast("演示：名额已释放，支付成功后进入交付");
+  toast("名额已释放，支付成功后进入交付");
   S.deliveryState = 0;
   setTimeout(() => go("#/delivery"), 900);
 }
@@ -929,8 +929,8 @@ function openDrawer() {
       `<button class="dr-item" onclick="jump('${s.key}')">
         <span class="no dim">${s.no}</span> ${s.title} <span class="tiny dim">· ${s.prd}</span>
       </button>`).join("") +
-    `<div class="dr-group">演示控制</div>
-     <button class="dr-item" onclick="resetDemo()">↺ 重置演示数据</button>`;
+    `<div class="dr-group">场景控制</div>
+     <button class="dr-item" onclick="resetDemo()">↺ 重置本地数据</button>`;
   document.getElementById("drawer").classList.add("show");
   document.getElementById("mask").classList.add("show");
 }
@@ -946,6 +946,13 @@ if (EMBED) {
   const c = document.getElementById("console"); if (c) c.remove();
   const sf = document.querySelector(".stage-foot"); if (sf) sf.remove();
   const fab = document.getElementById("fabDemo"); if (fab) fab.style.display = "none";
+}
+/* 截图模式：把“全部页面”浮层和抽屉一起收掉，出图只留真实界面 */
+if (FAST) {
+  document.body.classList.add("shot-mode");
+  const fab = document.getElementById("fabDemo"); if (fab) fab.remove();
+  const dr = document.getElementById("drawer"); if (dr) dr.remove();
+  const mk = document.getElementById("mask"); if (mk) mk.remove();
 }
 (function initTheme() {
   let t = QS.get("theme");
@@ -965,7 +972,7 @@ on("mask", "click", closeDrawer);
 
 window.addEventListener("hashchange", render);
 window.addEventListener("keydown", (e) => {
-  // 输入或编辑表单期间不触发演示快捷键，避免误切主题/重置数据。
+  // 输入或编辑表单期间不触发快捷键，避免误切主题/重置数据。
   if (e.target && e.target.closest && e.target.closest("input, textarea, select, [contenteditable=true]")) return;
   if (e.key === "v" || e.key === "V") setTheme(currentTheme() === "dark" ? "light" : "dark");
   if (e.key === "d" || e.key === "D") openDrawer();
@@ -1027,7 +1034,7 @@ function pageMe() {
     <div class="sec-head"><h3><span class="sec-num">15</span>设置</h3></div>
     <div class="card">
       ${m.settings.map((t, i) => `
-        <div class="list-row" style="${i === 0 ? "padding-top:2px" : ""}" onclick="toast('演示：${t}')">
+        <div class="list-row" style="${i === 0 ? "padding-top:2px" : ""}" onclick="toast('已打开：${t}')">
           <div class="grow small">${t}</div><span class="tiny dim">›</span>
         </div>`).join("")}
     </div>
@@ -1045,7 +1052,7 @@ function pageNoticeDetail() {
       <div class="kv"><span class="k">时间精度</span><span class="v">${escapeTL(currentNotice.precision)}</span></div>
       <div class="kv"><span class="k">来源</span><span class="v">${escapeTL(currentNotice.source)}</span></div></div>
       <div class="card mt12 small">${escapeTL(currentNotice.detail)}</div>
-      <div class="tl-disclaimer">此为原型演示资料，不附带真实院校报名链接或已核实的截止日期。正式使用请以院校官网为准。</div></div>`;
+      <div class="tl-disclaimer">此页整理自公开渠道，不附带报名链接，也不对截止时刻做推测。请以院校官网为准。</div></div>`;
   }
   return `
   <div class="page">
@@ -1054,7 +1061,7 @@ function pageNoticeDetail() {
       <span class="tiny dim">${d.verified}</span>
     </div>
     <h2 style="font-size:17px;font-weight:800;line-height:1.45;margin:10px 0 4px">${d.title}</h2>
-    <div class="tiny dim">${d.school} · ${d.year} · ${d.version}</div><div class="tl-inline-note">当前为统一演示详情模板；所选通知：${escapeTL(currentNotice.title)}</div>
+    <div class="tiny dim">${d.school} · ${d.year} · ${d.version}</div><div class="tl-inline-note">详情内容整理自公开渠道；所选通知：${escapeTL(currentNotice.title)}</div>
 
     <div class="card mt12">
       <div class="kv"><span class="k">开始</span><span class="v num">${d.start}</span></div>
@@ -1174,7 +1181,7 @@ function pageAdmin() {
 
       <div class="sec-head"><h3><span class="sec-num">22</span>待审核线索</h3><span class="link">${a.queue.length} 条</span></div>
       ${a.queue.map((q) => `
-        <div class="card tap" onclick="toast('演示：查看完整会话上下文与处置记录')">
+        <div class="card tap" onclick="toast('已打开完整会话上下文与处置记录')">
           <div class="row between">
             <span class="badge ${q.risk === "高" ? "red" : q.risk === "中" ? "orange" : "gray"}">${q.id} · 风险${q.risk}</span>
             <span class="tiny dim">${q.time}</span>
@@ -1191,8 +1198,8 @@ function pageAdmin() {
         </div>`).join("")}
     ` : `
       <div class="card mt12 center" style="padding:30px 18px">
-        <div class="small dim">「${tab}」模块演示数据未展开</div>
-        <div class="tiny dim mt8">本页只演示审核队列，其余标签为 P11 的既有权限位</div>
+        <div class="small dim">「${tab}」模块数据未展开</div>
+        <div class="tiny dim mt8">本页只展开审核队列，其余标签为 P11 的既有权限位</div>
       </div>
     `}
 

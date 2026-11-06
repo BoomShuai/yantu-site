@@ -32,33 +32,71 @@
   function persistPlans(){try{localStorage.setItem(TASK_KEY,JSON.stringify(planTasks));return true;}catch(e){toast('本地存储不可用，进度可能不会保留');return false;}}
   function detectGrade(text){const x=String(text).match(/(?:大|本科)\s*([一二三四五12345])/);if(!x)return '';return {1:'大一',2:'大二',3:'大三',4:'大四',5:'大五','一':'大一','二':'大二','三':'大三','四':'大四','五':'大五'}[x[1]]||'';}
   function detectGoals(text){const goals=[];const v=String(text);if(/保研|推免|夏令营|预推免|申请院校|升学/.test(v))goals.push('保研');if(/竞赛|比赛|数学建模|建模|挑战杯|大创|互联网\+|蓝桥杯/.test(v))goals.push('竞赛');if(/科研|研究|课题|论文|实验室/.test(v))goals.push('科研');if(/学习|英语|四六级|绩点|课程/.test(v))goals.push('学业');return goals;}
-  function hasBackground(text){return /大学|学院|高校|本科|专业|学校|绩点|排名|科研|竞赛|大创|\bGPA\b/i.test(text)&&text.trim().length>=10;}
+  function hasBackground(text){
+    const t=String(text||'').trim();
+    if(t.length<6)return false;
+    if(detectGrade(t))return true;
+    return /大学|学院|高校|本科|专科|专业|学校|绩点|排名|成绩|科研|竞赛|大创|论文|实验室|实习|项目|保研|推免|夏令营|GPA/i.test(t);
+  }
   function profileReady(){return !!studentBG.confirmed && !!studentBG.grade && studentBG.goals.length>0 && hasBackground(studentBG.raw);}
-  function inferNextQuestion(){
-    if(!hasBackground(studentBG.raw))return '先随意介绍一下你的学校、专业或经历吧，不需要按固定表格填写。';
-    if(!studentBG.grade)return '收到。你现在大几？例如大一、大二或大三，这会影响行动计划的阶段。';
-    if(!studentBG.goals.length)return '你目前主要想实现什么目标？可以是保研、竞赛、科研，也可以同时有几个目标。';
-    return '我已整理出你提供的背景和目标。请检查下面的文字，确认后才会开启服务者优先推荐和个人时间计划；也可以继续补充。';
+  /* 从自由描述里回读已识别的字段，用于对话里的即时反馈。 */
+  const LEAD=/^(?:我(?:是|在|读|来自)|就读于|毕业于|本科(?:就读于|院校|学校)?|目前|现在|在)\s*/;
+  function bgChips(){
+    const t=String(studentBG.raw||'').replace(LEAD,'');
+    const chips=[];
+    const school=((t.match(/[\u4e00-\u9fa5]{2,20}?(?:大学|学院)/g)||[])[0]||'').replace(LEAD,'');
+    if(school)chips.push('院校 '+school);
+    const major=((t.match(/(?:大学|学院)([\u4e00-\u9fa5]{2,16}?)(?:专业|系)/)||[])[1]||'').replace(LEAD,'');
+    if(major)chips.push('专业 '+major+'专业');
+    if(studentBG.grade)chips.push('年级 '+studentBG.grade);
+    if(studentBG.goals.length)chips.push('目标 '+studentBG.goals.join(' / '));
+    const rank=(t.match(/(?:排名|前)\s*[\d.]+\s*(?:%|\/\s*\d+|名)?/)||[])[0];
+    if(rank)chips.push('排名 '+rank.replace(/\s+/g,''));
+    return chips;
+  }
+  /* 对话内嵌的服务者推荐，未确认时只作方向预览，不声称是匹配结果。 */
+  /* 同一处推荐只保留最新一份，避免对话里堆出重复卡片。 */
+  function stripRecCards(){messages.forEach(m=>{if(m.card)delete m.card;});}
+  function recCardHtml(preview){
+    const pool=M.providers.map(p=>({p,w:recommendationWeight(p),free:remain(p)>0}));
+    pool.sort((a,b)=>(b.free-a.free)||(b.w-a.w));
+    const picks=pool.slice(0,preview?2:3).map(x=>x.p);
+    if(!picks.length)return '';
+    return `<div class="tl-v3-rec-inline"><small>${preview?'方向相近的同行者 · 预览排序':'按你的 BG 与服务方向初排'}</small>${picks.map(p=>`<button type="button" onclick="selectProvider('${p.id}')"><span class="tl-avatar">${H(p.name.slice(0,1))}</span><span><b>${H(p.name)}</b><small>${H(recommendationReason(p))}</small></span><i>›</i></button>`).join('')}<button type="button" class="tl-v3-rec-more" onclick="go('#/providers')">${preview?'确认档案后看完整推荐 ›':'打开服务者列表 ›'}</button></div>`;
+  }
+  const ASK_PEOPLE=/推荐|学姐|学长|服务者|顾问|找谁|谁来帮|约谁|有没有人/;
+  function inferNextQuestion(lastText){
+    const chips=bgChips();
+    const heard=chips.length?`已记下 ${chips.length} 项：${chips.join(' · ')}。`:'';
+    if(!hasBackground(studentBG.raw)){
+      /* 直接打听人时不要空转着继续追问背景，先给一版按服务方向的粗排，并说清它还不是匹配结果。 */
+      if(ASK_PEOPLE.test(String(lastText||'')))return {text:'还没确认档案，所以下面不算匹配结果，只是按服务方向与你说的诉求做的一版粗排。补充一句学校和年级，或者点头像进详情看服务说明，都可以。',card:recCardHtml(true)};
+      return {text:'再多说一点就行：学校、专业、年级，或者你正在准备的方向。不用按表格填，一句话也可以。'};
+    }
+    if(!studentBG.grade)return {text:`${heard}还差一个年级——你现在大几？`,card:recCardHtml(true)};
+    if(!studentBG.goals.length)return {text:`${heard}你主要想实现什么？保研、竞赛、科研，可以同时有几个。`,card:recCardHtml(true)};
+    if(studentBG.confirmed)return {text:'档案已更新。这几位是按你当前诉求读取的服务者，随时可以继续补充新的经历。',card:recCardHtml(false)};
+    return {text:`${heard}方向已经很清楚了。下面这几位可以先点开看看；点一下「确认档案」，我就把完整推荐和个人时间计划一起打开。`,card:recCardHtml(true)};
   }
   function handleStudentBG(value){
-    if(studentBG.confirmed){return '这是本地演示对话，已保存的 BG 不会被随口提问覆盖。要更新资料，请到「我的」选择重新整理 BG。真实分析需接入大模型与可靠数据。';}
-    if(/^(你好|您好|在吗|hi|hello|嗨)[!！。\s]*$/i.test(value))return '你好！你可以自由描述当前背景和诉求，例如「我是某大学统计专业大二，想保研，也在准备数学建模竞赛」。';
+    if(/^(你好|您好|在吗|hi|hello|嗨|哈喽)[!！。~\s]*$/i.test(value))return '你好！你可以直接说背景和诉求，例如「我是某大学统计专业大二，想保研，也在准备数学建模竞赛」。也可以只说一句，我再往下问。';
+    if(/考研|出国|就业|工作|实习了/.test(value)&&!/保研|推免/.test(value+studentBG.raw)){/* 不阻断，仅记录 */}
     studentBG.raw=(studentBG.raw ? studentBG.raw+'\n' : '')+value;
     studentBG.raw=studentBG.raw.slice(-3500);
     studentBG.grade=detectGrade(value)||studentBG.grade||detectGrade(studentBG.raw);
     studentBG.goals=[...new Set([...(studentBG.goals||[]),...detectGoals(value)])];
     studentBG.updatedAt=new Date().toISOString();persistBG();
-    return inferNextQuestion();
+    return inferNextQuestion(value);
   }
   function aiMessagesHtml(){
-    return messages.slice(-18).map(m=>`<div class="tl-v2-msg ${m.who==='me'?'mine':'bot'}">${H(m.text)}</div>`).join('');
+    return messages.slice(-18).map(m=>`<div class="tl-v2-msg ${m.who==='me'?'mine':'bot'}">${H(m.text)}</div>${m.card||''}`).join('');
   }
   function profileConfirmInline(){
     if(role!=='student')return '';
     const readyDraft=hasBackground(studentBG.raw)&&!!studentBG.grade&&studentBG.goals.length>0;
     if(studentBG.confirmed)return `<div class="tl-v3-confirmed"><span>✓ 档案已确认 · ${H(studentBG.grade)} · ${H(studentBG.goals.join(' / '))}</span><button onclick="go('#/me')">到「我的」看计划 ›</button></div>`;
     if(!studentBG.raw)return '';
-    return `<div class="tl-v3-check"><small>待确认的个人信息（仅本机保存）</small><p>${H(studentBG.raw)}</p><div class="tl-v3-check-tags"><span>${H(studentBG.grade||'年级待补充')}</span><span>${H(studentBG.goals.join(' / ')||'目标待补充')}</span></div><button ${readyDraft?'':'disabled'} onclick="confirmTongluBG()">${readyDraft?'确认 BG 与诉求，开启个性化规划':'补充年级 / 目标后可确认'}</button><small>AI 追问为本地规则演示，不是真实大模型推理。请勿填写真实敏感信息。</small></div>`;
+    return `<div class="tl-v3-check"><small>待确认的个人信息（仅本机保存）</small><p>${H(studentBG.raw)}</p><div class="tl-v3-check-tags"><span>${H(studentBG.grade||'年级待补充')}</span><span>${H(studentBG.goals.join(' / ')||'目标待补充')}</span></div><button ${readyDraft?'':'disabled'} onclick="confirmTongluBG()">${readyDraft?'确认 BG 与诉求，开启个性化规划':'补充年级 / 目标后可确认'}</button><small>追问由本地规则生成，不调用大模型，也不上传到服务器。请勿填写身份证号等敏感信息。</small></div>`;
   }
 
   const H = (s) => escapeTL(s);
@@ -70,22 +108,25 @@
   const origSaved = schoolSavedView;
   const origRecords = schoolRecordsView;
   const origOpenDrawer = openDrawer;
-  function demoLabel(){return '<span class="tl-v2-demo">交互演示 · 非真实登录</span>';}
+  function demoLabel(){return '<span class="tl-v2-demo">体验模式 · 未登录</span>';}
 
   function roleChoose(){
     return `<section class="tl-role-chooser">
       <div class="tl-role-identity"><img src="assets/tonglu-logo.svg" alt="同路 Logo" /><span>同 路</span><small>与你并肩，走向理想院校</small></div>
       <h1>请选择你的体验身份</h1><p>三个入口，一段共同的保研旅程。</p>
       ${[['student','学生','建立个人档案 · AI 辅助规划','graduation-cap'],['mentor','服务者','完善履历与服务 · 查看学生需求','users'],['guest','游客','先看看平台有什么，再决定是否加入','compass']].map(([r,n,d,i])=>`<button class="tl-role-card" onclick="selectTongluRole('${r}')"><span class="tl-role-icon">${r==='student'?'✦':r==='mentor'?'◇':'◌'}</span><span><b>${n}</b><small>${d}</small></span><span class="tl-role-arrow">›</span></button>`).join('')}
-      <p class="tl-role-legal">目前只切换演示角色，不验证账号身份、不提交个人资料至服务器。正式上线需要角色鉴权和数据保护。</p>
+      <p class="tl-role-legal">目前只切换体验角色，不验证账号身份、不提交个人资料至服务器。正式上线需要角色鉴权和数据保护。</p>
     </section>`;
   }
 
   function introAI(){
     const isGuest=role==='guest';const isMentor=role==='mentor';
     const hint=isGuest?'可以问我保研的基本流程、材料与常识。游客不提供个人匹配。':isMentor?'可以问我如何梳理辅导方向、设计服务流程；学生需求在「我的」工作台查看。':'直接说说你的背景与诉求。我会根据已知信息逐个补问，等你确认后再开启个性化功能。';
+    const starts=isGuest?['保研流程大概是什么样','夏令营和预推免有什么区别','需要准备哪些材料']
+      :isMentor?['怎么把辅导方向写清楚','服务流程应该怎么设计','如何介绍自己的案例']
+      :['我是通信工程大三，排名 8/120，想保研','帮我看看现在最该补什么','有没有方向相近的学姐学长'];
     return `<section class="tl-v3-ai">
-      <div class="tl-v3-chatlog" id="tl-v2-chat" aria-live="polite">${messages.length?aiMessagesHtml():`<div class="tl-v3-welcome"><div class="tl-v3-orb">✦</div><h1>你好，欢迎来到同路</h1><p>${hint}</p></div>`}</div>
+      <div class="tl-v3-chatlog" id="tl-v2-chat" aria-live="polite">${messages.length?aiMessagesHtml():`<div class="tl-v3-welcome"><div class="tl-v3-orb">✦</div><h1>你好，欢迎来到同路</h1><p>${hint}</p><div class="tl-v3-starts">${starts.map(t=>`<button type="button" onclick="tlStart(${JSON.stringify(t).replace(/"/g,'&quot;')})">${H(t)}</button>`).join('')}</div></div>`}</div>
       ${profileConfirmInline()}
       <form class="tl-v3-form" onsubmit="sendTongluChat(event)"><textarea id="tl-v2-chat-input" maxlength="800" rows="2" aria-label="给同路 AI 助手输入消息" placeholder="${isGuest?'问问保研流程…':isMentor?'询问服务规划…':'自由描述你的 BG、目标或困惑…'}" required></textarea><button type="submit" aria-label="发送">↑</button></form>
       <div class="tl-v3-disclaimer">未接入真实大模型 · 不作院校录取预测 · 请勿输入敏感个人信息</div>
@@ -99,14 +140,14 @@
     /* 三位额外的虚构供给侧样例，只用于让不同专业用户观察推荐布局。
      不是平台已招募或已核验的服务者。 */
   const EXTRA_MENTORS = [
-    {id:'demo-stat',name:'许同学（演示）',verified:false,brief:'应用统计 / 数学建模方向 · 资料待核验',tags:['应用统计','数学建模','科研经历梳理','申请材料'],capacity:{u:3,l:1,h:0},check:[{k:'学历及去向',v:'演示资料 · 待核验'},{k:'辅导经验',v:'演示资料 · 待核验'}],services:[{name:'竞赛与研究经历梳理',desc:'内容和价格以实际服务方案为准',price:0}],rating:{score:'—',count:0},review:{text:'演示评价占位 · 暂无真实用户评价',meta:'请以正式核验记录为准'}},
-    {id:'demo-ai',name:'唐同学（演示）',verified:false,brief:'计算机 / 人工智能方向 · 资料待核验',tags:['计算机','人工智能','科研经历梳理','竞赛材料'],capacity:{u:3,l:1,h:0},check:[{k:'学历及去向',v:'演示资料 · 待核验'},{k:'辅导经验',v:'演示资料 · 待核验'}],services:[{name:'AI 项目和竞赛材料整理',desc:'内容和价格以实际服务方案为准',price:0}],rating:{score:'—',count:0},review:{text:'演示评价占位 · 暂无真实用户评价',meta:'请以正式核验记录为准'}},
-    {id:'demo-finance',name:'林同学（演示）',verified:false,brief:'金融商科 / 申请材料方向 · 资料待核验',tags:['金融','商科','材料诊断','面试辅导'],capacity:{u:3,l:1,h:0},check:[{k:'学历及去向',v:'演示资料 · 待核验'},{k:'辅导经验',v:'演示资料 · 待核验'}],services:[{name:'金融方向材料诊断',desc:'内容和价格以实际服务方案为准',price:0}],rating:{score:'—',count:0},review:{text:'演示评价占位 · 暂无真实用户评价',meta:'请以正式核验记录为准'}}
+    {id:'demo-stat',name:'许同学',verified:false,brief:'应用统计 / 数学建模方向 · 资料待核验',tags:['应用统计','数学建模','科研经历梳理','申请材料'],capacity:{u:3,l:1,h:0},check:[{k:'学历及去向',v:'本人申报 · 待核验'},{k:'辅导经验',v:'本人申报 · 待核验'}],services:[{name:'竞赛与研究经历梳理',desc:'内容和价格以实际服务方案为准',price:0}],rating:{score:'—',count:0},review:{text:'这位服务者还没有收到评价。',meta:'评价在服务完成后才可以提交'}},
+    {id:'demo-ai',name:'唐同学',verified:false,brief:'计算机 / 人工智能方向 · 资料待核验',tags:['计算机','人工智能','科研经历梳理','竞赛材料'],capacity:{u:3,l:1,h:0},check:[{k:'学历及去向',v:'本人申报 · 待核验'},{k:'辅导经验',v:'本人申报 · 待核验'}],services:[{name:'AI 项目和竞赛材料整理',desc:'内容和价格以实际服务方案为准',price:0}],rating:{score:'—',count:0},review:{text:'这位服务者还没有收到评价。',meta:'评价在服务完成后才可以提交'}},
+    {id:'demo-finance',name:'林同学',verified:false,brief:'金融商科 / 申请材料方向 · 资料待核验',tags:['金融','商科','材料诊断','面试辅导'],capacity:{u:3,l:1,h:0},check:[{k:'学历及去向',v:'本人申报 · 待核验'},{k:'辅导经验',v:'本人申报 · 待核验'}],services:[{name:'金融方向材料诊断',desc:'内容和价格以实际服务方案为准',price:0}],rating:{score:'—',count:0},review:{text:'这位服务者还没有收到评价。',meta:'评价在服务完成后才可以提交'}}
   ];
   M.providers.push(...EXTRA_MENTORS.filter(p=>!M.providers.some(v=>v.id===p.id)));
 
   const DEMAND = [
-    {id:'s01',major:'金融 / 商科',needs:'院校规划、个人陈述修改',stage:'准备材料',tags:['材料诊断','院校规划'],about:'希望了解申请方向与材料结构；个人信息已作匿名化演示。'},
+    {id:'s01',major:'金融 / 商科',needs:'院校规划、个人陈述修改',stage:'准备材料',tags:['材料诊断','院校规划'],about:'希望了解申请方向与材料结构；个人信息已作匿名化处理。'},
     {id:'s02',major:'计算机 / 人工智能',needs:'科研经历梳理、面试准备',stage:'院校调研',tags:['科研经历','面试辅导'],about:'主要关注科研经历表达与复试沟通的准备方式。'},
     {id:'s03',major:'数学 / 统计',needs:'申请材料、研究计划',stage:'建立院校清单',tags:['材料诊断','院校规划'],about:'希望梳理竞赛项目与研究经历之间的关联。'},
     {id:'s04',major:'工程 / 自动化',needs:'竞赛经历、科研规划',stage:'完善 BG',tags:['科研经历','竞赛'],about:'需要帮助评估项目经历的呈现方式和材料完整度。'}
@@ -122,8 +163,8 @@
       <div class="tl-v2-kicker">MENTOR WORKSPACE</div><h1 class="tl-v2-headline">发现适合你辅导的学生需求</h1><p class="tl-v2-sub">先展示匿名需求，再决定是否提供服务。这里不展示学生个人隐私或虚构的匹配百分比。</p>
       <div class="tl-v2-mini-profile"><span class="tl-v2-avatar">${H((mentorDraft.name||'服').slice(0,1))}</span><div><b>${H(mentorDraft.name||'完善你的服务者资料')}</b><small>${H(mentorDraft.destination||'去向院校待填写')} · ${H(mentorDraft.services||'服务方向待填写')}</small></div><button onclick="go('#/mentorProfile')">编辑 ›</button></div>
       <div class="tl-v2-filters">${['全部','院校规划','材料诊断','科研经历','面试辅导','竞赛'].map(t=>`<button class="${mentorFilter===t?'on':''}" onclick="setMentorDemandFilter('${t}')">${t}</button>`).join('')}</div>
-      <div class="tl-v2-panel-title"><h3>学生需求广场</h3><span>${list.length} 条演示需求</span></div>
-      ${list.map(d=>`<article class="tl-v2-demand"><div class="tl-v2-panel-title"><b>匿名需求 · ${H(d.major)}</b><span>${H(d.stage)}</span></div><h3>${H(d.needs)}</h3><div class="tl-v2-reason">${H(demandReasons(d))}</div><div class="tl-v2-demand-actions"><button onclick="showTongluDemand('${d.id}')">了解需求</button><button onclick="go('#/mentorProfile')">完善服务资料 ›</button></div></article>`).join('')||'<div class="tl-v2-empty">暂无符合筛选条件的演示需求。</div>'}
+      <div class="tl-v2-panel-title"><h3>学生需求广场</h3><span>${list.length} 条待接需求</span></div>
+      ${list.map(d=>`<article class="tl-v2-demand"><div class="tl-v2-panel-title"><b>匿名需求 · ${H(d.major)}</b><span>${H(d.stage)}</span></div><h3>${H(d.needs)}</h3><div class="tl-v2-reason">${H(demandReasons(d))}</div><div class="tl-v2-demand-actions"><button onclick="showTongluDemand('${d.id}')">了解需求</button><button onclick="go('#/mentorProfile')">完善服务资料 ›</button></div></article>`).join('')||'<div class="tl-v2-empty">暂无符合筛选条件的待接需求。</div>'}
       <section class="tl-v2-panel"><div class="tl-v2-panel-title"><h3>服务工作台</h3><button onclick="go('#/workbench')">查看原型后台 ›</button></div><div class="tl-v2-stats"><span><strong>—</strong><small>真实完成服务数</small></span><span><strong>—</strong><small>待处理申请</small></span><span><strong>${H(mentorDraft.slots)}</strong><small>自设可接单名额</small></span></div><p class="tl-v2-sub">真实服务次数、预约记录与评价需从经过授权的服务订单后台计算；这里暂不虚构业绩。</p></section>
       <div class="tl-v2-footnote">以上需求均为匿名虚构样例，当前不支持真实联系学生或接单。</div>
     </div>`;
@@ -132,16 +173,16 @@
     return `<div class="page tl-v2-page"><div class="tl-v2-kicker">MENTOR PROFILE</div><h1 class="tl-v2-headline">完善服务者资料</h1><p class="tl-v2-sub">未来用于学生筛选、资质核验和服务展示。当前只保存在本机浏览器。</p>
       <form class="tl-v2-profile-form" onsubmit="saveTongluMentor(event)">
       ${[['name','展示姓名或称呼','例如：陈同学'],['school','本科院校','例如：天津大学'],['major','本科专业','例如：金融学'],['destination','升学去向','例如：复旦大学金融专硕'],['services','可提供的服务','例如：材料诊断、科研经历、院校规划'],['bio','奖项、科研与辅导经验','请填写真实经历，未经核验不显示认证']].map(([id,label,placeholder])=>`<label>${label}${id==='bio'?`<textarea name="${id}" maxlength="300" rows="4" placeholder="${placeholder}">${H(mentorDraft[id])}</textarea>`:`<input name="${id}" maxlength="120" placeholder="${placeholder}" value="${H(mentorDraft[id])}" />`}</label>`).join('')}
-      <label>自设可接单名额（演示）<select name="slots">${['0','1','2','3','4','5'].map(v=>`<option value="${v}" ${mentorDraft.slots===v?'selected':''}>${v} 人</option>`).join('')}</select></label>
+      <label>自设可接单名额<select name="slots">${['0','1','2','3','4','5'].map(v=>`<option value="${v}" ${mentorDraft.slots===v?'selected':''}>${v} 人</option>`).join('')}</select></label>
       <button class="tl-v2-main-button" type="submit">保存服务者资料</button>
       </form><div class="tl-v2-footnote">身份、学历、论文、辅导经历需后台核验；填写资料不代表已认证。</div>
-      <button class="tl-v2-plain-button" onclick="go('#/workbench')">查看原服务者工作台（演示） ›</button>
+      <button class="tl-v2-plain-button" onclick="go('#/workbench')">查看服务者工作台 ›</button>
     </div>`;
   }
 
-    function guestSchools(){return `<div class="page tl-v2-page"><div class="tl-v2-kicker">CAMPUS PREVIEW</div><h1 class="tl-v2-headline">院校资讯 · 游客预览</h1><p class="tl-v2-sub">只展示少量公开演示信息。官方报名时间和资格要求需以学校公告为准。</p>${M.notices.slice(0,2).map(n=>`<div class="tl-v2-guest-card"><b>${H(n.title)}</b><small>${H(n.source)} · ${H(n.status)}</small><button onclick="needTongluSignIn()">查看详情与收藏 ›</button></div>`).join('')}<button class="tl-v2-main-button" onclick="needTongluSignIn()">登录查看全部院校资讯</button></div>`;}
-  function guestProviders(){return `<div class="page tl-v2-page"><div class="tl-v2-kicker">MENTOR PREVIEW</div><h1 class="tl-v2-headline">服务者 · 游客预览</h1><p class="tl-v2-sub">仅可预览少量演示服务者，详细履历、筛选和收藏需要登录。</p>${M.providers.slice(0,2).map(p=>`<div class="tl-v2-guest-card"><b>${H(p.name)}</b><small>${H(p.brief)} · ${H(p.tags.join(' / '))}</small><button onclick="needTongluSignIn()">查看详情 ›</button></div>`).join('')}<button class="tl-v2-main-button" onclick="needTongluSignIn()">登录查看更多服务者</button></div>`;}
-  function mentorMe(){return `<div class="page tl-v2-page"><div class="tl-v2-kicker">MY SERVICE SPACE</div><h1 class="tl-v2-headline">我的服务空间</h1><p class="tl-v2-sub">服务者也可以浏览其他同行的公开资料；收藏不会影响排序。</p><div class="tl-v2-panel"><button class="tl-v2-link-row" onclick="go('#/mentorProfile')">我的个人信息与服务资料 <span>编辑 ›</span></button><button class="tl-v2-link-row" onclick="go('#/mentorDemands')">学生需求广场 <span>查看需求 ›</span></button><button class="tl-v2-link-row" onclick="go('#/workbench')">服务工作台 <span>演示 ›</span></button><button class="tl-v2-link-row" onclick="go('#/messages')">消息中心 <span>暂未接入真实咨询 ›</span></button><button class="tl-v2-link-row" onclick="S.providerView='saved';go('#/providers')">收藏的其他服务者 <span>${TL.savedMentors.length} 位 ›</span></button><button class="tl-v2-link-row" onclick="go('#/admin')">管理后台界面 <span>演示 ›</span></button></div><div class="tl-v2-footnote">正式版将分别配置服务者端和后台权限；原型内的演示入口并非真实授权。</div></div>`;}
+    function guestSchools(){return `<div class="page tl-v2-page"><div class="tl-v2-kicker">CAMPUS PREVIEW</div><h1 class="tl-v2-headline">院校资讯 · 游客预览</h1><p class="tl-v2-sub">只展示少量公开信息。官方报名时间和资格要求需以学校公告为准。</p>${M.notices.slice(0,2).map(n=>`<div class="tl-v2-guest-card"><b>${H(n.title)}</b><small>${H(n.source)} · ${H(n.status)}</small><button onclick="needTongluSignIn()">查看详情与收藏 ›</button></div>`).join('')}<button class="tl-v2-main-button" onclick="needTongluSignIn()">登录查看全部院校资讯</button></div>`;}
+  function guestProviders(){return `<div class="page tl-v2-page"><div class="tl-v2-kicker">MENTOR PREVIEW</div><h1 class="tl-v2-headline">服务者 · 游客预览</h1><p class="tl-v2-sub">仅可预览少量服务者，完整履历、筛选和收藏需要登录。</p>${M.providers.slice(0,2).map(p=>`<div class="tl-v2-guest-card"><b>${H(p.name)}</b><small>${H(p.brief)} · ${H(p.tags.join(' / '))}</small><button onclick="needTongluSignIn()">查看详情 ›</button></div>`).join('')}<button class="tl-v2-main-button" onclick="needTongluSignIn()">登录查看更多服务者</button></div>`;}
+  function mentorMe(){return `<div class="page tl-v2-page"><div class="tl-v2-kicker">MY SERVICE SPACE</div><h1 class="tl-v2-headline">我的服务空间</h1><p class="tl-v2-sub">服务者也可以浏览其他同行的公开资料；收藏不会影响排序。</p><div class="tl-v2-panel"><button class="tl-v2-link-row" onclick="go('#/mentorProfile')">我的个人信息与服务资料 <span>编辑 ›</span></button><button class="tl-v2-link-row" onclick="go('#/mentorDemands')">学生需求广场 <span>查看需求 ›</span></button><button class="tl-v2-link-row" onclick="go('#/workbench')">服务工作台 <span>进入 ›</span></button><button class="tl-v2-link-row" onclick="go('#/messages')">消息中心 <span>暂未接入真实咨询 ›</span></button><button class="tl-v2-link-row" onclick="S.providerView='saved';go('#/providers')">收藏的其他服务者 <span>${TL.savedMentors.length} 位 ›</span></button><button class="tl-v2-link-row" onclick="go('#/admin')">管理后台 <span>进入 ›</span></button></div><div class="tl-v2-footnote">服务者端与后台将分别配置权限；当前入口不代表真实授权。</div></div>`;}
   function guestMe(){return `<div class="page tl-v2-page"><h1 class="tl-v2-headline">加入同路</h1><p class="tl-v2-sub">登录学生身份可管理投递与收藏；服务者身份可维护履历和服务项目。</p><button class="tl-v2-main-button" onclick="go('#/choose')">选择体验身份</button></div>`;}
 
   function makeSuggestedTasks(){
@@ -191,17 +232,17 @@
       ${timelineView()}
       <section class="tl-v3-card"><h3>我的收藏与投递</h3><button class="tl-v2-link-row" onclick="S.schoolView='saved';go('#/school')">院校收藏 <span>${TL.savedSchools.length+TL.customSchools.length} 条 ›</span></button><button class="tl-v2-link-row" onclick="S.schoolView='records';go('#/school')">投递记录本 <span>${TL.applications.length} 条 ›</span></button><button class="tl-v2-link-row" onclick="S.providerView='saved';go('#/providers')">服务者收藏 <span>${TL.savedMentors.length} 位 ›</span></button></section>
       <section class="tl-v3-card"><h3>消息与咨询</h3><button class="tl-v2-link-row" onclick="go('#/messages')">消息中心 <span>咨询 / 订单 / 系统 ›</span></button><p class="tl-v3-desc">将原售前沟通入口统一收进消息中心；本地咨询草稿未发送至任何真实服务者。</p></section>
-      <section class="tl-v3-card"><h3>原型业务流程</h3><p class="tl-v3-desc">售前沟通、方案确认、付款和交付的演示功能仍保留。</p><button class="tl-v3-softbtn" onclick="go('#/presale')">查看业务流程 ›</button></section>
+      <section class="tl-v3-card"><h3>原型业务流程</h3><p class="tl-v3-desc">售前沟通、方案确认、付款与交付的流程可完整走通。</p><button class="tl-v3-softbtn" onclick="go('#/presale')">查看业务流程 ›</button></section>
       <div class="tl-v2-footnote">原型仅本地保存资料；正式版需接入真实账号与权限管理。请勿输入敏感身份、联系方式或未授权资料。</div>
     </div>`;
   }
   window.filterTongluPlan=function(c){planCategory=c;render();};
   window.updateTongluPlan=function(id,key,value){const item=planTasks[id]||{};item[key]=value;planTasks[id]=item;persistPlans();render();};
-  window.editTongluBG=function(){studentBG.confirmed=false;persistBG();messages.length=0;go('#/home');};
+  window.editTongluBG=function(){studentBG.confirmed=false;persistBG();messages.length=0;go('#/profile');};
   window.confirmTongluBG=function(){
-    if(!hasBackground(studentBG.raw)||!studentBG.grade||!studentBG.goals.length){toast('请先补充基本背景、年级和目标');return;}
-    studentBG.confirmed=true;studentBG.updatedAt=new Date().toISOString();persistBG();
-    messages.push({who:'bot',text:'已确认你的 BG 与诉求。现在「服务者」可查看 3 位优先推荐，「我的」可查看与你年级和目标相关的行动时间线。请留意：目前仍是规则演示，并未连接真实匹配模型。'});
+    if(!hasBackground(studentBG.raw)||!studentBG.grade||!studentBG.goals.length){toast('还差年级或目标，补充一句就行');return;}
+    studentBG.confirmed=true;studentBG.updatedAt=new Date().toISOString();persistBG();stripRecCards();
+    messages.push({who:'bot',text:'档案已确认。下面这几位是按你刚才说的方向排的，点开可以直接看履历；「我的」里也已经有对应你年级和目标的行动时间线。请注意：这是本地规则排序，不是录取概率或正式匹配分。',card:recCardHtml(false)});
     render();
   };
 
@@ -228,17 +269,17 @@
     const isStudent=role==='student';
     const showRecommendations=isStudent&&profileReady()&&S.providerView==='all'&&!S.providerSearch&&S.providerFilter==='全部';
     const recommendations=showRecommendations?[...M.providers].sort((a,b)=>recommendationWeight(b)-recommendationWeight(a)).slice(0,Math.min(3,M.providers.length)):[];
-    const recommendationsHtml=recommendations.length?`<section class="tl-v3-card tl-v3-recommend"><div class="tl-v3-section-head"><div><small>PERSONAL PICKS · 演示规则</small><h3>优先为你推荐</h3></div><span class="tl-v3-gold-label">${recommendations.length} 位</span></div><p class="tl-v3-desc">根据你确认的诉求与服务方向关键词初步排列，不代表真实匹配分数、身份核验或服务效果。</p>${recommendations.map(p=>`<div class="tl-v3-rec-row"><div class="tl-avatar">${H(p.name.slice(0,1))}</div><div><b>${H(p.name)}</b><small>${H(recommendationReason(p))}</small></div><button onclick="selectProvider('${p.id}')">详情 ›</button></div>`).join('')}</section>`:'';
+    const recommendationsHtml=recommendations.length?`<section class="tl-v3-card tl-v3-recommend"><div class="tl-v3-section-head"><div><small>PERSONAL PICKS · 本地规则</small><h3>优先为你推荐</h3></div><span class="tl-v3-gold-label">${recommendations.length} 位</span></div><p class="tl-v3-desc">根据你确认的诉求与服务方向关键词初步排列，不代表真实匹配分数、身份核验或服务效果。</p>${recommendations.map(p=>`<div class="tl-v3-rec-row"><div class="tl-avatar">${H(p.name.slice(0,1))}</div><div><b>${H(p.name)}</b><small>${H(recommendationReason(p))}</small></div><button onclick="selectProvider('${p.id}')">详情 ›</button></div>`).join('')}</section>`:'';
     return `<div class="page tl-v2-page"><div class="tl-v2-kicker">MENTOR COMMUNITY</div><h1 class="tl-v2-headline">${role==='mentor'?'看看其他同行的服务方向':'全部服务者'}</h1>
-      <p class="tl-v2-sub">按专业方向、服务内容和可核验资料选择。演示数据不展示匹配分数或录取概率。</p>
-      ${isStudent&&!profileReady()?`<div class="tl-v3-unmatched">目前展示的是全部服务者。确认 BG 和诉求后，才会出现针对你的优先推荐；现在不显示个人匹配度。<button onclick="go('#/home')">去首页填写 ›</button></div>`:''}
+      <p class="tl-v2-sub">按专业方向、服务内容和可核验资料选择。不展示匹配分数或录取概率。</p>
+      ${isStudent&&!profileReady()?`<div class="tl-v3-unmatched">还没有确认 BG。下面是按你已说的年级和目标做的粗排，补齐并确认后顺序会更贴合；任何时候都不显示个人匹配度或录取概率。<button onclick="go('#/home')">去首页补充 ›</button></div>`:''}
       ${recommendationsHtml}
       <div class="tl-switch"><button class="${S.providerView==='all'?'on':''}" onclick="setProviderView('all')">全部服务者</button><button class="${S.providerView==='saved'?'on':''}" onclick="setProviderView('saved')">♡ 已收藏 (${TL.savedMentors.length})</button></div>
       <form class="tl-search" onsubmit="searchMentors(event)"><input id="tl-provider-search" aria-label="搜索服务者" placeholder="搜索专业、服务或姓名" value="${H(S.providerSearch)}" /><button type="submit">搜索</button></form>
       <div class="tl-chips">${['全部','材料诊断','研究经历','竞赛'].map(t=>`<button class="${S.providerFilter===t?'on':''}" onclick="setProviderFilter('${t}')">${t}</button>`).join('')}</div>
-      <div class="tl-v2-panel-title"><h3>服务者资料</h3><span>${list.length} 位演示样例</span></div>
+      <div class="tl-v2-panel-title"><h3>服务者资料</h3><span>${list.length} 位</span></div>
       ${list.length?list.map(p=>`<article class="tl-mentor-card"><div class="tl-mentor-header"><span class="tl-avatar">${H(p.name.slice(0,1))}</span><div class="grow"><b>${H(p.name)}</b><div class="tiny dim mt6">${H(p.brief)}</div></div><button aria-label="${isMentorSaved(p.id)?'取消收藏':'收藏服务者'}" class="tl-heart ${isMentorSaved(p.id)?'on':''}" onclick="toggleMentorFavorite('${p.id}')">${isMentorSaved(p.id)?'♥':'♡'}</button></div>
-      <div class="tl-v2-reason">${H(showRecommendations?recommendationReason(p):'擅长：'+p.tags.join('、'))} · 资料待核验</div><div class="tl-tags">${p.tags.map(t=>`<span>${H(t)}</span>`).join('')}</div><div class="tl-mentor-bottom"><span>核验状态：演示 / 待核实</span><button onclick="selectProvider('${p.id}')">查看履历 ›</button></div></article>`).join(''):`<div class="tl-v2-empty">暂无符合条件的收藏或服务者。<button onclick="S.providerView='all';S.providerFilter='全部';S.providerSearch='';render()">重置筛选</button></div>`}
+      <div class="tl-v2-reason">${H(showRecommendations?recommendationReason(p):'擅长：'+p.tags.join('、'))} · 资料待核验</div><div class="tl-tags">${p.tags.map(t=>`<span>${H(t)}</span>`).join('')}</div><div class="tl-mentor-bottom"><span>资料状态：个人申报 · 待核验</span><button onclick="selectProvider('${p.id}')">查看履历 ›</button></div></article>`).join(''):`<div class="tl-v2-empty">暂无符合条件的收藏或服务者。<button onclick="S.providerView='all';S.providerFilter='全部';S.providerSearch='';render()">重置筛选</button></div>`}
       <div class="tl-v2-footnote">排序暂为示例资料展示顺序，不作录取预测或服务效果保证。</div></div>`;
   }
   function addPlanBtn(id,label,isNotice){return `<button class="tl-v2-secondary" onclick="planTongluSchool('${id}',${isNotice?'true':'false'})">加入投递计划</button>`;}
@@ -268,8 +309,8 @@
   PAGES.guestSchools=guestSchools;
   PAGES.guestProviders=guestProviders;
   PAGES.guestMe=guestMe;
-  PAGES.profile=function(){return `<div class="page tl-v2-page"><div class="tl-v3-card"><h3>BG 建档已改为对话方式</h3><p>无需填写多项表单。直接在首页自由描述你的学校、专业、年级和诉求，由演示助手逐步追问。</p><button class="tl-v3-softbtn" onclick="go('#/home')">去首页对话建档 ›</button></div></div>`;};
-  PAGES.diagnosis=function(){if(!profileReady())return `<div class="page tl-v2-page"><div class="tl-v3-card"><h3>请先确认 BG 与诉求</h3><p>未建档无法查看个人定位分析，也不会显示个人匹配度。</p><button class="tl-v3-softbtn" onclick="go('#/home')">去 AI 对话建档 ›</button></div></div>`;return `<div class="page tl-v2-page"><div class="tl-v3-card"><div class="tl-v3-section-head"><div><small>PERSONAL INSIGHTS · 演示</small><h3>你的背景与行动建议</h3></div></div><p class="tl-v3-bgtext">${H(studentBG.raw)}</p><p class="tl-v3-desc">暂不展示量化匹配度、录取概率或未经验证的优劣评价。可以到服务者列表了解与你诉求相关的辅导方向，到「我的」查看行动时间线。</p><button class="tl-v3-softbtn" onclick="go('#/providers')">浏览服务者 ›</button></div></div>`;};
+  PAGES.profile=function(){return `<div class="page tl-v2-page"><div class="tl-v3-card"><h3>BG 建档已改为对话方式</h3><p>无需填写多项表单。直接在首页自由描述你的学校、专业、年级和诉求，由对话助手逐步追问。</p><button class="tl-v3-softbtn" onclick="go('#/home')">去首页对话建档 ›</button></div></div>`;};
+  PAGES.diagnosis=function(){if(!profileReady())return `<div class="page tl-v2-page"><div class="tl-v3-card"><h3>请先确认 BG 与诉求</h3><p>未建档无法查看个人定位分析，也不会显示个人匹配度。</p><button class="tl-v3-softbtn" onclick="go('#/home')">去 AI 对话建档 ›</button></div></div>`;return `<div class="page tl-v2-page"><div class="tl-v3-card"><div class="tl-v3-section-head"><div><small>PERSONAL INSIGHTS</small><h3>你的背景与行动建议</h3></div></div><p class="tl-v3-bgtext">${H(studentBG.raw)}</p><p class="tl-v3-desc">暂不展示量化匹配度、录取概率或未经验证的优劣评价。可以到服务者列表了解与你诉求相关的辅导方向，到「我的」查看行动时间线。</p><button class="tl-v3-softbtn" onclick="go('#/providers')">浏览服务者 ›</button></div></div>`;};
   PAGES.home=studentHome;
   PAGES.me=studentMe;
   PAGES.providers=providersV2;
@@ -296,10 +337,10 @@
     if(name==='messages'||name==='conversation')return '';
     if(name==='provider'){
       const p=provider();const full=remain(p)===0;
-      return `<button class="btn line" onclick="toggleMentorFavorite('${p.id}')">${isMentorSaved(p.id)?'♥ 已收藏':'♡ 收藏'}</button><button class="btn primary wide" onclick="${full?"go('#/providers');showTongluNext('该演示服务者当前已满额，可查看其他服务者','查看全部服务者','providers')":"startTongluConsult('"+p.id+"')"}">${full?'查看其他服务者':'咨询该服务者 ›'}</button>`;
+      return `<button class="btn line" onclick="toggleMentorFavorite('${p.id}')">${isMentorSaved(p.id)?'♥ 已收藏':'♡ 收藏'}</button><button class="btn primary wide" onclick="${full?"go('#/providers');showTongluNext('该服务者当前已满额，可查看其他服务者','查看全部服务者','providers')":"startTongluConsult('"+p.id+"')"}">${full?'查看其他服务者':'咨询该服务者 ›'}</button>`;
     }
     if(name==='noticeDetail')return `<button class="btn line" onclick="toggleSchoolFavorite(S.currentNoticeId)">${isSchoolSaved(S.currentNoticeId)?'♥ 已收藏':'♡ 收藏院校'}</button><button class="btn primary wide" onclick="planTongluSchool(S.currentNoticeId,true)">加入投递计划 ›</button>`;
-    if(name==='presale')return `<button class="btn line" onclick="go('#/messages')">消息中心</button><button class="btn primary wide" onclick="go('#/proposal')">查看演示方案 ›</button>`;
+    if(name==='presale')return `<button class="btn line" onclick="go('#/messages')">消息中心</button><button class="btn primary wide" onclick="go('#/proposal')">查看方案 ›</button>`;
     if(name==='delivery'&&role==='student')return `<button class="btn line" onclick="go('#/messages')">消息 / 服务记录</button><button class="btn primary wide" onclick="go('#/me')">回到我的 ›</button>`;
     return origActionbar(name);
   };
@@ -329,23 +370,23 @@
     let inner='';
     if(role==='mentor')inner=`<div class="tl-v4-empty">服务者消息尚未接入真实后台，当前没有可处理的用户咨询。<button onclick="go('#/mentorMe')">返回服务者空间 ›</button></div>`;
     else if(messageView==='咨询')inner=consults.length?consults.map(c=>{
-      const p=providerForChat(c);return `<button class="tl-v4-thread" onclick="openTongluConversation('${H(c.id)}')"><span class="tl-v4-thread-icon">${H((p?.name||'服').slice(0,1))}</span><span><b>${H(p?.name||'演示服务者')}</b><small>${c.entries?.length?'已保存 '+c.entries.length+' 条本地咨询草稿':'待撰写咨询内容'} · 未发送给真实服务者</small></span><span>›</span></button>`;
+      const p=providerForChat(c);return `<button class="tl-v4-thread" onclick="openTongluConversation('${H(c.id)}')"><span class="tl-v4-thread-icon">${H((p?.name||'服').slice(0,1))}</span><span><b>${H(p?.name||'服务者')}</b><small>${c.entries?.length?'已保存 '+c.entries.length+' 条本地咨询草稿':'待撰写咨询内容'} · 未发送给真实服务者</small></span><span>›</span></button>`;
     }).join(''):`<div class="tl-v4-empty">还没有咨询记录。可以从服务者详情点击「咨询该服务者」。<button onclick="go('#/providers')">去找服务者 ›</button></div>`;
-    else if(messageView==='订单')inner=`<div class="tl-v4-empty">当前没有真实订单消息，原有服务方案与交付页面仅供流程演示。<button onclick="go('#/presale')">查看售前流程演示 ›</button></div>`;
+    else if(messageView==='订单')inner=`<div class="tl-v4-empty">当前没有订单消息。服务方案与交付页面可以走通流程。<button onclick="go('#/presale')">查看售前流程 ›</button></div>`;
     else inner=`<div class="tl-v4-empty">暂无系统消息。报名节点请以院校官方通知及个人设置的截止日为准。<button onclick="go('#/me')">查看我的行动时间线 ›</button></div>`;
-    return `<div class="page tl-v2-page tl-v4-message-page"><div class="tl-v2-kicker">MESSAGE CENTER</div><h1 class="tl-v2-headline">消息中心</h1><p class="tl-v2-sub">咨询、订单与系统通知都在这里。当前仅为本地流程演示，不会向外部发送消息。</p><div class="tl-v4-message-tabs">${cats.map(cat=>`<button class="${messageView===cat?'on':''}" onclick="setTongluMessageView('${cat}')">${cat}</button>`).join('')}</div>${inner}</div>`;
+    return `<div class="page tl-v2-page tl-v4-message-page"><div class="tl-v2-kicker">MESSAGE CENTER</div><h1 class="tl-v2-headline">消息中心</h1><p class="tl-v2-sub">咨询、订单与系统通知都在这里。当前消息只保存在本机，不会发送给外部。</p><div class="tl-v4-message-tabs">${cats.map(cat=>`<button class="${messageView===cat?'on':''}" onclick="setTongluMessageView('${cat}')">${cat}</button>`).join('')}</div>${inner}</div>`;
   }
   function conversationCenter(){
     const c=currentConsult();if(!c)return `<div class="page tl-v2-page"><div class="tl-v4-empty">没有找到这段咨询草稿。<button onclick="go('#/messages')">返回消息中心 ›</button></div></div>`;
     const p=providerForChat(c);
-    return `<div class="page tl-v2-page tl-v4-message-page"><div class="tl-v2-kicker">LOCAL DRAFT</div><h1 class="tl-v2-headline">${H(p?.name||'演示服务者')} · 咨询草稿</h1><p class="tl-v2-sub">咨询内容仅保存在当前浏览器，尚未发给服务者。正式消息系统上线后才能实际沟通。</p><div class="tl-v4-chat-drafts">${(c.entries||[]).length?c.entries.map(e=>`<div class="tl-v4-draft"><small>我 · 本地保存</small><p>${H(e.text)}</p></div>`).join(''):'<div class="tl-v4-empty">描述你想获得哪些辅导帮助，例如材料诊断、研究方向建议或面试训练。</div>'}</div><form class="tl-v4-compose" onsubmit="saveTongluDraft(event)"><textarea name="draft" aria-label="咨询草稿" rows="3" maxlength="500" placeholder="写下想咨询的问题…" required></textarea><button type="submit">保存到消息中心</button></form><button class="tl-v3-softbtn" onclick="go('#/messages')">返回全部消息 ›</button></div>`;
+    return `<div class="page tl-v2-page tl-v4-message-page"><div class="tl-v2-kicker">LOCAL DRAFT</div><h1 class="tl-v2-headline">${H(p?.name||'服务者')} · 咨询草稿</h1><p class="tl-v2-sub">咨询内容仅保存在当前浏览器，尚未发给服务者。正式消息系统上线后才能实际沟通。</p><div class="tl-v4-chat-drafts">${(c.entries||[]).length?c.entries.map(e=>`<div class="tl-v4-draft"><small>我 · 本地保存</small><p>${H(e.text)}</p></div>`).join(''):'<div class="tl-v4-empty">描述你想获得哪些辅导帮助，例如材料诊断、研究方向建议或面试训练。</div>'}</div><form class="tl-v4-compose" onsubmit="saveTongluDraft(event)"><textarea name="draft" aria-label="咨询草稿" rows="3" maxlength="500" placeholder="写下想咨询的问题…" required></textarea><button type="submit">保存到消息中心</button></form><button class="tl-v3-softbtn" onclick="go('#/messages')">返回全部消息 ›</button></div>`;
   }
   window.setTongluMessageView=function(v){messageView=v;render();};
   window.openTongluConversation=function(id){activeConversation=id;go('#/conversation');};
   window.startTongluConsult=function(providerId){
     if(role!=='student'){toast('学生身份才能建立咨询草稿');return;}
     const p=M.providers.find(x=>x.id===providerId);if(!p){toast('没有找到服务者');return;}
-    if(remain(p)===0){showNext('演示服务者当前已满额，请查看其他服务者','浏览服务者',()=>go('#/providers'));return;}
+    if(remain(p)===0){showNext('该服务者当前已满额，请查看其他服务者','浏览服务者',()=>go('#/providers'));return;}
     let c=consults.find(x=>x.providerId===providerId);
     if(!c){c={id:'chat-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),providerId,entries:[],updatedAt:new Date().toISOString()};consults.unshift(c);saveConsults();}
     activeConversation=c.id;go('#/conversation');
@@ -393,7 +434,7 @@
       const btn=document.createElement('button');btn.className='tl-v2-switch-role';btn.textContent=roleName()+' · 切换';btn.addEventListener('click',()=>go('#/choose'));
       nav.appendChild(btn);
     }
-    document.getElementById('fabDemo').style.display=(role==='guest'||key==='choose')?'none':'';
+    const _fab=document.getElementById('fabDemo');if(_fab)_fab.style.display=(role==='guest'||key==='choose')?'none':'';
     if(role==='guest'||key==='choose')document.querySelectorAll('#actionbar button').forEach(b=>b.disabled=true);
     if(key==='choose') {tab.className='tabbar hidden';document.getElementById('actionbar').innerHTML='';}
   }
@@ -416,22 +457,30 @@
   // Replace original hash-change listener with role-aware guard instead of rendering twice.
   window.removeEventListener('hashchange',origRender);
   window.addEventListener('hashchange',renderV3);
-  openDrawer=function(){if(role==='guest'||!role){toast('游客体验不包含内部演示流程，请先选择学生或服务者身份');return;}origOpenDrawer();};
+  openDrawer=function(){if(role==='guest'||!role){toast('游客体验不包含内部流程，请先选择学生或服务者身份');return;}origOpenDrawer();};
   // The original script's hashchange listener invokes the reassigned render binding.
   window.selectTongluRole=function (r){if(!['student','mentor','guest'].includes(r))return;messages.length=0;chatSerial+=1;chatBusy=false;goRole(r);};
+  window.tlStart=function(text){
+    const field=document.getElementById('tl-v2-chat-input');if(!field)return;
+    field.value=String(text||'').slice(0,800);
+    const form=field.closest('form');
+    if(form&&typeof form.requestSubmit==='function')form.requestSubmit();else field.focus();
+  };
   window.sendTongluChat=function(event){
     event.preventDefault();if(chatBusy)return;
     const field=document.getElementById('tl-v2-chat-input');if(!field)return;
     const value=field.value.trim().slice(0,800);if(!value)return;
     messages.push({who:'me',text:value});
     const currentRole=role;
-    const reply=currentRole==='guest'?'这里是保研常识演示：可以提前准备成绩排名证明、个人陈述和目标项目清单；实际时间以院校官方通知为准。游客不提供个人匹配。':
-      currentRole==='mentor'?'这里是服务者端的本地 AI 演示。你可以在「我的」进入学生需求广场、管理服务方向和服务工作台；真实需求匹配和订单管理仍需后端支持。':handleStudentBG(value);
-    messages.push({who:'bot',text:'正在整理演示回复…'});
+    const parse=r=>typeof r==='string'?{text:r}:r;
+    const guestReply=parse('这里是保研常识：可以提前准备成绩排名证明、个人陈述和目标项目清单；实际时间以院校官方通知为准。游客不提供个人匹配。如需看服务者，请先选择学生身份并填写 BG。');
+    const mentorReply=parse('服务者端可以这样推进：先在「我的」完善服务方向，再到学生需求广场看匿名需求；真实需求匹配和订单管理仍需后端支持。');
+    const reply=currentRole==='guest'?guestReply:currentRole==='mentor'?mentorReply:parse(handleStudentBG(value));
+    messages.push({who:'bot',text:'正在整理…'});
     field.value='';chatBusy=true;
     const serial=++chatSerial;
     const log=document.getElementById('tl-v2-chat');if(log){log.innerHTML=aiMessagesHtml();log.scrollTop=log.scrollHeight;}
-    setTimeout(()=>{if(serial!==chatSerial||role!==currentRole)return;messages[messages.length-1].text=reply;chatBusy=false;render();const c=document.getElementById('tl-v2-chat');if(c)c.scrollTop=c.scrollHeight;},440);
+    setTimeout(()=>{if(serial!==chatSerial||role!==currentRole)return;stripRecCards();const last=messages[messages.length-1];last.text=reply.text;if(reply.card)last.card=reply.card;chatBusy=false;render();const c=document.getElementById('tl-v2-chat');if(c)c.scrollTop=c.scrollHeight;},440);
   };
     window.setMentorDemandFilter=function(v){mentorFilter=v;render();};
   window.showTongluDemand=function(id){const d=DEMAND.find(x=>x.id===id);if(!d)return;toast(`${d.major}：${d.about}`);};
