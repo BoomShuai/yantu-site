@@ -178,6 +178,13 @@
     return list;
   }
 
+  // 数据集是静态快照，把「整理时间」显式写出来，避免让人以为天天在自动同步
+  function updatedLabel() {
+    var raw = (window.TL_SCHOOL_NEWS && window.TL_SCHOOL_NEWS.fetchedAt) || "";
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw));
+    return m ? " · 整理于 " + m[2] + "-" + m[3] : "";
+  }
+
   function cardHTML(n) {
     var meta = ['<span class="v7-cat">' + E(n.category) + "</span>"];
     if (n.status === "时间待公布") {
@@ -232,7 +239,7 @@
       '<div class="tl-chips">' + chips + "</div>" +
       '<div class="v7-schools">' + schChips + "</div>" +
       "</div>" +
-      '<div class="v7-count">共 <b>' + list.length + "</b> 条 · 按截止紧迫度排序" +
+      '<div class="v7-count">共 <b>' + list.length + "</b> 条" + updatedLabel() + " · 按截止紧迫度排序" +
       (q ? " · 关键词「" + E(q) + "」" : "") + "</div>" +
       (list.length ? list.map(cardHTML).join("") : empty) +
       '<p class="v4-note">整理自公开渠道 · 请以院校官网与官方通知为准。平台不对截止时刻做推测。</p>' +

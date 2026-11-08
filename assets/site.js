@@ -185,7 +185,8 @@
     if (foot) {
       const schools = new Set(items.map((i) => i.school)).size;
       const liveN = live.length;
-      foot.innerHTML = `以上为院校资讯中的真实条目：共 <b>${items.length}</b> 条，覆盖 <b>${schools}</b> 所院校，其中 ${liveN} 条仍在报名期内。` +
+      const liveText = liveN > 0 ? `，其中 ${liveN} 条仍在报名期内。` : "。";
+      foot.innerHTML = `以上为院校资讯中的真实条目：共 <b>${items.length}</b> 条，覆盖 <b>${schools}</b> 所院校${liveText}` +
         `时间只按原文精度呈现，原文没写就不补。<a href="app/?role=student#/school" target="_blank" rel="noopener">查看全部并打开原文 ›</a>`;
     }
   })();
