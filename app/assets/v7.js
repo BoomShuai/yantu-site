@@ -184,7 +184,7 @@
       meta.push("<em>截止 <b>时间待公布</b></em>");
     } else {
       meta.push("<em>截止 <b>" + E(n.deadlineText) + "</b></em>");
-      if (n.days != null) meta.push("<em>剩余 <b>" + n.days + "</b> 天</em>");
+      if (n.days != null && n.days > 0) meta.push("<em>剩余 <b>" + n.days + "</b> 天</em>");
     }
     var out = n.url
       ? '<a class="v7-out" href="' + E(n.url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">原文 ↗</a>'

@@ -276,7 +276,7 @@ html[data-theme="dark"] .shot-img { background: rgba(99,102,241,.12); }
 .ti-ic.no { background: var(--danger-soft); color: var(--danger); }
 html[data-theme="dark"] .ti-ic { background: rgba(99,102,241,.18); color: #a5b4fc; }
 html[data-theme="dark"] .ti-ic.no { background: rgba(248,113,113,.16); color: #fca5a5; }
-.trust-item h4 { font-size: 14.5px; margin-bottom: 7px; }
+.trust-item h4 { font-size: 14.5px; margin: 0 0 7px; }
 .trust-item p { font-size: 12.5px; line-height: 1.72; color: var(--ink-2); }
 
 /* ---------------- 院校资讯真实条目 ---------------- */
