@@ -294,7 +294,9 @@
   PAGES.profile=function(){
     const html=oldStudent();
     if(T.role!=='student')return html;
-    return html.replace('<div class="v4-card"><div class="v4-head"><h3>申请目标</h3>',intakeCard('student')+'<div class="v4-card"><div class="v4-head"><h3>申请目标</h3>');
+    const open='<div class="page tl-v2-page">';
+    if(html.indexOf(open)>=0)return html.replace(open,open+intakeCard('student'));
+    return intakeCard('student')+html;
   };
   PAGES.mentorProfile=function(){
     const html=oldMentor();

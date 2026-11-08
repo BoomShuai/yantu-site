@@ -65,6 +65,46 @@
     return `<div class="tl-v3-rec-inline"><small>${preview?'方向相近的同行者 · 预览排序':'按你的 BG 与服务方向初排'}</small>${picks.map(p=>`<button type="button" onclick="selectProvider('${p.id}')"><span class="tl-avatar">${H(p.name.slice(0,1))}</span><span><b>${H(p.name)}</b><small>${H(recommendationReason(p))}</small></span><i>›</i></button>`).join('')}<button type="button" class="tl-v3-rec-more" onclick="go('#/providers')">${preview?'确认档案后看完整推荐 ›':'打开服务者列表 ›'}</button></div>`;
   }
   const ASK_PEOPLE=/推荐|学姐|学长|服务者|顾问|找谁|谁来帮|约谁|有没有人/;
+  /* 已确认档案后，按用户这句话的意图回答，而不是永远回同一句。 */
+  const ASK_ADVICE=/最该补|补什么|补哪|短板|不足|提升|怎么准备|如何准备|下一步|接下来|建议/;
+  const ASK_TIME=/时间|什么时候|几月|节奏|规划|安排|来得及|timeline/i;
+  const ASK_SCHOOL=/院校|学校|选校|夏令营|预推免|推免|报名|截止|招生|简章/;
+  const ASK_MATERIAL=/材料|简历|文书|个人陈述|推荐信|成绩单|自我介绍/;
+  const ASK_INTERVIEW=/面试|复试|口语|提问|导师/;
+  function nextChips(items){
+    return '<div class="tl-v3-next">'+items.map(x=>`<button type="button" onclick="${x[1]}">${H(x[0])}</button>`).join('')+'</div>';
+  }
+  function bgGaps(){
+    const raw=String(studentBG.raw||'');const out=[];
+    if(!/(排名|前\s*\d|绩点|GPA|加权)/i.test(raw))out.push(['排名与绩点','写清排名口径（专业排名或百分比）和绩点，多数院校报名表要填这一项']);
+    if(!/(科研|论文|专利|实验室|课题|项目)/.test(raw))out.push(['一段科研或项目经历','写清你负责的部分和产出，不必等到有论文']);
+    if(!/(竞赛|数模|数学建模|ACM|挑战杯|大创|比赛)/.test(raw))out.push(['一项可验证的竞赛或项目','优先选与目标方向一致的，写清角色和结果']);
+    if(!/(六级|CET|雅思|托福|英语)/i.test(raw))out.push(['英语成绩','六级分数是多数院校的硬门槛，先确认是否达标']);
+    if(!out.length)out.push(['把已有经历写成可核对的条目','时间、角色、动作、结果各一句，后面填报名表会省很多时间']);
+    return out.slice(0,3);
+  }
+  function adviceReply(){
+    const g=bgGaps();
+    const lines=g.map((x,i)=>`${'①②③'[i]} ${x[0]}：${x[1]}`);
+    return {text:`按你现在的档案（${studentBG.grade} · ${studentBG.goals.join(' / ')}），我会先补这三件事：\n${lines.join('\n')}\n这只是通用的准备顺序，不涉及任何院校的录取判断。`,
+      card:nextChips([['看我的成长规划',"go('#/me')"],['看院校资讯',"go('#/school')"]])};
+  }
+  function confirmedReply(value){
+    const v=String(value||'');
+    if(ASK_INTERVIEW.test(v))return {text:'面试准备建议先把简历里每一条都准备成「背景—动作—结果」三句话，再准备一段 1 分钟自我介绍。院校的复试形式与时间以原文通知为准，院校资讯里能直接看到原文链接。',
+      card:nextChips([['看院校资讯',"go('#/school')"],['看保研经验库',"go('#/experience')"]])};
+    if(ASK_MATERIAL.test(v))return {text:'材料按「先有再改」的顺序：成绩单与排名证明 → 简历 → 个人陈述 → 推荐信。简历可以回到「我的」重新上传或补充，识别结果一律以你核对后的内容为准。',
+      card:nextChips([['补充我的档案',"go('#/profile')"],['看我的成长规划',"go('#/me')"]])};
+    if(ASK_TIME.test(v))return {text:'时间安排分两层：一层是你自己的准备节奏，在「我的 · 成长规划」里按已确认的目标生成；另一层是院校的截止时间，只能以院校资讯里那条通知的原文为准——原文只写到日就按日算，不会替你补成具体时刻。',
+      card:nextChips([['看我的成长规划',"go('#/me')"],['看院校资讯',"go('#/school')"]])};
+    if(ASK_SCHOOL.test(v))return {text:'院校信息我按原文整理，不替你判断能不能上。你可以先在院校资讯里按院校和类别筛一遍，看到合适的就收藏，再加进投递记录本自己维护进度。',
+      card:nextChips([['打开院校资讯',"go('#/school')"],['看我的投递记录',"go('#/school')"]])};
+    if(ASK_PEOPLE.test(v))return {text:'这几位是按你已确认的档案读取的服务者，可以点开看服务说明和可约时间；满额的服务者不会显示可约。',card:recCardHtml(false)};
+    if(ASK_ADVICE.test(v))return adviceReply();
+    if(hasBackground(studentBG.raw)&&studentBG.confirmed)return {text:'收到，我把这句补进你的档案草稿。想让我按目标排一份准备顺序，可以直接问「我现在最该补什么」。',
+      card:nextChips([['我现在最该补什么',"tlStart('我现在最该补什么？')"],['看我的成长规划',"go('#/me')"]])};
+    return {text:'档案已更新。这几位是按你当前诉求读取的服务者，随时可以继续补充新的经历。',card:recCardHtml(false)};
+  }
   function inferNextQuestion(lastText){
     const chips=bgChips();
     const heard=chips.length?`已记下 ${chips.length} 项：${chips.join(' · ')}。`:'';
@@ -75,7 +115,7 @@
     }
     if(!studentBG.grade)return {text:`${heard}还差一个年级——你现在大几？`,card:recCardHtml(true)};
     if(!studentBG.goals.length)return {text:`${heard}你主要想实现什么？保研、竞赛、科研，可以同时有几个。`,card:recCardHtml(true)};
-    if(studentBG.confirmed)return {text:'档案已更新。这几位是按你当前诉求读取的服务者，随时可以继续补充新的经历。',card:recCardHtml(false)};
+    if(studentBG.confirmed)return confirmedReply(lastText);
     return {text:`${heard}方向已经很清楚了。下面这几位可以先点开看看；点一下「确认档案」，我就把完整推荐和个人时间计划一起打开。`,card:recCardHtml(true)};
   }
   function handleStudentBG(value){
@@ -494,7 +534,7 @@
   window.needTongluSignIn=function(){toast('请先选择学生或服务者身份体验');setTimeout(()=>go('#/choose'),520);};
   window.planTongluSchool=function(id,isNotice){
     const item=isNotice?M.notices.find(n=>n.id===id):TL.customSchools.find(n=>n.id===id);
-    if(!item)return;planPrefill=isNotice?schoolNameForNotice(item):item.name;S.schoolView='records';go('#/school');
+    if(!item){toast('这条通知暂时无法加入投递计划，请刷新后重试');return;}planPrefill=isNotice?schoolNameForNotice(item):item.name;S.schoolView='records';go('#/school');
   };
   // Existing record form saves through the original local-only function; reset prefill only after submit.
   const origSaveApplication=saveApplication;
