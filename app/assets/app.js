@@ -629,7 +629,7 @@ function schoolRecordsView(){return `<div class="tl-section-kicker">APPLICATION 
     <div class="tl-apply-status">进度：<select aria-label="更改投递状态" onchange="changeApplicationStatus('${a.id}',this.value)">${['准备中','已投递','审核中','进入面试','已录取','未通过'].map(v=>`<option ${a.status===v?'selected':''}>${v}</option>`).join('')}</select></div></div>`).join(''):'<div class="tl-empty">还没有投递记录，先添加一所目标院校吧。</div>'}
   <div class="tl-disclaimer">记录仅在本地浏览器保存，不会自动向任何院校提交申请，也不会跨设备同步。</div>`;}
 function pageSchool(){
-  const tabs=[['notices','院校资讯'],['saved','院校收藏'],['records','投递记录本']];
+  const tabs=[['notices','全部公告'],['saved','院校收藏'],['records','投递记录本']];
   return `<div class="tl-school-tabs">${tabs.map(([k,v])=>`<button class="${S.schoolView===k?'on':''}" onclick="setSchoolView('${k}')">${v}</button>`).join('')}</div>`+
     (S.schoolView==='notices'?pageSchoolNotices():S.schoolView==='saved'?`<div class="page tl-page">${schoolSavedView()}</div>`:`<div class="page tl-page">${schoolRecordsView()}</div>`);
 }
