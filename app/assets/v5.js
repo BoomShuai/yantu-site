@@ -14,6 +14,7 @@
     ['student','mentor'].forEach(k=>{if(o[k]&&typeof o[k]==='object')state[k]={...blank(),...o[k],files:Array.isArray(o[k].files)?o[k].files.slice(0,5):[]};});
   } catch(e){}
   let voice=null;
+  const uploading={student:false,mentor:false};
   const E=v=>escapeTL(String(v==null?'':v));
   const $=id=>document.getElementById(id);
   const clip=(v,n=400)=>String(v||'').trim().slice(0,n);
@@ -91,6 +92,7 @@
     };
   }
   function parseStudent(text){
+    if(window.TongluResumeFields)return window.TongluResumeFields.parseStudent(text);
     const out={};
     const school=val(one(text,/本科(?:院校|学校)\s*[：:]\s*([^，,。；;\n]{2,30})/))||val(guessSchool(text));
     const major=val(one(text,/本科专业\s*[：:\s]*([^，,。；;\n]{2,28})/))||val(one(text,/(?:大学|学院)([\u4e00-\u9fa5]{2,20}?)(?:专业|系)/))||val(one(text,/我(?:是|读)\s*([^，,。；;\n]{2,24}?)(?:专业|方向)/));
@@ -159,35 +161,49 @@
       const options=choices[id].includes(value)?choices[id]:['',value,...choices[id].filter(Boolean)];
       control='<select'+attrs+'>'+options.map(v=>'<option value="'+E(v)+'"'+(v===value?' selected':'')+'>'+E(v||'请选择')+'</option>').join('')+'</select>';
     }else if(large.has(id)){
-      control='<textarea'+attrs+' rows="'+(id==='goals'?2:4)+'" maxlength="500" placeholder="'+E(placeholders[id]||'')+'">'+E(value)+'</textarea>';
+      control='<textarea'+attrs+' rows="'+(id==='goals'?2:7)+'" maxlength="'+(id==='research'||id==='contest'?2000:500)+'" placeholder="'+E(placeholders[id]||'')+'">'+E(value)+'</textarea>';
     }else{
       control='<input'+attrs+' maxlength="150"'+(id==='name'?' autocomplete="name"':'')+' value="'+E(value)+'" placeholder="'+E(placeholders[id]||'')+'">';
     }
     return '<label class="v5-field"><span>'+E(label)+'</span>'+control+'</label>';
   }
+  let lastStudentStep=0;
+  function studentStep(){const id=location.hash.split('/')[2]||'basic';return Math.max(0,STUDENT_CARDS.findIndex(c=>c.id===id));}
   function studentIntake(){
-    const s=state.student;
-    const cards=STUDENT_CARDS.map((card,i)=>'<details class="v5-student-card"'+((s.cardOpen||{})[card.id]?' open':'')+' ontoggle="v5ToggleCard(\''+card.id+'\',this.open)">'+
-      '<summary><span class="v5-card-number">0'+(i+1)+'</span><span class="v5-card-heading"><b>'+card.title+'</b><small id="v5-summary-'+card.id+'">'+E(studentSummary(card))+'</small></span><span class="v5-card-chevron" aria-hidden="true">⌄</span></summary>'+
-      '<div class="v5-card-fields">'+card.fields.map(studentField).join('')+'</div></details>').join('');
-    return '<div class="page tl-v2-page v5-student-intake" id="v5-intake"><h1>个人资料</h1>'+
-      '<label class="v5-upload v5-student-upload"><span class="v5-upload-icon" aria-hidden="true">↑</span><b>上传个人简历</b><small>PDF / Word / TXT / MD · 自动填写资料卡</small><input type="file" aria-label="上传个人简历" accept=".pdf,.docx,.txt,.md" multiple onchange="v5ChooseFiles(\'student\',event)" /></label>'+
+    const s=state.student, index=studentStep(), card=STUDENT_CARDS[index];
+    const direction=index<lastStudentStep?'back':'forward';lastStudentStep=index;
+    const busy=uploading.student;
+    const steps=STUDENT_CARDS.map((c,i)=>'<button type="button" class="v5-step-tab '+(i===index?'active':i<index?'done':'')+'"'+(i===index?' aria-current="step"':'')+' onclick="v5GoStep('+i+')"><span>'+(i<index?'✓':'0'+(i+1))+'</span><small>'+c.title+'</small></button>').join('');
+    const upload='<label class="v5-upload v5-student-upload'+(busy?' is-busy':'')+'"><span class="v5-upload-icon" aria-hidden="true">'+(busy?'◌':'↑')+'</span><b>'+(busy?'正在识别简历…':s.files.some(f=>f.ok)?'更换个人简历':'上传个人简历')+'</b><small>PDF（含扫描版） / Word / TXT · 最大 8 MB</small><input type="file" aria-label="上传个人简历" accept=".pdf,.docx,.txt,.md"'+(busy?' disabled':'')+' onchange="v5ChooseFiles(\'student\',event)" /></label>'+
       (s.files.length?'<div class="v5-student-files">'+fileRows('student')+'</div>':'')+
-      '<form id="v5-student-form" onsubmit="v5SubmitStudent(event)">'+cards+
-      '<button type="submit" class="v5-btn v5-primary v5-student-continue">保存并进入同路 <span aria-hidden="true">→</span></button></form>'+
+      (s.text?'<details class="v5-source"><summary>查看识别原文</summary><pre>'+E(s.text)+'</pre></details>':'');
+    return '<div class="page tl-v2-page v5-student-intake" id="v5-intake"><nav class="v5-stepper" aria-label="资料填写步骤">'+steps+'</nav>'+
+      '<div class="v5-step-panel" data-direction="'+direction+'"><div class="v5-step-heading"><h1 tabindex="-1">'+card.title+'</h1><span>0'+(index+1)+' / 04</span></div>'+
+      (index===0?upload:(s.files.some(f=>f.ok)?'<button class="v5-resume-chip" type="button" onclick="v5GoStep(0)">✓ 简历已识别 · 查看或更换</button>':''))+
+      '<form id="v5-student-form" onsubmit="v5SubmitStudent(event)"><section class="v5-step-fields" aria-label="'+card.title+'">'+card.fields.map(studentField).join('')+'</section>'+
+      '<div class="v5-wizard-actions">'+(index>0?'<button type="button" class="v5-btn v5-wizard-back" onclick="v5GoStep('+(index-1)+')">上一步</button>':'')+
+      '<button type="submit" class="v5-btn v5-primary v5-student-continue"'+(busy?' disabled':'')+'>'+(index===3?'保存并进入同路':'下一步')+' <span aria-hidden="true">→</span></button></div></form>'+
       '<button type="button" class="v5-student-skip" onclick="go(\'#/home\')">稍后填写</button>'+
-      '<p class="v5-student-privacy">简历仅在本机解析，资料核对后保存。</p></div>';
+      (index===0?'<p class="v5-student-privacy">简历在本机识别，填写内容自动保存为草稿。</p>':'')+'</div></div>';
   }
-  window.v5ToggleCard=function(id,open){state.student.cardOpen={...state.student.cardOpen,[id]:open};persist();};
+  window.v5GoStep=function(index){
+    if(index<0||index>=STUDENT_CARDS.length)return;
+    syncFields('student');const path='#/profile/'+STUDENT_CARDS[index].id;
+    if(location.hash===path)return;
+    window.addEventListener('hashchange',()=>document.querySelector('.v5-step-heading h1')?.focus({preventScroll:true}),{once:true});
+    go(path);
+  };
+  const beforeWizardBack=back;
+  back=function(){if(location.hash.split('/')[1]==='profile'&&T.role==='student'&&studentStep()>0){v5GoStep(studentStep()-1);return;}beforeWizardBack();};
   window.v5KeepField=function(id,value){
     if(!CFG.student.some(x=>x[0]===id))return;
-    state.student.fields[id]=clip(value,500);
+    state.student.fields[id]=clip(value,id==='research'||id==='contest'?2000:500);
     state.student.edited=Array.from(new Set([...(state.student.edited||[]),id]));
     state.student.confirmed=false;persist();
     const card=STUDENT_CARDS.find(x=>x.fields.includes(id));
     const summary=$('v5-summary-'+card.id);if(summary)summary.textContent=studentSummary(card);
   };
-  window.v5SubmitStudent=function(event){event.preventDefault();if(v5Confirm('student'))go('#/home');};
+  window.v5SubmitStudent=function(event){event.preventDefault();if(uploading.student)return;if(studentStep()<3){v5GoStep(studentStep()+1);return;}if(v5Confirm('student'))go('#/home');};
   window.v5ImportStudentText=function(text){
     if(state.student.text.trim()&&state.student.text.trim()!==text.trim()&&!confirm('用对话内容更新简历文字草稿吗？资料卡中手动修改的字段会保留。'))return;
     state.student.text=clip(text,12000);v5Analyze('student');
@@ -225,7 +241,7 @@
   function fileRows(k){
     const files=state[k].files;
     if(!files.length)return '<p class="v5-sub">还没有选择简历。上传后会在本机读出正文并自动整理字段，也可以用文字描述。</p>';
-    return files.map((f,i)=>'<div class="v5-file'+(f.ok?' v5-file-ok':'')+'"><span>'+(f.ok?'✓':'▤')+'</span><div><b>'+E(f.name)+'</b><small>'+E(f.status)+'</small></div><button type="button" onclick="v5RemoveFile(\''+k+'\','+i+')">移除</button></div>').join('');
+    return files.map((f,i)=>'<div class="v5-file'+(f.ok?' v5-file-ok':'')+'"><span>'+(f.ok?'✓':'▤')+'</span><div><b>'+E(f.name)+'</b><small id="v5-file-status-'+k+'-'+i+'" role="status">'+E(f.status)+'</small></div><button type="button"'+(uploading[k]?' disabled':'')+' onclick="v5RemoveFile(\''+k+'\','+i+')">移除</button></div>').join('');
   }
   function intakeCard(k){
     const s=state[k], mentor=k==='mentor';
@@ -237,53 +253,52 @@
       '<div class="v5-voicebar"><button type="button" class="v5-btn v5-secondary" onclick="v5Voice(\''+k+'\')">语音转文字</button><span id="v5-'+k+'-voice-status">支持情况取决于手机浏览器，必要时可直接打字</span></div>'+
       '<label class="v5-upload"><b>上传简历，自动识别信息</b><small>PDF / Word(.docx) / TXT / MD，最多 5 份，单份不超过 8 MB</small><input type="file" accept=".pdf,.docx,.txt,.md" multiple onchange="v5ChooseFiles(\''+k+'\',event)" /></label>'+
       fileRows(k)+
-      '<div class="v5-local">隐私提示：简历只在你自己的浏览器里解析，不上传服务器、不联网发送。扫描件 PDF（图片型）和旧版 .doc 读不出正文，请改用可复制文字的 PDF、.docx 或直接粘贴。语音识别由浏览器提供，请勿输入身份证号等敏感信息。</div>'+
+      '<div class="v5-local">隐私提示：简历只在你自己的浏览器里解析，不上传服务器、不联网发送。扫描版 PDF 会自动进行中英文图片文字识别；旧版 .doc 请另存为 .docx。语音识别由浏览器提供，请勿输入身份证号等敏感信息。</div>'+
       '<button type="button" class="v5-btn v5-primary" onclick="v5Analyze(\''+k+'\')">识别并整理上面这段文字</button>'+
       formatPreview(k)+
       '<div class="v5-bottom-note"><b>本地解析说明：</b>浏览器端读取正文 → 规则识别字段 → 缺失项追问 → 你确认 → 存到本机。识别结果可能不完整，一律以你核对后的内容为准；未经平台核验的信息不会显示认证标识。</div></div>';
   }
   function syncFields(k){
     if(k!=='student'&&!state[k].preview)return;
-    CFG[k].forEach(([id])=>{const el=$('v5-'+k+'-'+id);if(el)state[k].fields[id]=clip(el.value,500);});
+    CFG[k].forEach(([id])=>{const el=$('v5-'+k+'-'+id);if(el)state[k].fields[id]=clip(el.value,id==='research'||id==='contest'?2000:500);});
     if(k==='mentor'&&$('v5-mentor-intro'))state.mentor.intro=clip($('v5-mentor-intro').value,600);
     persist();
   }
   window.v5KeepText=function(k,value){if(!state[k])return;const changed=state[k].text!==clip(value,12000);state[k].text=clip(value,12000);if(changed&&state[k].preview){state[k].preview=false;const el=document.querySelector('.v5-preview');if(el)el.remove();}persist();};
   window.v5RemoveFile=function(k,i){if(!state[k])return;state[k].files.splice(i,1);persist();render();};
   window.v5ChooseFiles=async function(k,event){
-    const input=event.target;const selected=Array.from(input.files||[]);if(!selected.length)return;
-    const X=window.TongluExtract;
-    if(!X){toast('文件解析脚本未加载，请刷新页面后重试');return;}
-    let added=0,read=0,failed=[];
-    for(const f of selected){
-      if(state[k].files.length>=5){toast('最多保留 5 份文件');break;}
-      if(f.size>8*1024*1024){toast(f.name+' 超过 8 MB，请压缩后再试');continue;}
-      if(!/\.(pdf|docx|doc|txt|md)$/i.test(f.name)){toast(f.name+'：目前支持 PDF、Word(.docx)、TXT、MD');continue;}
-      const row={name:clip(f.name,100),status:'正在本地读取正文…',ok:false,chars:0};
-      state[k].files.push(row);added++;persist();render();
-      try{
-        const res=await X.fromFile(f);
-        row.status='已读取 '+res.text.replace(/\s/g,'').length+' 字 · 本地解析，未上传';
-        row.ok=true;row.chars=res.text.replace(/\s/g,'').length;row.kind=res.kind;
-        state[k].text=clip([state[k].text,res.text.trim()].filter(Boolean).join('\n'),12000);
-        read++;
-      }catch(err){
-        row.status=(err&&err.message)||'读取失败';
-        failed.push(f.name);
+    if(uploading[k])return;
+    const input=event.target, selected=Array.from(input.files||[]).slice(0,k==='student'?1:5);
+    if(!selected.length)return;
+    const X=window.TongluExtract;if(!X){toast('文件解析脚本未加载，请刷新后重试');return;}
+    syncFields(k);uploading[k]=true;
+    let read=0, added=0;
+    try {
+      for(const f of selected){
+        if(k!=='student'&&state[k].files.length>=5){toast('最多保留 5 份文件');break;}
+        if(f.size>8*1024*1024){toast(f.name+' 超过 8 MB，请压缩后再试');continue;}
+        if(!/\.(pdf|docx|doc|txt|md)$/i.test(f.name)){toast('请选择 PDF、Word(.docx)、TXT 或 MD');continue;}
+        const row={name:clip(f.name,100),status:'正在读取简历…',ok:false,chars:0};
+        if(k==='student')state[k].files=[row];else state[k].files.push(row);
+        const rowIndex=state[k].files.length-1;added++;persist();render();
+        try {
+          const res=await X.fromFile(f,{onProgress:info=>{
+            row.status=info.message;
+            const el=$('v5-file-status-'+k+'-'+rowIndex);if(el)el.textContent=info.message;
+          }});
+          row.status='已识别 '+(res.pages?res.pages+' 页 · ':'')+res.text.replace(/\s/g,'').length+' 字'+(res.ocrPages?' · 扫描页文字已提取':'');
+          row.ok=true;row.chars=res.text.replace(/\s/g,'').length;row.kind=res.kind;
+          state[k].text=clip(k==='student'?res.text:[state[k].text,res.text].filter(Boolean).join('\n'),50000);
+          read++;
+          v5Analyze(k,{silent:true,replace:k==='student'});
+        } catch(err) {row.status=(err&&err.message)||'识别失败，请重试';}
+        persist();render();
       }
-      persist();render();
+    } finally {
+      uploading[k]=false;try{input.value='';}catch(_){}persist();render();
     }
-    try{input.value='';}catch(e){}
-    if(read){
-      // 读到正文后立刻做一次结构化整理，用户上传完就能看到识别结果
-      v5Analyze(k,{silent:true});
-      toast(k==='student'?'简历已填入资料卡，请核对后保存':'已在本地读出简历正文，并整理出 '+countFields(k)+' 项信息，请核对');
-      const el=$('v5-intake');if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
-    } else if(added&&failed.length){
-      toast('有文件读不出正文（可能是扫描件），可改为粘贴文字');
-    } else if(added){
-      toast('已记录文件，但没读到正文');
-    }
+    if(read)toast(k==='student'?'简历已更新，核对后点击下一步':'简历已识别，请核对资料');
+    else if(added)toast('简历未识别成功，已保留你原来填写的资料');
   };
   function countFields(k){const f=state[k].fields||{};return Object.keys(f).filter(x=>f[x]).length;}
   window.v5Voice=function(k){
@@ -299,11 +314,11 @@
   };
   window.v5Analyze=function(k,opts){
     const text=getText(k);if(!text.trim()){toast('请先输入或粘贴文字，或上传一份可读的简历');return;}
-    state[k].text=clip(text,12000);
+    state[k].text=clip(text,50000);
     const parsed=k==='student'?parseStudent(text):parseMentor(text);
     const existing=state[k].fields||{};
     state[k].fields={...existing};
-    Object.keys(parsed).forEach(field=>{if(parsed[field]&&!(k==='student'&&(state[k].edited||[]).includes(field)))state[k].fields[field]=parsed[field];});
+    Object.keys(parsed).forEach(field=>{if((parsed[field]||(opts&&opts.replace))&&!(k==='student'&&(state[k].edited||[]).includes(field)))state[k].fields[field]=parsed[field]||'';});
     state[k].preview=true;state[k].confirmed=false;state[k].intro='';
     state[k].source=state[k].files.some(f=>f.ok)?'简历正文（本地解析）':'自由文字 / 语音转写';
     state[k].question=missingQuestion(k,state[k].fields);persist();render();
@@ -330,7 +345,7 @@
       const bg=T.bg;
       const pieces=[f.name?'姓名：'+f.name:'',f.school?'本科院校：'+f.school:'',f.major?'本科专业：'+f.major:'',f.grade?'当前年级：'+f.grade:'',f.rank?'成绩排名：'+f.rank:'',f.research?'科研经历：'+f.research:'',f.contest?'竞赛经历：'+f.contest:'',f.goals?'目标与诉求：'+f.goals:'',f.targetSchool?'目标院校：'+f.targetSchool:'',f.targetMajor?'目标专业：'+f.targetMajor:'',f.direction?'研究方向：'+f.direction:''].filter(Boolean);
       if(!pieces.length){toast('请至少确认一项个人背景信息');return;}
-      bg.raw=clip(pieces.join('；'),3500);
+      bg.raw=clip(pieces.join('；'),6000);
       bg.name=clip(f.name,150);
       const grades=['大一','大二','大三','大四','大五'];bg.grade=grades.includes(f.grade)?f.grade:'';
       bg.goals=['保研','竞赛','科研','学业'].filter(x=>(f.goals||'').includes(x));

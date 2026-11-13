@@ -1,15 +1,13 @@
 /* 同路 · 本地文件文字提取
  * 目标：用户上传简历后，先在浏览器本地把正文读出来，再交给规则提取字段。
- * 不联网、不上传服务器、不调用后端。
+ * 解析在本机完成，运行组件从本站按需加载；简历内容不上传服务器。
  * 支持：TXT / MD / DOCX（zip + word/document.xml）/ PDF（文本型，含 ToUnicode CMap）。
- * 不支持：扫描件 PDF（图片）、.doc 旧格式、加密 PDF。失败时明确告知用户改用粘贴。
+ * PDF 使用 PDF.js；文字稀少或乱码时逐页渲染并使用本地中英文 OCR。
  */
 (function () {
   'use strict';
 
   const utf8 = new TextDecoder('utf-8');
-  const decoder = new TextDecoder('latin1');
-  const latin = (u8) => decoder.decode(u8);
 
   async function pipe(u8, format) {
     const ds = new DecompressionStream(format);
@@ -17,10 +15,6 @@
     return new Uint8Array(await new Response(stream).arrayBuffer());
   }
   async function inflateRaw(u8) { return pipe(u8, 'deflate-raw'); }
-  async function inflateZlib(u8) {
-    try { return await pipe(u8, 'deflate'); }
-    catch (e) { return inflateRaw(u8); }
-  }
 
   /* ---------- ZIP（DOCX 本质） ---------- */
   async function unzip(buf) {
@@ -93,194 +87,123 @@
     return lines.join('\n');
   }
 
-  /* ---------- PDF ---------- */
-  function parseCMap(txt) {
-    const map = new Map();
-    const toStr = arr => {
-      let s = '';
-      for (let i = 0; i < arr.length; i += 2) s += String.fromCharCode((arr[i] << 8) | (arr[i + 1] || 0));
-      return s;
-    };
-    const hexArr = h => h.trim().split(/\s+/).map(x => parseInt(x, 16));
-    const set = (k, v) => { const u = k.toUpperCase(); if (!map.has(u)) map.set(u, v); };
-    txt.replace(/beginbfchar([\s\S]*?)endbfchar/g, (m, body) => {
-      body.replace(/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g, (mm, src, dst) => {
-        set(src.padStart(src.length % 4 ? src.length : src.length, '0'), toStr(hexArr(dst)));
-        return '';
-      });
-      return '';
-    });
-    txt.replace(/beginbfrange([\s\S]*?)endbfrange/g, (m, body) => {
-      body.replace(/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g, (mm, a, b, c) => {
-        const lo = parseInt(a, 16), hi = parseInt(b, 16), w = a.length, base = hexArr(c);
-        for (let k = lo; k <= hi && k - lo < 65536; k++) {
-          const d = base.slice();
-          d[d.length - 1] = d[d.length - 1] + (k - lo);
-          set(k.toString(16).toUpperCase().padStart(w, '0'), toStr(d));
-        }
-        return '';
-      });
-      body.replace(/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*\[([\s\S]*?)\]/g, (mm, a, b, c) => {
-        const lo = parseInt(a, 16), w = a.length;
-        const items = (c.match(/<([0-9A-Fa-f]+)>/g) || []).map(x => x.slice(1, -1));
-        items.forEach((dst, i) => set((lo + i).toString(16).toUpperCase().padStart(w, '0'), toStr(hexArr(dst))));
-        return '';
-      });
-      return '';
-    });
-    return map;
+  /* ---------- PDF.js + 扫描件本地 OCR ---------- */
+  const assetBase = new URL('.', document.currentScript.src);
+  const asset = path => new URL(path, assetBase).href;
+  let pdfEngine;
+  function loadPDF() {
+    if (!pdfEngine) pdfEngine = import(asset('vendor/pdfjs/pdf.min.mjs')).then(lib => {
+      lib.GlobalWorkerOptions.workerSrc = asset('vendor/pdfjs/pdf.worker.min.mjs');
+      return lib;
+    }).catch(err => { pdfEngine = null; throw new Error('PDF 组件加载失败，请检查网络后重试'); });
+    return pdfEngine;
   }
-
-  function tokenize(s) {
-    const out = [], n = s.length;
-    let i = 0;
-    while (i < n) {
-      const c = s[i];
-      if (c === '%') { while (i < n && s[i] !== '\n') i++; continue; }
-      if (c === '(') {
-        let depth = 1, buf = ''; i++;
-        while (i < n && depth > 0) {
-          const ch = s[i];
-          if (ch === '\\') {
-            const nx = s[i + 1]; i += 2;
-            const esc = { n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', '(': '(', ')': ')', '\\': '\\' };
-            if (esc[nx] != null) buf += esc[nx];
-            else if (nx >= '0' && nx <= '7') {
-              let oct = nx, k = 0;
-              while (k < 2 && i < n && s[i] >= '0' && s[i] <= '7') { oct += s[i]; i++; k++; }
-              buf += String.fromCharCode(parseInt(oct, 8));
-            } else if (nx !== '\n') buf += nx;
-            continue;
+  let ocrScript;
+  function loadOCR() {
+    if (window.Tesseract) return Promise.resolve(window.Tesseract);
+    if (!ocrScript) ocrScript = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = asset('vendor/ocr/tesseract.min.js');
+      script.onload = () => resolve(window.Tesseract);
+      script.onerror = () => { script.remove(); ocrScript = null; reject(new Error('图片识别组件加载失败，请重试')); };
+      document.head.appendChild(script);
+    });
+    return ocrScript;
+  }
+  function cleanText(text) {
+    return String(text || '').normalize('NFKC').replace(/\u0000/g, '')
+      .replace(/[\u200b-\u200d\ufeff]/g, '')
+      .replace(/([\u3400-\u9fff]) +(?=[\u3400-\u9fff])/g, '$1')
+      .replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+  function textRows(items) {
+    const rows = [];
+    for (const it of items.filter(x => x.str && x.str.trim()).sort((a,b) => b.transform[5]-a.transform[5] || a.transform[4]-b.transform[4])) {
+      const y=it.transform[5], h=Math.max(1, Math.abs(it.height || it.transform[3]));
+      let row=rows.find(r => Math.abs(r.y-y)<Math.max(2, Math.min(r.h,h)*0.35));
+      if(!row){row={y,h,items:[]};rows.push(row);}row.items.push(it);
+    }
+    return rows.sort((a,b)=>b.y-a.y).map(row=>({...row,items:row.items.sort((a,b)=>a.transform[4]-b.transform[4])}));
+  }
+  function joinItems(items) {
+    let line='', end=0;
+    for(const it of items){
+      const gap=it.transform[4]-end;
+      if(line&&gap>Math.max(1,(it.height||10)*0.16))line+=' ';
+      line+=it.str;end=it.transform[4]+it.width;
+    }
+    return cleanText(line);
+  }
+  function layoutText(items, width) {
+    const rows=textRows(items), gutters=[];
+    for(const row of rows) for(let i=1;i<row.items.length;i++){
+      const left=row.items[i-1], right=row.items[i], end=left.transform[4]+left.width;
+      if(right.transform[4]-end>width*0.12&&end>width*0.18&&right.transform[4]<width*0.85)gutters.push({left:end,right:right.transform[4],y:row.y});
+    }
+    let split=0, support=0;
+    for(let x=width*.28;x<width*.72;x+=8){const n=gutters.filter(g=>g.left<x&&g.right>x).length;if(n>support){support=n;split=x;}}
+    if(support>=3){
+      const crossing=items.filter(it=>it.transform[4]<split&&it.transform[4]+it.width>split+8);
+      const firstColumnY=Math.max(...gutters.filter(g=>g.left<split&&g.right>split).map(g=>g.y));
+      if(crossing.filter(it=>it.transform[5]<firstColumnY-5).length<=1){
+        const top=rows.filter(r=>r.y>firstColumnY+3).map(r=>joinItems(r.items));
+        const body=rows.filter(r=>r.y<=firstColumnY+3);
+        return cleanText([...top,...body.map(r=>joinItems(r.items.filter(it=>it.transform[4]<split))),...body.map(r=>joinItems(r.items.filter(it=>it.transform[4]>=split)))].filter(Boolean).join('\n'));
+      }
+    }
+    return cleanText(rows.map(r=>joinItems(r.items)).join('\n'));
+  }
+  async function pdfText(buf, options={}) {
+    const report = info => options.onProgress?.(info);
+    const lib = await loadPDF();
+    const task = lib.getDocument({data:new Uint8Array(buf),cMapUrl:asset('vendor/pdfjs/cmaps/'),cMapPacked:true,
+      standardFontDataUrl:asset('vendor/pdfjs/standard_fonts/'),wasmUrl:asset('vendor/pdfjs/wasm/'),
+      isEvalSupported:false,enableXfa:false,verbosity:0});
+    let pdf, worker, ocrPages=0, ocrPage=0;
+    const pages=[], methods=[];
+    try {
+      pdf=await task.promise;
+      if(pdf.numPages>20)throw new Error('简历超过 20 页，请保留简历正文后重新上传');
+      for(let n=1;n<=pdf.numPages;n++){
+        report({message:'正在读取 PDF 第 '+n+' / '+pdf.numPages+' 页',progress:(n-1)/pdf.numPages});
+        const page=await pdf.getPage(n);
+        let text='';
+        try {const content=await page.getTextContent();text=layoutText(content.items,page.getViewport({scale:1}).width);}catch(_){}
+        let method='text';
+        const resumeHints=/大学|学院|教育|经历|项目|专业|姓名|科研|竞赛|奖|简历|education|experience|university|college|research|skills|resume|curriculum/i;
+        if(text.replace(/\s/g,'').length<80||quality(text)<.7||!resumeHints.test(text)){
+          ocrPage=n;
+          if(!worker){
+            report({message:'正在准备中文图片识别，首次加载稍慢',progress:(n-1)/pdf.numPages});
+            const OCR=await loadOCR();
+            worker=await OCR.createWorker('chi_sim+eng',1,{workerPath:asset('vendor/ocr/worker.min.js'),corePath:asset('vendor/ocr/core/'),
+              langPath:asset('vendor/ocr/lang/'),workerBlobURL:false,logger:m=>{if(m.status==='recognizing text')report({message:'正在识别扫描页 '+ocrPage+' / '+pdf.numPages+' · '+Math.round(m.progress*100)+'%',progress:(ocrPage-1+m.progress)/pdf.numPages});}});
+            await worker.setParameters({preserve_interword_spaces:'1',user_defined_dpi:'150'});
           }
-          if (ch === '(') { depth++; buf += ch; i++; continue; }
-          if (ch === ')') { depth--; i++; if (!depth) break; buf += ch; continue; }
-          buf += ch; i++;
+          const original=page.getViewport({scale:1});
+          const scale=Math.min(2.5,1800/original.width,Math.sqrt(5000000/(original.width*original.height)));
+          const viewport=page.getViewport({scale});
+          const canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
+          try {
+            await page.render({canvasContext:canvas.getContext('2d'),viewport,background:'rgb(255,255,255)'}).promise;
+            const result=await worker.recognize(canvas);
+            const recognized=cleanText(result.data.text);
+            if(recognized.replace(/\s/g,'').length>=12&&quality(recognized)>.7&&(quality(text)<.7||!resumeHints.test(text)||recognized.replace(/\s/g,'').length>text.replace(/\s/g,'').length)){text=recognized;method='ocr';ocrPages++;}
+          } finally {canvas.width=canvas.height=0;}
         }
-        out.push({ t: 'str', v: buf });
-        continue;
+        if(text.replace(/\s/g,'').length<12)throw new Error('第 '+n+' 页没有识别出足够文字，请上传更清晰的 PDF');
+        pages.push(text);methods.push(method);page.cleanup();
       }
-      if (c === '<' && s[i + 1] !== '<') {
-        const j = s.indexOf('>', i);
-        if (j < 0) { i++; continue; }
-        out.push({ t: 'hex', v: s.slice(i + 1, j).replace(/\s+/g, '') });
-        i = j + 1; continue;
-      }
-      if (c === '<' && s[i + 1] === '<') { i += 2; continue; }
-      if (c === '>' && s[i + 1] === '>') { i += 2; continue; }
-      if (c === '[' || c === ']') { out.push({ t: c }); i++; continue; }
-      if (c === '/' || /[A-Za-z'"*]/.test(c)) {
-        let j = i;
-        while (j < n && !/[\s()<>\[\]{}\/%]/.test(s[j])) j++;
-        if (j === i) j++;
-        out.push({ t: 'op', v: s.slice(i, j) });
-        i = j; continue;
-      }
-      i++;
+      report({message:'PDF 识别完成',progress:1});
+      return {text:pages.join('\n\n'),pages:pdf.numPages,ocrPages,methods};
+    } catch(err) {
+      if(err.name==='PasswordException')throw new Error('这份 PDF 有密码保护，请解锁后重新上传');
+      if(err.name==='InvalidPDFException')throw new Error('PDF 文件损坏或格式不完整，请重新导出');
+      throw err;
+    } finally {
+      if(worker)await worker.terminate().catch(()=>{});
+      await task.destroy().catch(()=>{});
     }
-    return out;
-  }
-
-  function hexToText(hex, cmap) {
-    if (cmap && cmap.size) {
-      let w = 4;
-      const widths = new Set();
-      cmap.forEach((v, k) => widths.add(k.length));
-      if (widths.size) w = [...widths].sort((a, b) => b - a)[0];
-      let out = '';
-      for (let i = 0; i + w <= hex.length; i += w) out += (cmap.get(hex.slice(i, i + w).toUpperCase()) || '');
-      return out;
-    }
-    let out = '';
-    for (let i = 0; i + 4 <= hex.length; i += 4) {
-      const cp = parseInt(hex.slice(i, i + 4), 16);
-      out += cp ? String.fromCharCode(cp) : '';
-    }
-    return out;
-  }
-  function bytesToText(str, cmap) {
-    // 括号字符串在 CID 字体里也是 2 字节编码
-    if (cmap && cmap.size) {
-      let hex = '';
-      for (let i = 0; i < str.length; i++) hex += str.charCodeAt(i).toString(16).padStart(2, '0');
-      return hexToText(hex, cmap);
-    }
-    return str;
-  }
-
-  function contentText(txt, cmap) {
-    const tk = tokenize(txt);
-    let out = '';
-    let depth = 0, group = [];
-    for (let i = 0; i < tk.length; i++) {
-      const t = tk[i];
-      if (t.t === '[') { depth++; group = []; continue; }
-      if (t.t === ']') { depth = Math.max(0, depth - 1); continue; }
-      if (t.t === 'str' || t.t === 'hex') {
-        const next = tk[i + 1];
-        const isShow = next && next.t === 'op' && /^(Tj|TJ|'|")$/.test(next.v);
-        const val = t.t === 'str' ? bytesToText(t.v, cmap) : hexToText(t.v, cmap);
-        if (depth) group.push(val);
-        else if (isShow) out += val;
-        else {
-          // 有些生成器省略算子
-          out += val;
-        }
-        continue;
-      }
-      if (t.t === 'op') {
-        if (/^(Td|TD|T\*|ET|BT)$/.test(t.v)) out += '\n';
-        else if (t.v === 'TJ' && depth === 0) { out += group.join(''); group = []; }
-      }
-    }
-    return out;
-  }
-
-  async function pdfText(buf) {
-    const u8 = new Uint8Array(buf);
-    if (u8.length > 20 * 1024 * 1024) throw new Error('文件超过 20 MB，请压缩后再试');
-    const s = latin(u8);
-    const objs = [];
-    const re = /(\d+)\s+(\d+)\s+obj\b/g;
-    let m;
-    while ((m = re.exec(s))) {
-      const start = m.index + m[0].length;
-      const end = s.indexOf('endobj', start);
-      objs.push({ start, end: end < 0 ? s.length : end });
-    }
-    if (!objs.length) throw new Error('这个 PDF 的结构无法解析');
-    const streams = [];
-    for (const o of objs) {
-      const head = s.slice(o.start, Math.min(o.end, o.start + 4000));
-      const si = head.indexOf('stream');
-      if (si < 0) continue;
-      let ds = o.start + si + 6;
-      if (s[ds] === '\r') ds++;
-      if (s[ds] === '\n') ds++;
-      const de = Math.min(o.end, s.indexOf('endstream', ds));
-      if (de <= ds) continue;
-      const dict = head.slice(0, si);
-      let data = u8.subarray(ds, de);
-      const filters = (dict.match(/\/Filter\s*\[([^\]]*)\]|\/Filter\s*\/\w+/) || [''])[0];
-      if (/FlateDecode/.test(filters || dict)) {
-        try { data = await inflateZlib(data); } catch (e) { continue; }
-      } else if (filters && !/FlateDecode/.test(filters)) {
-        continue;
-      }
-      streams.push({ dict, text: latin(data) });
-    }
-    if (!streams.length) throw new Error('这个 PDF 的正文是压缩流，无法读取');
-    const cmap = new Map();
-    for (const st of streams) {
-      if (!/beginbfchar|beginbfrange/.test(st.text)) continue;
-      parseCMap(st.text).forEach((v, k) => { if (!cmap.has(k)) cmap.set(k, v); });
-    }
-    let out = '';
-    for (const st of streams) {
-      if (/beginbfchar|beginbfrange/.test(st.text)) continue;
-      if (!/(Tj|TJ)[\s\]>]/.test(st.text) && !/Tj\b|TJ\b/.test(st.text)) continue;
-      out += contentText(st.text, cmap) + '\n';
-    }
-    return out.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
   }
 
   function quality(text) {
@@ -289,7 +212,7 @@
     return (t.match(/[\u4e00-\u9fa5A-Za-z0-9，。、：；（）\-–—·]/g) || []).length / t.length;
   }
 
-  async function fromFile(file) {
+  async function fromFile(file, options={}) {
     const name = String(file.name || '');
     const size = file.size || 0;
     if (!size) throw new Error('这个文件是空的');
@@ -305,18 +228,14 @@
       return { text: text.slice(0, 12000), kind: 'Word', note: '' };
     }
     if (ext === 'pdf') {
-      const text = await pdfText(await file.arrayBuffer());
-      if (!text || text.replace(/\s/g, '').length < 12) {
-        throw new Error('这份 PDF 可能是扫描件或图片版，读不到文字，建议粘贴或换 Word');
-      }
-      if (quality(text) < 0.55) {
-        throw new Error('这份 PDF 用了非标准字体编码，读出来的文字会错乱，建议粘贴文字');
-      }
-      return { text: text.slice(0, 12000), kind: 'PDF', note: '' };
+      const result = await pdfText(await file.arrayBuffer(), options);
+      if(quality(result.text)<.55)throw new Error('PDF 文字质量较低，请上传清晰版本或核对后粘贴正文');
+      if(result.text.length>50000)throw new Error('简历文字超过 5 万字，请精简后上传');
+      return {...result,kind:result.ocrPages?'PDF · 图片文字识别':'PDF',note:result.ocrPages?'扫描页识别结果请逐项核对':''};
     }
     if (ext === 'doc') throw new Error('旧版 .doc 不支持读取，请另存为 .docx 或 PDF');
     throw new Error('目前支持 PDF / Word(.docx) / TXT / MD');
   }
 
-  window.TongluExtract = { fromFile, version: 'v1', supports: ['pdf', 'docx', 'txt', 'md'] };
+  window.TongluExtract = { fromFile, version: 'v2-pdfjs-ocr', supports: ['pdf', 'docx', 'txt', 'md'] };
 })();

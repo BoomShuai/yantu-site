@@ -122,7 +122,7 @@
     if(/^(你好|您好|在吗|hi|hello|嗨|哈喽)[!！。~\s]*$/i.test(value))return '你好！你可以直接说背景和诉求，例如「我是某大学统计专业大二，想保研，也在准备数学建模竞赛」。也可以只说一句，我再往下问。';
     if(/考研|出国|就业|工作|实习了/.test(value)&&!/保研|推免/.test(value+studentBG.raw)){/* 不阻断，仅记录 */}
     studentBG.raw=(studentBG.raw ? studentBG.raw+'\n' : '')+value;
-    studentBG.raw=studentBG.raw.slice(-3500);
+    studentBG.raw=studentBG.raw.slice(-12000);
     studentBG.grade=detectGrade(value)||studentBG.grade||detectGrade(studentBG.raw);
     studentBG.goals=[...new Set([...(studentBG.goals||[]),...detectGoals(value)])];
     studentBG.updatedAt=new Date().toISOString();persistBG();
@@ -140,7 +140,12 @@
   }
 
   const H = (s) => escapeTL(s);
-  const goRole = (r) => { role = r; document.body.dataset.role = r; if(r==='student')go('#/profile'); else if(r==='mentor')go('#/mentorHome'); else go('#/guestHome'); };
+  const goRole = (r) => {
+    role=r;document.body.dataset.role=r;
+    const url=new URL(location.href);url.searchParams.set('role',r);
+    history.replaceState(null,'',url.pathname+url.search+url.hash);
+    if(r==='student')go('#/profile');else if(r==='mentor')go('#/mentorHome');else go('#/guestHome');
+  };
   const roleName = () => ({student:'学生体验',mentor:'服务者体验',guest:'游客体验'}[role]||'选择身份');
   const origRender = render;
   const origActionbar = actionbar;
@@ -162,7 +167,7 @@
   function introAI(){
     const isGuest=role==='guest';const isMentor=role==='mentor';
     return `<section class="tl-v3-ai">
-      <div class="tl-v3-chatlog" id="tl-v2-chat" aria-live="polite">${messages.length?aiMessagesHtml():`<div class="tl-v3-welcome"><h1>你好，欢迎来到同路</h1></div>`}</div>
+      <div class="tl-v3-chatlog" id="tl-v2-chat" aria-live="polite">${messages.length?aiMessagesHtml():`<div class="tl-v3-welcome"><h1 aria-label="你好，欢迎来到同路">${Array.from('你好，欢迎来到同路').map((char,i)=>`<span class="tl-welcome-char" aria-hidden="true" style="--char:${i}">${char}</span>`).join('')}</h1></div>`}</div>
       ${messages.length&&!studentBG.confirmed?profileConfirmInline():''}
       <form class="tl-v3-form" onsubmit="sendTongluChat(event)"><textarea id="tl-v2-chat-input" maxlength="800" rows="2" aria-label="给同路 AI 助手输入消息" placeholder="${isGuest?'问问保研流程…':isMentor?'询问服务规划…':'描述你的 BG、目标或困惑…'}" required></textarea><button type="submit" aria-label="发送">↑</button></form>
     </section>`;
