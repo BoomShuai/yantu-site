@@ -1,7 +1,7 @@
 /* 简历正文 -> 待核对字段。仅提取文本中出现的内容，不推断成绩、年级或申请意愿。 */
 (function(root){
   'use strict';
-  const normalize=text=>String(text||'').normalize('NFKC').replace(/([\u3400-\u9fff]) +(?=[\u3400-\u9fff])/g,'$1').replace(/[ \t]+/g,' ').replace(/\r/g,'');
+  const normalize=text=>String(text||'').normalize('NFKC').replace(/([\u3400-\u9fff]) +(?=[\u3400-\u9fff])/g,'$1').replace(/[ \t]+/g,' ').replace(/\r/g,'').replace(/^[ \t]*[\u009f•▪●◦]+\s*/gm,'');
   const heads={
     education:['教育背景','教育经历','学习经历','教育信息','Education','Educational Background'],
     research:['科研经历','研究经历','科研项目','研究项目','项目经历','项目经验','学术成果','科研成果','Research Experience','Research','Projects','Project Experience','Publications'],
@@ -46,12 +46,18 @@
       major=suffix.replace(/\d{4}[.年/-]\d{1,2}/g,'').replace(/\b\d{4}\b/g,'').replace(/本科|学士|在读|至今/g,'').replace(/[|｜·()（）—–-]/g,' ').trim().split(/\s{2,}/)[0]||'';
     }
     if(!major)major=text.match(/(?:大学|学院)\s*([\u3400-\u9fff]{2,18}?)(?:专业|系)/)?.[1]||'';
+    // PDF 常把「大学 + 学院 + 专业」连成一行，只保留学院名称之后的专业。
+    major=major.replace(/^.*(?:学院|学部)\s*/,'').trim();
     let name=field(['姓名','称呼','Name']);
     if(!name)name=lines.slice(0,5).find(l=>/^[\u3400-\u9fff]{2,4}$/.test(l)&&![...Object.values(heads).flat(),...labels,'个人简历','简历','求职简历','本科','学士','在读'].includes(l))||'';
     const gradeRaw=field(['当前年级','年级'])||text.match(/(?:本科|大)\s*([一二三四五12345])(?:年级)?/)?.[0]||text.match(/\b(Freshman|Sophomore|Junior|Senior)\b/i)?.[0]||'';
     const gradeMap={一:'大一',二:'大二',三:'大三',四:'大四',五:'大五',1:'大一',2:'大二',3:'大三',4:'大四',5:'大五',freshman:'大一',sophomore:'大二',junior:'大三',senior:'大四'};
     const grade=gradeMap[gradeRaw.toLowerCase()]||gradeMap[gradeRaw.match(/[一二三四五12345]/)?.[0]]||'';
-    const rank=field(['专业排名','年级排名','排名','GPA','绩点'])||text.match(/(?:排名|rank(?:ing|ed)?)\s*[:：]?\s*((?:前|第)?\s*\d+(?:\.\d+)?\s*(?:\/\s*\d+|%|名))/i)?.[1]||'';
+    const rankHit=text.match(/((?:专业|综合|年级|成绩)?排名|rank(?:ing|ed)?)\s*[:：]?\s*\(?\s*((?:前|第)?\s*\d+(?:\.\d+)?\s*(?:\/\s*\d+|%|名))/i);
+    let rank=rankHit?.[2]||field(['专业排名','综合排名','年级排名','排名'])||'';
+    const gpa=text.match(/(?:\bGPA\b|绩点)\s*[:：]?\s*\(?\s*(\d+(?:\.\d+)?(?:\s*\/\s*\d+(?:\.\d+)?)?)/i)?.[1]||'';
+    const average=text.match(/(?:加权成绩|平均成绩|均分)\s*[:：]?\s*\(?\s*(\d+(?:\.\d+)?(?:\s*\/\s*\d+(?:\.\d+)?)?)/)?.[1]||'';
+    if(gpa||average)rank=[rank?(rankHit?.[1]||'排名')+' '+rank:'',gpa?'GPA '+gpa:'',average?'加权成绩 '+average:''].filter(Boolean).join(' · ');
     const directResearch=field(['科研经历','研究经历','科研项目','项目经历']);
     const directContest=field(['获奖经历','获奖情况','竞赛经历','荣誉奖项']);
     const goalsText=field(['目标与诉求','申请意向','申请目标','诉求'])||lines.filter(l=>/希望|打算|计划|想要|想保研|目标是/.test(l)).join('；');
