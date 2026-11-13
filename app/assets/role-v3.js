@@ -140,7 +140,7 @@
   }
 
   const H = (s) => escapeTL(s);
-  const goRole = (r) => { role = r; document.body.dataset.role = r; if(r==='student')go('#/home'); else if(r==='mentor')go('#/mentorHome'); else go('#/guestHome'); };
+  const goRole = (r) => { role = r; document.body.dataset.role = r; if(r==='student')go('#/profile'); else if(r==='mentor')go('#/mentorHome'); else go('#/guestHome'); };
   const roleName = () => ({student:'学生体验',mentor:'服务者体验',guest:'游客体验'}[role]||'选择身份');
   const origRender = render;
   const origActionbar = actionbar;
@@ -161,15 +161,10 @@
 
   function introAI(){
     const isGuest=role==='guest';const isMentor=role==='mentor';
-    const hint=isGuest?'可以问我保研的基本流程、材料与常识。游客不提供个人匹配。':isMentor?'可以问我如何梳理辅导方向、设计服务流程；学生需求在「我的」工作台查看。':'直接说说你的背景与诉求。我会根据已知信息逐个补问，等你确认后再开启个性化功能。';
-    const starts=isGuest?['保研流程大概是什么样','夏令营和预推免有什么区别','需要准备哪些材料']
-      :isMentor?['怎么把辅导方向写清楚','服务流程应该怎么设计','如何介绍自己的案例']
-      :['我是通信工程大三，排名 8/120，想保研','帮我看看现在最该补什么','有没有方向相近的学姐学长'];
     return `<section class="tl-v3-ai">
-      <div class="tl-v3-chatlog" id="tl-v2-chat" aria-live="polite">${messages.length?aiMessagesHtml():`<div class="tl-v3-welcome"><div class="tl-v3-orb">✦</div><h1>你好，欢迎来到同路</h1><p>${hint}</p><div class="tl-v3-starts">${starts.map(t=>`<button type="button" onclick="tlStart(${JSON.stringify(t).replace(/"/g,'&quot;')})">${H(t)}</button>`).join('')}</div></div>`}</div>
-      ${profileConfirmInline()}
-      <form class="tl-v3-form" onsubmit="sendTongluChat(event)"><textarea id="tl-v2-chat-input" maxlength="800" rows="2" aria-label="给同路 AI 助手输入消息" placeholder="${isGuest?'问问保研流程…':isMentor?'询问服务规划…':'自由描述你的 BG、目标或困惑…'}" required></textarea><button type="submit" aria-label="发送">↑</button></form>
-      <div class="tl-v3-disclaimer">未接入真实大模型 · 不作院校录取预测 · 请勿输入敏感个人信息</div>
+      <div class="tl-v3-chatlog" id="tl-v2-chat" aria-live="polite">${messages.length?aiMessagesHtml():`<div class="tl-v3-welcome"><h1>你好，欢迎来到同路</h1></div>`}</div>
+      ${messages.length&&!studentBG.confirmed?profileConfirmInline():''}
+      <form class="tl-v3-form" onsubmit="sendTongluChat(event)"><textarea id="tl-v2-chat-input" maxlength="800" rows="2" aria-label="给同路 AI 助手输入消息" placeholder="${isGuest?'问问保研流程…':isMentor?'询问服务规划…':'描述你的 BG、目标或困惑…'}" required></textarea><button type="submit" aria-label="发送">↑</button></form>
     </section>`;
   }
   function aiOnlyHome(){return `<div class="page tl-v3-home">${introAI()}</div>`;}

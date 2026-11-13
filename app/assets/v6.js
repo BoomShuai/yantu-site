@@ -46,12 +46,7 @@
     go('#/profile');
     // hash 路由异步触发 render，必须在新页面渲染后再写入草稿。
     setTimeout(()=>{
-      const field=$('v5-student-text');
-      if(!field){toast('建档页面尚未就绪，请进入「我的 → 智能建档」');return;}
-      if(field.value.trim() && field.value.trim()!==raw && !confirm('当前资料草稿和首页对话不同。用对话内容替换草稿并重新生成待确认预览吗？'))return;
-      field.value=raw;
-      v5KeepText('student',raw);
-      v5Analyze('student');
+      v5ImportStudentText(raw);
     },80);
   };
   const baseHome=PAGES.home;
@@ -60,16 +55,7 @@
     if(T.role!=='student')return html;
     // 仍坚持“首页只有 AI 对话”，清理旧版本额外插入的快捷入口。
     const cleaned=html.replace(/<div class="v4-quick">[\s\S]*?<\/div><div class="v4-quick-note">[\s\S]*?<\/div>/,'');
-    const hasDraft=!!String(T.bg.raw||'').trim();
-    const helper='<div class="v6-ai-helper">'+(hasDraft?'<div><b>'+(T.profileReady()?'BG 已确认 · 可继续完善':'已记录你的描述 · 待核对')+'</b><small>聊天内容只作为草稿，不会未经你确认就写入正式档案</small></div><button type="button" onclick="v6PrepareConversation()">整理为 BG ›</button>':'<div><b>自然语言填写 BG</b><small>可以先聊，也可以前往「我的」上传简历与语音口述</small></div>')+'</div>';
-    return cleaned.replace('<div class="tl-v3-disclaimer">',helper+'<div class="tl-v3-disclaimer">');
-  };
-  const oldProfile=PAGES.profile;
-  PAGES.profile=function(){
-    const html=oldProfile();if(T.role!=='student')return html;
-    const source=String(T.bg.raw||'').trim();
-    const top='<div class="v6-card v6-soft"><b>同一份 BG，三个入口</b><p>首页对话、自由描述、简历与语音最终整理到同一份可编辑档案。所有识别结果都需要你主动确认。</p>'+(source?'<button class="v6-secondary" onclick="v6PrepareConversation()">将首页对话导入下方识别预览 ›</button>':'')+'</div>';
-    return html.replace('<div class="v5-card"',top+'<div class="v5-card"');
+    return cleaned;
   };
   const oldProvider=PAGES.provider;
   PAGES.provider=function(){

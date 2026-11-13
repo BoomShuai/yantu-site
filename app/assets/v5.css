@@ -33,3 +33,39 @@
 
 .v5-pick{width:100%;display:flex;gap:9px;align-items:center;text-align:left;background:#fff;border:1px solid #f1e7f8;border-radius:12px;padding:10px;margin:7px 0;cursor:pointer}
 .v5-pick>span:nth-child(2){min-width:0;flex:1}.v5-pick b{display:block;font-size:12px;color:#513c6c}.v5-pick small{display:block;color:#9889a5;font-size:10px;line-height:1.5;margin-top:4px}.v5-pick strong{font-size:10px;white-space:nowrap;color:#8766b7}.v5-avatar{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:#f1e8fa;color:#7a5aaf;font-weight:800;flex:none}
+
+/* 学生入口：简历上传与四张资料卡，共用原有档案及解析逻辑。 */
+.v5-student-intake{padding:14px 0 22px;color:var(--ink)}
+.v5-student-intake h1{font-size:24px;font-weight:700;letter-spacing:-.5px;margin:0 0 18px}
+.v5-student-upload{display:flex;flex-direction:column;align-items:center;gap:5px;padding:23px 12px;background:var(--card);border:1.5px dashed var(--brand-2);border-radius:20px;margin-bottom:18px;transition:background .18s,border-color .18s}
+.v5-student-upload:hover,.v5-student-upload:focus-within{background:var(--brand-soft);border-color:var(--brand)}
+.v5-student-upload:focus-within{outline:3px solid var(--brand-2);outline-offset:3px}
+.v5-student-upload .v5-upload-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:13px;background:var(--brand-soft);color:var(--brand);font-size:23px;margin-bottom:4px}
+.v5-student-upload b{font-size:15px;color:var(--ink);font-weight:650}
+.v5-student-upload small{font-size:11px;color:var(--ink-2);margin:0}
+.v5-student-files{margin:-8px 0 16px}
+.v5-student-files .v5-file{border-color:var(--line)}
+.v5-student-files .v5-file b{color:var(--ink)}
+.v5-student-files .v5-file small{color:var(--ink-2)}
+.v5-student-card{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:10px 0;overflow:hidden}
+.v5-student-card summary{list-style:none;display:flex;align-items:center;gap:11px;padding:17px 14px;cursor:pointer;min-height:78px}
+.v5-student-card summary::-webkit-details-marker{display:none}
+.v5-student-card summary:focus-visible{outline:3px solid var(--brand);outline-offset:-3px;border-radius:17px}
+.v5-card-number{font-size:11px;font-weight:650;color:var(--brand);background:var(--brand-soft);border-radius:10px;display:grid;place-items:center;width:33px;height:33px;flex:none}
+.v5-card-heading{flex:1;min-width:0}
+.v5-card-heading b{display:block;color:var(--ink);font-size:14px;font-weight:650}
+.v5-card-heading small{display:block;font-size:11px;color:var(--ink-3);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v5-card-chevron{font-size:18px;color:var(--ink-3);transition:transform .18s}
+.v5-student-card[open] .v5-card-chevron{transform:rotate(180deg)}
+.v5-card-fields{padding:0 14px 14px}
+.v5-student-card .v5-field{margin:0 0 13px}
+.v5-student-card .v5-field:last-child{margin-bottom:0}
+.v5-student-card .v5-field span{color:var(--ink-2);font-size:11px;font-weight:500}
+.v5-student-card .v5-field input,.v5-student-card .v5-field textarea,.v5-student-card .v5-field select{display:block;width:100%;box-sizing:border-box;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:11px 12px;font:inherit;font-size:16px;line-height:1.6;outline:none}
+.v5-student-card .v5-field input::placeholder,.v5-student-card .v5-field textarea::placeholder{color:var(--ink-3);font-size:13px}
+.v5-student-card .v5-field :is(input,textarea,select):focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.v5-student-continue{display:flex;align-items:center;justify-content:center;gap:12px;background:var(--brand);border-color:var(--brand);font-size:14px;min-height:48px;margin:22px 0 10px}
+.v5-student-continue:active{background:var(--brand-3);transform:scale(.99)}
+.v5-student-skip{display:block;padding:10px;width:100%;font-size:12px;color:var(--ink-2)}
+.v5-student-privacy{text-align:center;color:var(--ink-3);font-size:10px;margin:12px 0 0}
+@media(prefers-reduced-motion:reduce){.v5-student-upload,.v5-card-chevron{transition:none}}

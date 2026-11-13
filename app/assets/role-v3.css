@@ -11,6 +11,17 @@ body[data-chat-home="yes"] #app .tl-v3-home{flex:1;display:flex;flex-direction:c
 .tl-v3-form{display:flex;gap:8px;align-items:flex-end;border:1px solid #e6dcec;border-radius:16px;background:#faf8fd;padding:9px;flex:none;box-shadow:0 3px 12px rgba(77,52,111,.025)}
 .tl-v3-form textarea{flex:1;min-width:0;resize:vertical;max-height:108px;min-height:45px;outline:0;border:0;background:transparent;font:inherit;font-size:16px;line-height:1.5;color:#3e3155}
 .tl-v3-form button{flex:none;width:39px;height:39px;border-radius:13px;background:#8667bb;color:#fff;font-size:19px;font-weight:800}
+
+/* 对话首页：欢迎语与输入框。 */
+.screen{overflow:clip}
+.drawer:not(.show){visibility:hidden;pointer-events:none}
+.tl-v3-home .tl-v3-ai{border:0;background:transparent;box-shadow:none;padding:0 3px 6px}
+.tl-v3-home .tl-v3-welcome{padding:28px 0}
+.tl-v3-home .tl-v3-welcome h1{color:var(--ink);font-size:21px;font-weight:650;letter-spacing:-.5px;margin:0}
+.tl-v3-home .tl-v3-form{background:var(--card);border-color:var(--line);border-radius:22px;padding:13px 12px;box-shadow:var(--shadow)}
+.tl-v3-home .tl-v3-form textarea{color:var(--ink);min-height:55px;resize:none;font-size:15px}
+.tl-v3-home .tl-v3-form textarea::placeholder{color:var(--ink-3)}
+.tl-v3-home .tl-v3-form button{background:var(--brand);border-radius:50%;font-weight:500}
 .tl-v3-disclaimer{text-align:center;font-size:9px;line-height:1.5;color:#a198aa;margin:9px 0 0;flex:none}
 .tl-v3-check{padding:10px;border:1px solid #e9dff3;background:#fbf8ff;border-radius:13px;margin-bottom:10px;max-height:190px;overflow-y:auto;flex:none}.tl-v3-check>small{display:block;font-size:10px;color:#9982ac}.tl-v3-check p{font-size:11px;color:#56456c;white-space:pre-wrap;overflow-wrap:anywhere;max-height:76px;overflow-y:auto;line-height:1.6;margin:6px 0}.tl-v3-check-tags,.tl-v3-bg-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.tl-v3-check-tags span,.tl-v3-bg-chips span{padding:4px 9px;background:#f0e6fa;color:#7555a2;border-radius:999px;font-size:10px}.tl-v3-check button{width:100%;border-radius:11px;background:#8263b5;color:#fff;padding:10px 8px;margin:6px 0;font-size:11px;font-weight:700}.tl-v3-check button:disabled{background:#e5ddea;color:#9887ad;cursor:not-allowed}
 .tl-v3-confirmed{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px;background:#f6f0fb;border-radius:12px;margin-bottom:9px;flex:none}.tl-v3-confirmed span{font-size:10px;color:#73599a}.tl-v3-confirmed button{font-size:10px;color:#96723b;white-space:nowrap}
