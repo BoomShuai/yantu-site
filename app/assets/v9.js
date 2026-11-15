@@ -17,7 +17,6 @@
   const cities=[...new Set(schools.map(s=>s.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh'));
   const schoolMeta=s=>[s?.type,s?.city].filter(Boolean).join(' · ')||'资料待补充';
   function credits(){return sync?`<details class="v11-source-panel"><summary>来源：深研派开源合集 · MIT · 同步于 ${E(new Date(sync.syncedAt).toLocaleDateString('sv-SE',{timeZone:'Asia/Shanghai'}))}</summary><p>标题、截止时间与原文链接按开源仓库收录。合集年度与公告发布日期分别保留，学校最新要求以原文为准。</p>${sync.repositories.map(r=>`<div>${link(r.url,r.year+' '+r.collection)}${link(new URL(r.licenseUrl,location.href).href,'MIT 许可')}</div>`).join('')}</details>`:'';}
-  function sourceRecords(n){if(!n.sourceRecords?.length)return '';return `<section class="v11-index-record"><h2>开源收录信息</h2><dl><div><dt>合集年度</dt><dd>${E((n.informationYears||[]).join(' / '))}</dd></div><div><dt>所属合集</dt><dd>${E((n.collectionTypes||[]).join(' / '))}</dd></div>${n.subjectGroups?.length?`<div><dt>学科分类</dt><dd>${E(n.subjectGroups.join(' / '))}</dd></div>`:''}</dl><details><summary>查看原始收录记录 · ${n.sourceRecords.length} 条</summary>${n.sourceRecords.map(r=>`<article><b>${E(r.title)}</b><p>${E(r.year)} ${E(r.collection)} · 截止时间：${E(r.rawDeadline)}</p>${link(r.sourceRecordUrl,'深研派原始记录')}</article>`).join('')}</details></section>`;}
   function select(scope,key,label,choices){
     const value=filters[scope][key];
     return `<label class="v9-nav-select"><span>${label}</span><select aria-label="${label}" onchange="v9Filter('${scope}','${key}',this.value)">${['全部',...choices].map(v=>`<option value="${E(v)}"${v===value?' selected':''}>${E(v==='211'?'211（非985）':v)}</option>`).join('')}</select></label>`;
@@ -96,17 +95,14 @@
   PAGES.noticeDetail=function(){
     const n=news().find(n=>n.id===S.currentNoticeId);
     if(!n)return empty('未找到通知','请返回招生通知重新选择。','招生通知',"v9SchoolTab('notices')");
-    const reader=window.TL_NEWS_READERS?.items?.[n.id],canEmbed=reader?.mode==='embed'&&/^https:\/\//.test(safeUrl(reader.readerUrl));
     const original=window.tlOriginalNotice?.(n);
-    const originalUrl=safeUrl(n.url),sourceUrl=originalUrl||n.sourceRecordUrl;
-    const sourceHost=originalUrl?new URL(originalUrl).hostname:'';
-    const isWechat=sourceHost==='mp.weixin.qq.com',official=/\.(edu|gov|ac)\.cn$|\.edu$/.test(sourceHost);
-    const sourceLabel=isWechat?'微信公众号原通知':originalUrl?n.school+' · 通知发布页面':'深研派开源收录';
-    const sourceButton=!originalUrl?'查看开源收录记录':isWechat?'查看微信公众号原通知':official?'前往官网查看完整通知':'查看原通知全文';
+    const originalUrl=safeUrl(n.url);
+    const meta=window.TL_NEWS_ARTICLES?.items?.[n.id];
+    const unavailable=!originalUrl?'原文链接待补充。':meta?.status==='verification-required'?'原站需要访问验证，暂时无法转载正文。':meta?.status==='access-restricted'?'原站限制访问，暂时无法转载正文。':meta?.status==='login-required'?'原站需要登录后查看正文。':meta?.status==='source-removed'?'原站通知已移除，暂时无法读取正文。':sourceUnavailable(n)?'原站通知已失效（404），暂时无法读取正文。':'原站正文暂时无法读取。';
     return `<div class="page v9-page v10-notice-detail"><button class="v9-back-link" onclick="v9SchoolTab('notices')">‹ 招生通知</button><div class="v10-detail-category">${categoryBadge(n)}<span>${E(n.school)}</span></div><h1 class="v9-notice-title">${E(n.title)}</h1><p class="v9-eyebrow">${E(n.sourceLabel||n.school)}</p><div class="v9-notice-dates"><span>发布 ${E(n.publishedText||n.publishedAt||'未标注')}</span><span>截止 ${E(n.deadlineText||'待公布')}</span></div>
-      ${sourceRecords(n)}${original||`<section class="v10-original-reader" aria-label="高校官方原文"><div class="v10-reader-heading"><h2>通知原文</h2><span>${isWechat?'微信公众号':official?'高校官方网站':'原通知发布页面'}</span></div>${canEmbed?`<p class="v10-reader-note">以下直接加载原站页面，可在原文区域滑动阅读完整内容和附件。</p><iframe src="${E(safeUrl(reader.readerUrl))}" title="${E(n.school)}官方通知原文" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"></iframe><p class="v10-reader-note">如原文未正常显示，请使用下方官网链接。</p>`:`<div class="v10-reader-unavailable"><span aria-hidden="true">↗</span><h3>${!originalUrl?'原文链接待补充':sourceUnavailable(n)?'原通知链接目前无法访问':'查看原通知全文'}</h3><p>${!originalUrl?'开源合集尚未提供有效原文链接，标题和截止信息已保留，可查看下方原始收录记录。':sourceUnavailable(n)?'该链接目前返回 404，暂不能获取完整正文。可通过下方链接核对，或等待学校重新发布。':n.sourceRecords?.length?'开源仓库收录了标题、截止时间和原文链接。完整正文及附件请通过下方原通知链接查看。':reader?.reason==='frame-policy'?'该原站限制在其他网站内嵌展示，完整正文与附件请通过下方链接查看。':'当前原站无法在此获取完整通知，完整正文与附件请通过下方链接查看。'}</p></div>`}</section>`}
-      <footer class="v10-original-footer"><span>来源 · ${E(sourceLabel)}</span>${link(sourceUrl,sourceButton)}<small>${E(sourceUrl)}</small></footer>
-      <form class="v9-position-form" onsubmit="v9AskNotice(event,'${E(n.id)}')"><div class="v10-position-heading"><span class="v10-position-icon" aria-hidden="true">✦</span><label for="v9-position-question">帮我定位</label></div><div><input id="v9-position-question" name="question" placeholder="结合我的背景，看看这条通知是否适合我" maxlength="350"><button type="submit">帮我定位 <span aria-hidden="true">↗</span></button></div></form></div>`;
+      ${original||`<p class="v12-body-unavailable">${E(unavailable)}${originalUrl?'可点击下方按钮查看。':''}</p>`}
+      <footer class="v10-original-footer">${originalUrl?link(originalUrl,'查看官网'):'<button type="button" disabled>官网链接待补充</button>'}</footer>
+      <button type="button" class="v12-position-button" onclick="v9AskNotice(null,'${E(n.id)}')"><span>帮我定位</span><span aria-hidden="true">↗</span></button></div>`;
   };
   function providerCard(p){
     const m=V4.metaOf(p),free=remain(p)>0;const rank=V4.state.ranks.indexOf(p.id);
@@ -153,8 +149,8 @@
   window.v9ProviderFilter=function(key,value){if(!['identities','capabilities'].includes(key))return;const list=filters.providers[key];filters.providers[key]=value==='全部'?[]:list.includes(value)?list.filter(v=>v!==value):[...list,value];render();};
   window.v9AllProviders=function(){S.providerView='all';render();};
   window.v9ClearNoticeContext=function(){noticeContext=null;render();};
-  window.v9AskNotice=function(event,id){event.preventDefault();if(T.role!=='student'){toast('请使用学生身份进行个人定位');return;}const n=news().find(n=>n.id===id);if(!n)return;
-    const question=event.target.elements.question.value.trim()||'帮我结合这条招生通知梳理申请准备方向';noticeContext={id,title:n.title,url:n.url};
+  window.v9AskNotice=function(event,id){event?.preventDefault();if(T.role!=='student'){toast('请使用学生身份进行个人定位');return;}const n=news().find(n=>n.id===id);if(!n)return;
+    const question='结合我的背景，帮我判断这条通知是否适合我，并梳理申请条件、材料和截止时间';noticeContext={id,title:n.title,url:n.url};
     window.addEventListener('hashchange',()=>window.tlStartNotice(question,{title:n.title,summary:n.summary,url:n.url}),{once:true});route('home');
   };
   NAV.school={title:'院校资讯'};

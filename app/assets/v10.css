@@ -82,3 +82,13 @@ body{background:radial-gradient(ellipse at 25% 15%,#ebe7f4,#dddde8 60%,#d3d4df);
 .v11-load-more{width:100%;padding:14px;border:1px solid #e3daed;border-radius:11px;color:#8c68a6;background:#fff;margin:8px 0 4px;font-size:12px;display:flex;justify-content:space-between;gap:12px}.v11-load-more span{color:#a28db0;font-size:10px}
 .v11-source-panel{font-size:10px;color:#9b86aa;border-top:1px solid #eae1f1;padding:17px 3px 0;margin-top:20px;line-height:1.9}.v11-source-panel summary{cursor:pointer;color:#8e76a1}.v11-source-panel p{margin:12px 0;color:#a38cad}.v11-source-panel>div{display:flex;justify-content:space-between;gap:10px;margin:9px 0}
 .v11-index-record{margin-top:20px;padding:16px;border:1px solid #e7dcee;border-radius:14px;background:#fff}.v11-index-record h2{font-size:14px;color:#81618e;margin:0 0 14px}.v11-index-record dl{margin:0}.v11-index-record dl>div{display:flex;gap:14px;justify-content:space-between;font-size:11px;margin:10px 0}.v11-index-record dt{color:#a28aaf}.v11-index-record dd{margin:0;color:#8f709e;text-align:right}.v11-index-record summary{font-size:10px;color:#a084b0;cursor:pointer;border-top:1px solid #f0e8f5;padding-top:12px;margin-top:13px}.v11-index-record article{border-top:1px solid #f1eaf7;padding:12px 0}.v11-index-record article b{font-size:11px;font-weight:550;color:#9b7baa;line-height:1.9;display:block}.v11-index-record article p,.v11-index-record article a{font-size:10px;color:#b098bc;line-height:1.9;margin-top:8px}
+.v12-notice-body{margin:18px 0 0;border:0;background:transparent;overflow-wrap:anywhere}
+.v12-notice-body .v10-article{padding:0;color:#494451;font-size:14px;line-height:2.05}
+.v12-notice-body .v10-article:after{content:'';display:block;clear:both}
+.v12-notice-body .v10-article strong,.v12-notice-body .v10-article b{color:#38313f}
+.v12-body-unavailable{font-size:13px;line-height:1.9;color:#91839b;margin:24px 0}
+.v10-notice-detail .v10-original-footer{padding:20px 0 0;margin-bottom:16px}
+.v10-notice-detail .v10-original-footer>a{justify-content:center;padding:13px 16px;font-size:14px;border-radius:11px;background:transparent;border-color:#d8cce5;color:#846199}
+.v10-original-footer>button:disabled{padding:13px;border:1px solid #e6deed;border-radius:11px;color:#a99bb4;background:transparent;cursor:default}
+.v12-position-button{display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px 18px;border:0;border-radius:11px;background:#845fa0;color:#fff;font-size:15px;font-weight:650;line-height:1.6;margin:0 0 6px}
+.v12-position-button:hover{background:#75528f}.v12-position-button:active{background:#68477f}

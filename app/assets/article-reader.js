@@ -27,6 +27,6 @@
     const meta=window.TL_NEWS_ARTICLES?.items?.[n.id];
     if(!['full','media-pending'].includes(meta?.status)||meta.sourceUrl!==n.url)return '';
     queueMicrotask(()=>mount(n.id,n.url));
-    return '<section class="v10-original-reader v10-local-original" aria-label="高校官方原文"><div class="v10-reader-heading"><h2>通知原文</h2><span>原文转载</span></div><div data-notice-body="'+E(n.id)+'" aria-busy="true"><div class="v10-loading" role="status">正在读取通知原文…</div></div></section>';
+    return '<section class="v10-local-original v12-notice-body" aria-label="正文"><div data-notice-body="'+E(n.id)+'" aria-busy="true"><div class="v10-loading" role="status">正在加载正文…</div></div></section>';
   };
 })();
