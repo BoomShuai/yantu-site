@@ -27,14 +27,14 @@
     const year=Number(new Intl.DateTimeFormat('en',{timeZone:'Asia/Shanghai',year:'numeric'}).format(now));
     return Array.from({length:5},(_,i)=>String(year-i));
   }
-  const textOf=n=>[n.school,n.college,n.title,n.summary,n.detail].filter(Boolean).join(' ');
+  const textOf=n=>[n.school,n.college,n.title,n.summary,n.detail,...(n.subjectGroups||[]),...(n.sourceRecords||[]).map(r=>r.title)].filter(Boolean).join(' ');
   function newsMatches(n,f,school){
     const text=textOf(n),year=String(n.publishedAt||'').match(/^\d{4}/)?.[0]||'';
-    if(f.category&&f.category!=='全部'&&noticeCategory(n)!==f.category)return false;
+    if(f.category&&f.category!=='全部'&&noticeCategory(n)!==f.category&&!(n.collectionTypes||[]).includes(f.category))return false;
     if(f.major&&f.major!=='全部'&&!MAJORS[f.major]?.test(text))return false;
     if(f.type&&f.type!=='全部'&&school?.type!==f.type)return false;
     if(f.city&&f.city!=='全部'&&school?.city!==f.city)return false;
-    if(f.year&&f.year!=='全部'&&year!==f.year)return false;
+    if(f.year&&f.year!=='全部'&&!(n.informationYears?.length?n.informationYears.map(String).includes(String(f.year)):year===String(f.year)))return false;
     return !f.q||text.toLowerCase().includes(f.q.trim().toLowerCase());
   }
   function providerMatches(p,f,meta={}){

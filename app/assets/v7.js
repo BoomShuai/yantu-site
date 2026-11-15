@@ -98,6 +98,9 @@
 
     var w = parseWhen(deadlineRaw);
     var v = viewOf(w);
+    if(item.expiredUpstream===true){v.status='已截止';v.days=null;v.tone='gray';}
+    else if(!w&&item.sourceType==='shenyanpai'){v.status='截止时间未提供';}
+    else if(item.sourceType==='shenyanpai'&&v.status==='报名中'){v.status='未到收录截止日';}
     if (!w && labelRaw) { v.text = labelRaw; v.note = labelRaw; }
     var pub = parseWhen(publishedRaw);
 
@@ -123,6 +126,14 @@
       note: v.note,
       source: "来源：" + (college || school || "公开渠道"),
       sourceLabel: college ? school + " · " + college : school,
+      informationYears:Array.isArray(item.informationYears)?item.informationYears:[],
+      collectionTypes:Array.isArray(item.collectionTypes)?item.collectionTypes:[],
+      subjectGroups:Array.isArray(item.subjectGroups)?item.subjectGroups:[],
+      sourceType:item.sourceType||'official',
+      sourceRecordUrl:item.sourceRecordUrl||'',
+      sourceRecords:Array.isArray(item.sourceRecords)?item.sourceRecords:[],
+      rawDeadline:item.rawDeadline||'',
+      expiredUpstream:item.expiredUpstream===true,
       summary: summary,
       detail: summary,
       url: url

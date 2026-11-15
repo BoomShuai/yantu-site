@@ -6,13 +6,18 @@
   const E=v=>escapeTL(String(v??''));
   const safeUrl=u=>/^https?:\/\//i.test(String(u||''))?String(u):'';
   const link=(url,label)=>safeUrl(url)?`<a href="${E(safeUrl(url))}" target="_blank" rel="noopener noreferrer">${E(label)} ↗</a>`:'';
-  const schools=D.schools,schoolByName=name=>schools.find(s=>s.name===name);
+  const schools=D.schools,schoolMap=new Map(schools.map(s=>[s.name,s])),schoolByName=name=>schoolMap.get(name);
+  const sync=window.TL_SCHOOL_NEWS?.sync;
   const years=C.recentYears();
   const filters={news:{category:'全部',major:'全部',type:'全部',city:'全部',year:'全部',q:''},library:{type:'全部',city:'全部'},providers:{identities:[],capabilities:[],q:''}};
   let programmeQuery='',rosterYear='',providerReturn='',noticeContext=null;
+  let newsLimit=40,libraryLimit=40,newsCacheKey='',newsCache=[],libraryKey='';
   const parts=()=>location.hash.replace(/^#\//,'').split('/');
   const route=path=>go('#/'+path);
-  const cities=[...new Set(schools.map(s=>s.city))].sort((a,b)=>a.localeCompare(b,'zh'));
+  const cities=[...new Set(schools.map(s=>s.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh'));
+  const schoolMeta=s=>[s?.type,s?.city].filter(Boolean).join(' · ')||'资料待补充';
+  function credits(){return sync?`<details class="v11-source-panel"><summary>来源：深研派开源合集 · MIT · 同步于 ${E(new Date(sync.syncedAt).toLocaleDateString('sv-SE',{timeZone:'Asia/Shanghai'}))}</summary><p>标题、截止时间与原文链接按开源仓库收录。合集年度与公告发布日期分别保留，学校最新要求以原文为准。</p>${sync.repositories.map(r=>`<div>${link(r.url,r.year+' '+r.collection)}${link(new URL(r.licenseUrl,location.href).href,'MIT 许可')}</div>`).join('')}</details>`:'';}
+  function sourceRecords(n){if(!n.sourceRecords?.length)return '';return `<section class="v11-index-record"><h2>开源收录信息</h2><dl><div><dt>合集年度</dt><dd>${E((n.informationYears||[]).join(' / '))}</dd></div><div><dt>所属合集</dt><dd>${E((n.collectionTypes||[]).join(' / '))}</dd></div>${n.subjectGroups?.length?`<div><dt>学科分类</dt><dd>${E(n.subjectGroups.join(' / '))}</dd></div>`:''}</dl><details><summary>查看原始收录记录 · ${n.sourceRecords.length} 条</summary>${n.sourceRecords.map(r=>`<article><b>${E(r.title)}</b><p>${E(r.year)} ${E(r.collection)} · 截止时间：${E(r.rawDeadline)}</p>${link(r.sourceRecordUrl,'深研派原始记录')}</article>`).join('')}</details></section>`;}
   function select(scope,key,label,choices){
     const value=filters[scope][key];
     return `<label class="v9-nav-select"><span>${label}</span><select aria-label="${label}" onchange="v9Filter('${scope}','${key}',this.value)">${['全部',...choices].map(v=>`<option value="${E(v)}"${v===value?' selected':''}>${E(v==='211'?'211（非985）':v)}</option>`).join('')}</select></label>`;
@@ -23,33 +28,42 @@
   function categoryBadge(n){const category=C.noticeCategory(n);return `<span class="v10-category ${C.categoryTone(category)}">${E(category)}</span>`;}
   const news=()=>M.notices||[];
   const sourceUnavailable=n=>window.TL_NEWS_ARTICLES?.items?.[n.id]?.httpStatus===404;
+  const noticeYear=n=>n.informationYears?.length?Math.max(...n.informationYears):Number(String(n.publishedAt).slice(0,4))||0;
+  const noticeOrder=(a,b)=>(Number(sourceUnavailable(a))-Number(sourceUnavailable(b)))||((a.days??Infinity)-(b.days??Infinity))||(noticeYear(b)-noticeYear(a))||String(b.publishedAt||b.deadline||'').localeCompare(String(a.publishedAt||a.deadline||''));
   function newsCard(n){
     const s=schoolByName(n.school);
-    return `<article class="v9-news"><button class="v9-news-open" onclick="v9OpenNotice('${E(n.id)}')"><div class="v9-news-meta">${categoryBadge(n)}<time>${E(n.publishedText||n.publishedAt||'发布日期未标注')}</time></div><h2>${E(n.title)}</h2><div class="v10-school-line"><span class="v10-school-dot">${E(n.school.slice(0,1))}</span><span>${E(n.school)}</span><small>${E(s?.type||'')} · ${E(s?.city||'')}</small></div><div class="v9-news-foot"><span>${E(n.college||'研究生招生')}</span><span class="${n.status==='已截止'?'closed':'notice-status'}">${sourceUnavailable(n)?'原站暂不可用':E(n.status||'')}</span></div></button><button class="v9-notice-save" onclick="toggleSchoolFavorite('${E(n.id)}')" aria-label="${isSchoolSaved(n.id)?'取消收藏通知':'收藏通知'}">${isSchoolSaved(n.id)?'♥':'♡'}</button></article>`;
+    const date=n.publishedText||n.publishedAt||(n.informationYears?.length?n.informationYears.join(' / ')+' 年度':'发布日期未标注');
+    return `<article class="v9-news"><button class="v9-news-open" onclick="v9OpenNotice('${E(n.id)}')"><div class="v9-news-meta">${categoryBadge(n)}<time>${E(date)}</time></div><h2>${E(n.title)}</h2><div class="v10-school-line"><span class="v10-school-dot">${E(n.school.slice(0,1))}</span><span>${E(n.school)}</span><small>${E(schoolMeta(s))}</small></div><div class="v9-news-foot"><span>${n.deadline?'截止 '+E(n.deadlineText):E(n.college||(n.sourceRecords?.length?'深研派开源收录':'研究生招生'))}</span><span class="${n.status==='已截止'?'closed':'notice-status'}">${!n.url?'链接待补充':sourceUnavailable(n)?'原站暂不可用':E(n.status||'')}</span></div></button><button class="v9-notice-save" onclick="toggleSchoolFavorite('${E(n.id)}')" aria-label="${isSchoolSaved(n.id)?'取消收藏通知':'收藏通知'}">${isSchoolSaved(n.id)?'♥':'♡'}</button></article>`;
   }
   function noticesPage(){
-    const f=filters.news,list=news().filter(n=>C.newsMatches(n,f,schoolByName(n.school)));
-    list.sort((a,b)=>(Number(sourceUnavailable(a))-Number(sourceUnavailable(b)))||((a.days??Infinity)-(b.days??Infinity))||String(b.publishedAt||'').localeCompare(String(a.publishedAt||'')));
+    const f=filters.news,key=JSON.stringify(f);
+    if(key!==newsCacheKey){newsCacheKey=key;newsLimit=40;newsCache=news().filter(n=>C.newsMatches(n,f,schoolByName(n.school)));newsCache.sort(noticeOrder);}
+    const list=newsCache;
     return schoolTabs('notices')+`<div class="page v9-page"><div class="v9-heading"><h1>招生通知</h1><span>${list.length} 条</span></div>${search('news',f.q,'搜索院校、学院、专业或通知')}
       <nav class="v9-filter-nav" aria-label="招生通知筛选">${select('news','major','专业',Object.keys(C.MAJORS))}${select('news','type','院校类型',['985','211','普通本科'])}${select('news','city','城市',cities)}${select('news','year','年份',years)}</nav>
       <div class="v10-category-filters" role="group" aria-label="通知类别">${['全部',...C.CATEGORIES].map(v=>`<button type="button" aria-pressed="${f.category===v}" class="${f.category===v?'active':''}" onclick="v9Filter('news','category','${v}')">${v}</button>`).join('')}</div>
-      <div class="v9-results"><span>${f.category==='全部'?'全部通知':E(f.category)} · ${list.length} 条</span><button onclick="v9Reset('news')">重置筛选</button></div>${list.length?list.map(newsCard).join(''):empty('暂无符合条件的通知','换个条件试试，或清空关键词。')}
-      <p class="v9-footnote">年份按公告发布日期筛选。现有资料为静态整理，详情以官方原文为准。</p></div>`;
+      <div class="v9-results"><span>${f.category==='全部'?'全部通知':E(f.category)} · ${list.length.toLocaleString('zh-CN')} 条</span><button onclick="v9Reset('news')">重置筛选</button></div>${list.length?list.slice(0,newsLimit).map(newsCard).join(''):empty('暂无符合条件的通知','换个条件试试，或清空关键词。')}
+      ${list.length>newsLimit?`<button class="v11-load-more" onclick="v9MoreNews()">加载更多 <span>已显示 ${newsLimit} / ${list.length}</span></button>`:''}
+      <p class="v9-footnote">开源通知按合集年度筛选；其他公告按发布日期筛选。时间与要求以原文为准。</p>${credits()}</div>`;
   }
   function libraryPage(){
     const f=filters.library,list=schools.filter(s=>(f.type==='全部'||s.type===f.type)&&(f.city==='全部'||s.city===f.city));
-    return schoolTabs('library')+`<div class="page v9-page"><div class="v9-heading"><h1>院校库</h1><span>${list.length} 所</span></div><nav class="v9-filter-nav v9-two" aria-label="院校库筛选">${select('library','type','院校类型',['985','211','普通本科'])}${select('library','city','城市',cities)}</nav>
-      ${list.length?list.map(s=>`<button class="v9-university" onclick="v9OpenUniversity('${s.id}')"><span class="v9-school-mark">${E(s.name.slice(0,1))}</span><span class="v9-grow"><b>${E(s.name)}</b><small>${E(s.type)} · ${E(s.city)}</small><span class="v9-library-caption">${s.colleges.length?s.colleges.length+' 个已整理学院':'学院资料待补充'}</span></span><span class="v9-arrow">›</span></button>`).join(''):empty('暂无符合条件的院校','调整院校类型或城市。','重置筛选',"v9Reset('library')")}
-      <p class="v9-footnote">城市按学校主校区整理。仅展示已整理的学院资料。</p></div>`;
+    const key=JSON.stringify(f);if(key!==libraryKey){libraryLimit=40;libraryKey=key;}
+    return schoolTabs('library')+`<div class="page v9-page"><div class="v9-heading"><h1>院校库</h1><span>${list.length} 个院校与机构</span></div><nav class="v9-filter-nav v9-two" aria-label="院校库筛选">${select('library','type','院校类型',['985','211','普通本科'])}${select('library','city','城市',cities)}</nav>
+      ${list.length?list.slice(0,libraryLimit).map(s=>`<button class="v9-university" onclick="v9OpenUniversity('${s.id}')"><span class="v9-school-mark">${E(s.name.slice(0,1))}</span><span class="v9-grow"><b>${E(s.name)}</b><small>${E(schoolMeta(s))}</small><span class="v9-library-caption">${s.colleges.length?s.colleges.length+' 个已整理学院 · ':''}${s.noticeCount||0} 条招生通知</span></span><span class="v9-arrow">›</span></button>`).join(''):empty('暂无符合条件的院校','调整院校类型或城市。','重置筛选',"v9Reset('library')")}
+      ${list.length>libraryLimit?`<button class="v11-load-more" onclick="v9MoreLibrary()">加载更多 <span>已显示 ${libraryLimit} / ${list.length}</span></button>`:''}
+      <p class="v9-footnote">城市依教育部学校所在地整理，多校区以学校官网为准。未匹配的机构资料标为待补充。</p>${credits()}</div>`;
   }
   function universityPage(id,collegeId){
     const s=schools.find(s=>s.id===id);if(!s)return empty('未找到院校','请返回院校库重新选择。','返回院校库',"v9SchoolTab('library')");
     const q=programmeQuery.trim().toLowerCase();
     const colleges=s.colleges.filter(c=>(!collegeId||c.id===collegeId)&&(!q||c.name.toLowerCase().includes(q)||c.programs.some(p=>(p.name+p.code).toLowerCase().includes(q))));
-    return schoolTabs('library')+`<div class="page v9-page"><button class="v9-back-link" onclick="v9SchoolTab('library')">‹ 院校库</button><div class="v9-university-title"><span class="v9-school-mark">${E(s.name.slice(0,1))}</span><div><h1>${E(s.name)}</h1><p>${E(s.type)} · ${E(s.city)}</p></div></div>
-      ${search('programme',programmeQuery,'搜索学院或专业')}<div class="v9-subheading"><h2>${collegeId?'学院专业':'学院情况'}</h2>${collegeId?`<button onclick="v9OpenUniversity('${s.id}')">全部学院</button>`:''}</div>
+    const related=news().filter(n=>n.school===s.name&&(!q||(n.title+' '+n.college).toLowerCase().includes(q)));
+    return schoolTabs('library')+`<div class="page v9-page"><button class="v9-back-link" onclick="v9SchoolTab('library')">‹ 院校库</button><div class="v9-university-title"><span class="v9-school-mark">${E(s.name.slice(0,1))}</span><div><h1>${E(s.name)}</h1><p>${E(schoolMeta(s))}</p></div></div>
+      ${search('programme',programmeQuery,'搜索学院或专业')}${s.colleges.length?`<div class="v9-subheading"><h2>${collegeId?'学院专业':'学院情况'}</h2>${collegeId?`<button onclick="v9OpenUniversity('${s.id}')">全部学院</button>`:''}</div>`:''}
       ${colleges.length?colleges.map(c=>`<section class="v9-college"><div class="v9-college-head"><h3>${E(c.name)}</h3>${!collegeId?`<button onclick="v9OpenCollege('${s.id}','${c.id}')">查看学院 ›</button>`:''}</div><p>${E(c.summary)}</p>
-        <div class="v9-program-list">${c.programs.filter(p=>!q||c.name.toLowerCase().includes(q)||(p.name+p.code).toLowerCase().includes(q)).map(p=>`<button onclick="v9OpenMajor('${p.id}')"><span><b>${E(p.name)}</b><small>${E(p.code||'查看录取公示与辅导员')}</small></span><span>›</span></button>`).join('')||'<div class="v9-muted">专业信息正在补充，可先查看学院原文。</div>'}</div><div class="v9-source-link">${link(c.sourceUrl,'学院资料来源')}</div></section>`).join(''):empty('暂无匹配的学院或专业',q?'可以尝试更短的关键词。':'该校学院资料暂未整理，可先浏览该校招生通知。',q?'清空搜索':'查看该校通知',q?"v9ClearProgrammeQuery()":`v9UniversityNotices('${s.id}')`)}</div>`;
+        <div class="v9-program-list">${c.programs.filter(p=>!q||c.name.toLowerCase().includes(q)||(p.name+p.code).toLowerCase().includes(q)).map(p=>`<button onclick="v9OpenMajor('${p.id}')"><span><b>${E(p.name)}</b><small>${E(p.code||'查看录取公示与辅导员')}</small></span><span>›</span></button>`).join('')||'<div class="v9-muted">专业信息正在补充，可先查看学院原文。</div>'}</div><div class="v9-source-link">${link(c.sourceUrl,'学院资料来源')}</div></section>`).join(''):s.colleges.length?empty('暂无匹配的学院或专业','可以尝试更短的关键词。','清空搜索',"v9ClearProgrammeQuery()"):''}
+      <div class="v9-subheading"><h2>该校招生通知 · ${related.length}</h2><button onclick="v9UniversityNotices('${s.id}')">查看全部 ›</button></div>${related.slice(0,8).map(newsCard).join('')||'<p class="v9-muted">暂无匹配的通知，可尝试其他学院或专业关键词。</p>'}</div>`;
   }
   function programmeInfo(id){for(const school of schools)for(const college of school.colleges){const programme=college.programs.find(p=>p.id===id);if(programme)return {school,college,programme};}return null;}
   function pinnedCard(provider,label){return `<article class="v9-pinned"><span class="v9-pin-label">${label}</span><div class="v9-pinned-person"><span class="v9-avatar">${E(provider.name.slice(0,1))}</span><div><b>${E(provider.name)}</b><p>${E(provider.brief)}</p></div></div><div class="v9-pinned-actions"><button onclick="v9OpenProvider('${provider.id}',true)">查看个人资料</button><button onclick="startTongluConsult('${provider.id}')">进入聊天</button></div></article>`;}
@@ -84,9 +98,14 @@
     if(!n)return empty('未找到通知','请返回招生通知重新选择。','招生通知',"v9SchoolTab('notices')");
     const reader=window.TL_NEWS_READERS?.items?.[n.id],canEmbed=reader?.mode==='embed'&&/^https:\/\//.test(safeUrl(reader.readerUrl));
     const original=window.tlOriginalNotice?.(n);
+    const originalUrl=safeUrl(n.url),sourceUrl=originalUrl||n.sourceRecordUrl;
+    const sourceHost=originalUrl?new URL(originalUrl).hostname:'';
+    const isWechat=sourceHost==='mp.weixin.qq.com',official=/\.(edu|gov|ac)\.cn$|\.edu$/.test(sourceHost);
+    const sourceLabel=isWechat?'微信公众号原通知':originalUrl?n.school+' · 通知发布页面':'深研派开源收录';
+    const sourceButton=!originalUrl?'查看开源收录记录':isWechat?'查看微信公众号原通知':official?'前往官网查看完整通知':'查看原通知全文';
     return `<div class="page v9-page v10-notice-detail"><button class="v9-back-link" onclick="v9SchoolTab('notices')">‹ 招生通知</button><div class="v10-detail-category">${categoryBadge(n)}<span>${E(n.school)}</span></div><h1 class="v9-notice-title">${E(n.title)}</h1><p class="v9-eyebrow">${E(n.sourceLabel||n.school)}</p><div class="v9-notice-dates"><span>发布 ${E(n.publishedText||n.publishedAt||'未标注')}</span><span>截止 ${E(n.deadlineText||'待公布')}</span></div>
-      ${original||`<section class="v10-original-reader" aria-label="高校官方原文"><div class="v10-reader-heading"><h2>通知原文</h2><span>高校官方网站</span></div>${canEmbed?`<p class="v10-reader-note">以下直接加载原站页面，可在原文区域滑动阅读完整内容和附件。</p><iframe src="${E(safeUrl(reader.readerUrl))}" title="${E(n.school)}官方通知原文" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"></iframe><p class="v10-reader-note">如原文未正常显示，请使用下方官网链接。</p>`:`<div class="v10-reader-unavailable"><span aria-hidden="true">↗</span><h3>${sourceUnavailable(n)?'原通知链接目前无法访问':'请前往学校官网阅读全文'}</h3><p>${sourceUnavailable(n)?'该链接目前返回 404，暂不能获取完整正文。可通过下方链接核对，或等待学校重新发布。':reader?.reason==='frame-policy'?'该原站限制在其他网站内嵌展示，完整正文与附件请通过下方链接查看。':'当前原站无法在此获取完整通知，完整正文与附件请通过下方链接查看。'}</p></div>`}</section>`}
-      <footer class="v10-original-footer"><span>来源 · ${E(n.school)}官方网站</span>${link(n.url,'前往官网查看完整通知')}<small>${E(n.url)}</small></footer>
+      ${sourceRecords(n)}${original||`<section class="v10-original-reader" aria-label="高校官方原文"><div class="v10-reader-heading"><h2>通知原文</h2><span>${isWechat?'微信公众号':official?'高校官方网站':'原通知发布页面'}</span></div>${canEmbed?`<p class="v10-reader-note">以下直接加载原站页面，可在原文区域滑动阅读完整内容和附件。</p><iframe src="${E(safeUrl(reader.readerUrl))}" title="${E(n.school)}官方通知原文" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"></iframe><p class="v10-reader-note">如原文未正常显示，请使用下方官网链接。</p>`:`<div class="v10-reader-unavailable"><span aria-hidden="true">↗</span><h3>${!originalUrl?'原文链接待补充':sourceUnavailable(n)?'原通知链接目前无法访问':'查看原通知全文'}</h3><p>${!originalUrl?'开源合集尚未提供有效原文链接，标题和截止信息已保留，可查看下方原始收录记录。':sourceUnavailable(n)?'该链接目前返回 404，暂不能获取完整正文。可通过下方链接核对，或等待学校重新发布。':n.sourceRecords?.length?'开源仓库收录了标题、截止时间和原文链接。完整正文及附件请通过下方原通知链接查看。':reader?.reason==='frame-policy'?'该原站限制在其他网站内嵌展示，完整正文与附件请通过下方链接查看。':'当前原站无法在此获取完整通知，完整正文与附件请通过下方链接查看。'}</p></div>`}</section>`}
+      <footer class="v10-original-footer"><span>来源 · ${E(sourceLabel)}</span>${link(sourceUrl,sourceButton)}<small>${E(sourceUrl)}</small></footer>
       <form class="v9-position-form" onsubmit="v9AskNotice(event,'${E(n.id)}')"><div class="v10-position-heading"><span class="v10-position-icon" aria-hidden="true">✦</span><label for="v9-position-question">帮我定位</label></div><div><input id="v9-position-question" name="question" placeholder="结合我的背景，看看这条通知是否适合我" maxlength="350"><button type="submit">帮我定位 <span aria-hidden="true">↗</span></button></div></form></div>`;
   };
   function providerCard(p){
@@ -116,7 +135,10 @@
     if(p[0]==='school'&&['university','college','major'].includes(p[1])){if(p[1]==='college'){v9OpenUniversity(p[2]);return;}if(p[1]==='major'){const info=programmeInfo(p[2]);if(info){v9OpenCollege(info.school.id,info.college.id);return;}}v9SchoolTab('library');return;}previousBack();};
   window.v9SchoolTab=function(key){S.schoolView=key;programmeQuery='';route('school/'+key);};
   window.v9Filter=function(scope,key,value){if(!filters[scope]||!(key in filters[scope]))return;filters[scope][key]=value;render();};
-  window.v9Reset=function(scope){if(scope==='providers')Object.assign(filters.providers,{identities:[],capabilities:[],q:''});else if(scope==='library')Object.assign(filters.library,{type:'全部',city:'全部'});else Object.assign(filters.news,{category:'全部',major:'全部',type:'全部',city:'全部',year:'全部',q:''});render();};
+  window.v9Reset=function(scope){newsLimit=40;libraryLimit=40;if(scope==='providers')Object.assign(filters.providers,{identities:[],capabilities:[],q:''});else if(scope==='library')Object.assign(filters.library,{type:'全部',city:'全部'});else Object.assign(filters.news,{category:'全部',major:'全部',type:'全部',city:'全部',year:'全部',q:''});render();};
+  function showMore(kind){const app=document.getElementById('app'),scroll=app.scrollTop;if(kind==='news')newsLimit+=40;else libraryLimit+=40;render();document.getElementById('app').scrollTop=scroll;}
+  window.v9MoreNews=function(){showMore('news');};
+  window.v9MoreLibrary=function(){showMore('library');};
   window.v9KeepQuery=function(scope,value){if(scope==='programme')programmeQuery=value;else if(filters[scope])filters[scope].q=value;};
   window.v9Search=function(event,scope){event.preventDefault();v9KeepQuery(scope,event.target.elements.q.value);render();};
   window.v9ClearProgrammeQuery=function(){programmeQuery='';render();};
