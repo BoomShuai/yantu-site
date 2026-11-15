@@ -1,0 +1,136 @@
+/* 同路 V8.1 · 我的 / 聊天 / 服务者分步建档 */
+.v8-my-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 16px}
+.v8-my-shortcuts button{border:1px solid #eee7f6;background:linear-gradient(155deg,#fff,#faf7ff);border-radius:15px;padding:12px 7px;display:flex;flex-direction:column;align-items:center;gap:6px;color:#49385f;min-width:0}
+.v8-shortcut-icon{width:34px;height:34px;border-radius:12px;background:#f0e9fb;color:#8060ad;display:grid;place-items:center;font-size:19px}
+.v8-my-shortcuts b{font-size:11px;white-space:nowrap}
+.v8-my-shortcuts small{font-size:9px;color:#978ba4;white-space:nowrap}
+.v8-my-shortcuts.mentor{margin-top:14px}
+.v8-mentor-summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#f8f5fc;border:1px solid #eee7f6;border-radius:14px;padding:12px;margin:12px 0 0}
+.v8-mentor-summary b{font-size:13px;color:#49385f}
+.v8-mentor-summary small{flex:1 1 100%;font-size:10px;color:#8b7d98}
+.v8-mentor-summary button{margin-left:auto;border:0;background:transparent;color:#8060ad;font-size:11px}
+.v8-message-page,.v8-chat-page{padding-bottom:20px}
+.v8-message-tabs{display:flex;gap:8px;margin:16px 0 12px;padding:4px;border-radius:13px;background:#f3eff8}
+.v8-message-tabs button{flex:1;border:0;border-radius:10px;padding:9px;background:transparent;color:#84768f;font-size:12px}
+.v8-message-tabs button.active{background:#fff;color:#6e4d9d;box-shadow:0 2px 8px #4d3b6210;font-weight:700}
+.v8-thread-list{background:#fff;border:1px solid #eee8f4;border-radius:16px;overflow:hidden}
+.v8-thread{width:100%;display:flex;align-items:center;gap:11px;text-align:left;padding:13px;border:0;border-bottom:1px solid #f1edf5;background:#fff}
+.v8-thread:last-child{border-bottom:0}
+.v8-thread-avatar,.v8-chat-avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;background:linear-gradient(145deg,#eee5fa,#f8edda);color:#74569c;font-weight:700}
+.v8-thread-main{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+.v8-thread-main b{font-size:13px;color:#49385f}
+.v8-thread-main small{font-size:10px;color:#9a8ea5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:210px}
+.v8-thread-meta{display:flex;align-items:center;gap:6px;color:#a99cb3}
+.v8-thread-meta small{font-size:9px}
+.v8-empty{border:1px dashed #e6deee;border-radius:16px;padding:28px 16px;text-align:center;background:#fff}
+.v8-empty b{font-size:13px;color:#59476e}
+.v8-empty p{font-size:11px;line-height:1.7;color:#96899f;margin:8px 0 14px}
+.v8-empty button{border:0;background:#8161ad;color:#fff;border-radius:10px;padding:9px 14px;font-size:11px}
+.v8-footnote{font-size:10px;line-height:1.7;color:#a095aa;margin:12px 2px}
+.v8-chat-page{display:flex;flex-direction:column;min-height:calc(100dvh - 150px);background:#f7f5fa}
+.v8-chat-header{display:flex;align-items:center;gap:9px;padding:10px 4px 12px;border-bottom:1px solid #ebe5f1;background:#fff}
+.v8-chat-back,.v8-chat-more{border:0;background:transparent;color:#715296;font-size:22px;padding:4px 8px}
+.v8-chat-more{font-size:11px}
+.v8-chat-person{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.v8-chat-person b{font-size:13px;color:#463552}
+.v8-chat-person small{font-size:10px;color:#9a8ea4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v8-chat-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:12px 0}
+.v8-chat-actions button{border:1px solid #e7dff0;border-radius:12px;background:#fff;color:#75549b;padding:10px 6px;font-size:11px;font-weight:650}
+.v8-chat-actions button:first-child{background:linear-gradient(135deg,#8060ad,#a58bc8);color:#fff;border-color:transparent}
+.v8-chat-note{border-radius:10px;background:#f0edf4;color:#998da2;padding:8px 10px;text-align:center;font-size:9px;line-height:1.6}
+.v8-chat-log{flex:1;min-height:260px;max-height:calc(100dvh - 360px);overflow:auto;padding:14px 2px;display:flex;flex-direction:column;gap:12px}
+.v8-chat-row{display:flex;align-items:flex-end;gap:8px}
+.v8-chat-row.outgoing{justify-content:flex-end}
+.v8-chat-bubble{max-width:78%;border-radius:16px;padding:10px 12px;font-size:12px;line-height:1.65;overflow-wrap:anywhere;box-shadow:0 2px 8px #35244308}
+.v8-chat-row.outgoing .v8-chat-bubble{background:#8c70b5;color:#fff;border-bottom-right-radius:5px}
+.v8-chat-row.incoming .v8-chat-bubble{background:#fff;color:#51445e;border-bottom-left-radius:5px}
+.v8-chat-empty{align-self:center;max-width:260px;text-align:center;color:#a195ab;font-size:11px;line-height:1.8;margin:auto}
+.v8-chat-compose{display:flex;align-items:flex-end;gap:9px;padding:10px 0 calc(8px + env(safe-area-inset-bottom));background:#f7f5fa;border-top:1px solid #ebe5f1}
+.v8-chat-compose textarea{flex:1;resize:none;min-height:42px;max-height:110px;border:1px solid #e8e0ef;border-radius:14px;background:#fff;padding:11px 12px;font:inherit;font-size:12px;outline:none}
+.v8-chat-compose textarea:focus{border-color:#b6a1d0}
+.v8-chat-compose button{width:42px;height:42px;border:0;border-radius:14px;background:#8060ad;color:#fff;font-size:22px}
+.v8-mentor-wizard{padding-bottom:24px}
+.v8-step-progress{display:flex;gap:5px;margin:18px 0 10px}
+.v8-step-progress span{height:4px;flex:1;border-radius:5px;background:#eee8f3}
+.v8-step-progress span.active,.v8-step-progress span.done{background:linear-gradient(90deg,#8b6bb6,#c4a66c)}
+.v8-step-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-bottom:13px}
+.v8-step-tabs button{border:1px solid #eee7f3;border-radius:11px;background:#fff;padding:9px 3px;display:flex;align-items:center;flex-direction:column;gap:5px;color:#a194ad}
+.v8-step-tabs button b{font-size:11px}
+.v8-step-tabs button small{font-size:9px;white-space:nowrap}
+.v8-step-tabs button.active{border-color:#bba7d2;background:#f8f4fc;color:#73549b}
+.v8-step-tabs button.done{color:#9b8359}
+.v8-step-card{background:#fff;border:1px solid #eee7f3;border-radius:18px;padding:15px;box-shadow:0 5px 18px #45325508}
+.v8-step-title{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.v8-step-title small{font-size:9px;letter-spacing:.12em;color:#aa966f}
+.v8-step-title h2{font-size:18px;color:#4c3a61;margin:5px 0}
+.v8-step-title p{font-size:11px;color:#9b8fa5;margin:0}
+.v8-step-title>span{font-size:10px;color:#a091ae}
+.v8-step-fields{display:flex;flex-direction:column;gap:12px}
+.v8-field{display:flex;flex-direction:column;gap:6px;color:#5d4b70;font-size:11px;font-weight:650}
+.v8-field input,.v8-field textarea,.v8-field select{width:100%;border:1px solid #e9e2ef;border-radius:11px;padding:11px;background:#fff;color:#4f425d;font:inherit;font-size:12px;font-weight:400;outline:none;box-sizing:border-box}
+.v8-field textarea{resize:vertical;line-height:1.6}
+.v8-field input:focus,.v8-field textarea:focus,.v8-field select:focus{border-color:#b9a4d1}
+.v8-field>small{font-size:9px;font-weight:400;color:#a095aa;line-height:1.6}
+.v8-step-actions{display:flex;gap:9px;margin-top:18px}
+.v8-btn{flex:1;border-radius:12px;padding:12px 8px;font-size:12px;font-weight:650}
+.v8-btn.secondary{border:1px solid #e8e0ef;background:#fff;color:#8060a5}
+.v8-btn.primary{border:1px solid transparent;background:linear-gradient(135deg,#8060ad,#a58bc8);color:#fff}
+.v8-ai-import{border:1px solid #eee6f4;border-radius:13px;margin:0 0 14px;background:#fbf9fd;padding:11px}
+.v8-ai-import summary{display:flex;justify-content:space-between;gap:8px;align-items:center;cursor:pointer;color:#6d528d;font-size:11px;font-weight:700;list-style:none}
+.v8-ai-import summary::-webkit-details-marker{display:none}
+.v8-ai-import summary small{font-size:9px;color:#a69aad;font-weight:400}
+.v8-ai-import>p{font-size:10px;color:#978ba2;line-height:1.65}
+.v8-ai-actions{display:flex;gap:8px;margin:9px 0;align-items:center}
+.v8-ai-actions button,.v8-upload{border:1px solid #e8dff0;border-radius:10px;padding:9px 10px;background:#fff;color:#76569b;font-size:10px}
+.v8-upload{position:relative;overflow:hidden}
+.v8-upload input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
+.v8-ai-primary{width:100%;border:0;border-radius:10px;padding:10px;background:#8161ad;color:#fff;font-size:11px;margin:8px 0}
+.v8-file-list{display:flex;flex-direction:column;gap:6px}
+.v8-file-list>div{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:#665775}
+.v8-file-list small,.v8-muted{font-size:9px;color:#a398ad}
+.v8-declaration{border-radius:11px;background:#f8f5fb;padding:10px;color:#95899f;font-size:10px;line-height:1.7;margin-top:12px}
+@media(max-width:380px){.v8-my-shortcuts{gap:5px}.v8-my-shortcuts button{padding:10px 3px}.v8-my-shortcuts b{font-size:10px}.v8-my-shortcuts small{font-size:8px}.v8-step-tabs button small{font-size:8px}.v8-step-card{padding:12px}}
+
+
+/* V8.1 · 个人中心层级、聊天细节与服务者资料引导 */
+.v8-profile-banner{
+  display:flex;align-items:center;gap:11px;margin:10px 0 12px;padding:14px;
+  border:1px solid #eee5f4;border-radius:17px;
+  background:linear-gradient(120deg,#f6f0fc 0%,#fffdf8 100%);
+}
+.v8-profile-avatar{
+  width:46px;height:46px;flex:none;border-radius:15px;display:grid;place-items:center;
+  background:linear-gradient(145deg,#dfd0f1,#f1e4c8);color:#684d8e;font-size:17px;font-weight:800;
+}
+.v8-profile-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.v8-profile-copy>b{font-size:13px;color:#4d3c60}
+.v8-profile-copy>small{font-size:10px;color:#8e8199;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v8-profile-state{width:max-content;border-radius:20px;padding:3px 7px;background:#f2edf5;color:#8f8298;font-size:9px}
+.v8-profile-state.ready{background:#edf5ef;color:#5b886a}
+.v8-profile-banner>button{border:1px solid #e6dcef;background:#fff;border-radius:10px;padding:7px 10px;color:#76569a;font-size:10px;white-space:nowrap}
+.v8-my-shortcuts-wrap{margin:12px 0 16px;padding:12px;border:1px solid #eee7f4;border-radius:17px;background:#fff}
+.v8-shortcuts-title{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0 2px 10px}
+.v8-shortcuts-title>b{font-size:12px;color:#514060}
+.v8-shortcuts-title>small{font-size:9px;color:#a094aa}
+.v8-my-shortcuts{margin:0;gap:5px}
+.v8-my-shortcuts button{border:0;background:transparent;border-radius:12px;padding:8px 3px}
+.v8-my-shortcuts button:active{background:#f6f1fa}
+.v8-my-shortcuts button b{font-size:10px}
+.v8-my-shortcuts button small{font-size:8.5px}
+.v8-my-shortcuts .v8-shortcut-icon{width:35px;height:35px;background:linear-gradient(145deg,#f0e9fa,#f7f0e1);color:#795ba1}
+.v8-chat-time{display:block;margin-top:4px;font-size:8px;line-height:1;color:rgba(255,255,255,.68);text-align:right;font-weight:400}
+.v8-chat-row.incoming .v8-chat-time{color:#a79bab}
+.v8-chat-compose textarea{line-height:1.5;overflow-y:auto}
+.v8-chat-compose button{flex:none}
+.v8-chat-actions button{min-height:40px}
+.v8-mentor-wizard .v8-step-fields{gap:14px}
+.v8-mentor-wizard .v8-step-title{gap:10px}
+.v8-mentor-wizard .v8-step-tabs button:focus-visible,
+.v8-my-shortcuts button:focus-visible,
+.v8-chat-actions button:focus-visible{outline:2px solid #a58bc8;outline-offset:2px}
+@media(max-width:350px){
+  .v8-profile-banner{padding:11px;gap:8px}
+  .v8-profile-avatar{width:40px;height:40px}
+  .v8-my-shortcuts-wrap{padding:9px}
+  .v8-my-shortcuts button small{font-size:7.5px}
+}

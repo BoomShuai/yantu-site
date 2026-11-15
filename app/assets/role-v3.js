@@ -222,7 +222,70 @@
 
     function guestSchools(){return `<div class="page tl-v2-page"><div class="tl-v2-kicker">CAMPUS PREVIEW</div><h1 class="tl-v2-headline">院校资讯 · 游客预览</h1><p class="tl-v2-sub">只展示少量公开信息。官方报名时间和资格要求需以学校公告为准。</p>${M.notices.slice(0,2).map(n=>`<div class="tl-v2-guest-card"><b>${H(n.title)}</b><small>${H(n.source)} · ${H(n.status)}</small><button onclick="needTongluSignIn()">查看详情与收藏 ›</button></div>`).join('')}<button class="tl-v2-main-button" onclick="needTongluSignIn()">登录查看全部院校资讯</button></div>`;}
   function guestProviders(){return `<div class="page tl-v2-page"><div class="tl-v2-kicker">MENTOR PREVIEW</div><h1 class="tl-v2-headline">服务者 · 游客预览</h1><p class="tl-v2-sub">仅可预览少量服务者，完整履历、筛选和收藏需要登录。</p>${M.providers.slice(0,2).map(p=>`<div class="tl-v2-guest-card"><b>${H(p.name)}</b><small>${H(p.brief)} · ${H(p.tags.join(' / '))}</small><button onclick="needTongluSignIn()">查看详情 ›</button></div>`).join('')}<button class="tl-v2-main-button" onclick="needTongluSignIn()">登录查看更多服务者</button></div>`;}
-  function mentorMe(){return `<div class="page tl-v2-page"><div class="tl-v2-kicker">MY SERVICE SPACE</div><h1 class="tl-v2-headline">我的服务空间</h1><p class="tl-v2-sub">服务者也可以浏览其他同行的公开资料；收藏不会影响排序。</p><div class="tl-v2-panel"><button class="tl-v2-link-row" onclick="go('#/mentorProfile')">我的个人信息与服务资料 <span>编辑 ›</span></button><button class="tl-v2-link-row" onclick="go('#/mentorDemands')">学生需求广场 <span>查看需求 ›</span></button><button class="tl-v2-link-row" onclick="go('#/workbench')">服务工作台 <span>进入 ›</span></button><button class="tl-v2-link-row" onclick="go('#/messages')">消息中心 <span>暂未接入真实咨询 ›</span></button><button class="tl-v2-link-row" onclick="S.providerView='saved';go('#/providers')">收藏的其他服务者 <span>${TL.savedMentors.length} 位 ›</span></button><button class="tl-v2-link-row" onclick="go('#/admin')">管理后台 <span>进入 ›</span></button></div><div class="tl-v2-footnote">服务者端与后台将分别配置权限；当前入口不代表真实授权。</div></div>`;}
+  function myIcon(name){
+    const paths={
+      message:'<path d="M4 5.5h16v11H9l-5 3v-14Z"/><path d="M8 9h8M8 13h5"/>',
+      plan:'<rect x="4" y="4.5" width="16" height="16" rx="2.5"/><path d="M8 2.8v3.4M16 2.8v3.4M4 9h16M8 13h3M8 16.5h6"/>',
+      school:'<path d="m2.8 9 9.2-5 9.2 5-9.2 5-9.2-5Z"/><path d="M6.5 11.2v5c3.5 2.5 7.5 2.5 11 0v-5M21.2 9v6"/>',
+      heart:'<path d="M20.5 8.8c0 5-8.5 10-8.5 10s-8.5-5-8.5-10a4.5 4.5 0 0 1 8.5-2 4.5 4.5 0 0 1 8.5 2Z"/>',
+      users:'<circle cx="9" cy="8" r="3.2"/><path d="M2.8 20c.5-3.4 2.7-5.3 6.2-5.3s5.7 1.9 6.2 5.3M16 5.3a3.2 3.2 0 0 1 0 5.8M17.2 14.8c2.2.6 3.5 2.3 4 5.2"/>',
+      work:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4.5h8V7M3 12h18M10 12v2h4v-2"/>',
+      profile:'<circle cx="12" cy="8" r="3.4"/><path d="M4.5 20c.6-3.5 3.2-5.4 7.5-5.4s6.9 1.9 7.5 5.4"/>',
+      record:'<path d="M6 3.5h9l4 4V20H6a2 2 0 0 1-2-2V5.5a2 2 0 0 1 2-2Z"/><path d="M14.5 3.8V8H19M8 12h8M8 16h8"/>',
+      bookmark:'<path d="M6 4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21l-6-4-6 4V4.5Z"/>',
+      sparkle:'<path d="m12 2 1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2ZM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"/>'
+    };
+    return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">${paths[name]||paths.profile}</svg>`;
+  }
+
+  function mentorMe(){
+    const name=String(mentorDraft.name||'服务者用户').trim()||'服务者用户';
+    const sub=[mentorDraft.destination,mentorDraft.school,mentorDraft.major].filter(Boolean).join(' · ')||'完善个人资料，展示你的升学经历与辅导方向';
+    const saved=TL.savedMentors.length;
+    const filled=[mentorDraft.name,mentorDraft.school,mentorDraft.major,mentorDraft.destination,mentorDraft.services,mentorDraft.bio].filter(v=>String(v||'').trim()).length;
+    const rate=Math.round(filled/6*100);
+    return `<div class="page tl-v2-page tl-my-page" data-my-role="mentor">
+      <header class="tl-my-identity">
+        <div class="tl-my-identity-main">
+          <div class="tl-my-avatar">${H(name.slice(0,1))}</div>
+          <div class="tl-my-identity-copy"><div class="tl-my-name-line"><h1>${H(name)}</h1><span class="tl-my-role-tag">服务者</span></div><p>${H(sub)}</p></div>
+          <button class="tl-my-edit" onclick="go('#/mentorProfile')">编辑资料 <span>›</span></button>
+        </div>
+        <div class="tl-my-profile-state"><div><b>服务者资料</b><span>${rate>=100?'资料已填写':'资料完善度 '+rate+'%'}</span></div><div class="tl-my-progress"><i style="width:${rate}%"></i></div></div>
+      </header>
+
+      <section class="tl-my-shortcuts">
+        <div class="tl-my-section-title"><h2>常用功能</h2><span>快捷入口</span></div>
+        <div class="tl-my-shortcut-grid">
+          <button onclick="go('#/messages')"><i class="tl-my-shortcut-icon">${myIcon('message')}</i><b>消息中心</b><small>${consults.length?consults.length+' 个咨询会话':'查看咨询消息'}</small></button>
+          <button onclick="go('#/mentorDemands')"><i class="tl-my-shortcut-icon">${myIcon('users')}</i><b>学生需求</b><small>发现适合的学生</small></button>
+          <button onclick="go('#/workbench')"><i class="tl-my-shortcut-icon">${myIcon('work')}</i><b>服务工作台</b><small>管理服务事项</small></button>
+          <button onclick="S.providerView='saved';go('#/providers')"><i class="tl-my-shortcut-icon">${myIcon('heart')}</i><b>同行收藏</b><small>已收藏 ${saved} 位</small></button>
+        </div>
+      </section>
+
+      <section class="tl-my-feature">
+        <div class="tl-my-feature-head"><div><small>MY SERVICE PROFILE</small><h2>我的服务资料</h2></div><button onclick="go('#/mentorProfile')">编辑 ›</button></div>
+        <p>${mentorDraft.services?H(mentorDraft.services):'补充你的辅导方向、个人经验与服务内容，让学生更了解你。'}</p>
+        <div class="tl-my-meta">${mentorDraft.school?`<span>${H(mentorDraft.school)}</span>`:''}${mentorDraft.major?`<span>${H(mentorDraft.major)}</span>`:''}${mentorDraft.destination?`<span>去向：${H(mentorDraft.destination)}</span>`:''}</div>
+        <button class="tl-my-primary" onclick="go('#/mentorProfile')">${rate>=100?'查看并编辑资料':'继续完善服务资料'} <b>›</b></button>
+      </section>
+
+      <section class="tl-my-group">
+        <div class="tl-my-section-title"><h2>服务管理</h2><span>我的工作</span></div>
+        <button class="tl-my-row" onclick="go('#/mentorDemands')"><span class="tl-my-row-icon">${myIcon('users')}</span><span class="tl-my-row-copy"><b>学生需求广场</b><small>浏览学生的匿名辅导需求</small></span><span class="tl-my-row-arrow">›</span></button>
+        <button class="tl-my-row" onclick="go('#/workbench')"><span class="tl-my-row-icon">${myIcon('work')}</span><span class="tl-my-row-copy"><b>服务工作台</b><small>查看服务管理与工作事项</small></span><span class="tl-my-row-arrow">›</span></button>
+        <button class="tl-my-row" onclick="go('#/messages')"><span class="tl-my-row-icon">${myIcon('message')}</span><span class="tl-my-row-copy"><b>咨询与消息</b><small>查看当前浏览器保存的咨询记录</small></span><span class="tl-my-row-arrow">›</span></button>
+      </section>
+
+      <section class="tl-my-group">
+        <div class="tl-my-section-title"><h2>个人资料与收藏</h2><span>个人管理</span></div>
+        <button class="tl-my-row" onclick="go('#/mentorProfile')"><span class="tl-my-row-icon">${myIcon('profile')}</span><span class="tl-my-row-copy"><b>编辑服务者资料</b><small>教育背景、升学去向、服务经历</small></span><span class="tl-my-row-arrow">›</span></button>
+        <button class="tl-my-row" onclick="S.providerView='saved';go('#/providers')"><span class="tl-my-row-icon">${myIcon('heart')}</span><span class="tl-my-row-copy"><b>收藏的其他服务者</b><small>已收藏 ${saved} 位同行</small></span><span class="tl-my-row-arrow">›</span></button>
+      </section>
+      <div class="tl-my-footnote">当前为本地体验版。资料、收藏与咨询记录保存在当前浏览器；真实消息、服务订单和跨设备同步需后续接入后端。</div>
+    </div>`;
+  }
   function guestMe(){return `<div class="page tl-v2-page"><h1 class="tl-v2-headline">加入同路</h1><p class="tl-v2-sub">登录学生身份可管理投递与收藏；服务者身份可维护履历和服务项目。</p><button class="tl-v2-main-button" onclick="go('#/choose')">选择体验身份</button></div>`;}
 
   function makeSuggestedTasks(){
@@ -266,14 +329,61 @@
   }
   function studentMe(){
     const ready=profileReady();
-    return `<div class="page tl-v2-page tl-v3-my"><div class="tl-v3-section-head"><div><small>MY SPACE</small><h1>我的同路</h1></div><span class="tl-v3-gold-label">学生体验</span></div>
-      <section class="tl-v3-card tl-v3-bg-summary"><div class="tl-v3-section-head"><h3>个人 BG 与诉求</h3><button onclick="editTongluBG()">${ready?'重新整理':'去填写'} ›</button></div>
-       ${ready?`<div class="tl-v3-bg-chips"><span>${H(studentBG.grade)}</span>${studentBG.goals.map(g=>`<span>${H(g)}</span>`).join('')}</div><p class="tl-v3-bgtext">${H(studentBG.raw)}</p><div class="tl-v3-note">此资料由你主动输入并确认，非 AI 自动验证。</div>`:`<p class="tl-v3-desc">尚未完成 BG 和诉求确认。此时可查看全部院校与服务者，但不会出现个人推荐或匹配分析。</p><button class="tl-v3-softbtn" onclick="go('#/home')">去首页和 AI 交流 ›</button>`}</section>
-      ${timelineView()}
-      <section class="tl-v3-card"><h3>我的收藏与投递</h3><button class="tl-v2-link-row" onclick="S.schoolView='saved';go('#/school')">院校收藏 <span>${TL.savedSchools.length+TL.customSchools.length} 条 ›</span></button><button class="tl-v2-link-row" onclick="S.schoolView='records';go('#/school')">投递记录本 <span>${TL.applications.length} 条 ›</span></button><button class="tl-v2-link-row" onclick="S.providerView='saved';go('#/providers')">服务者收藏 <span>${TL.savedMentors.length} 位 ›</span></button></section>
-      <section class="tl-v3-card"><h3>消息与咨询</h3><button class="tl-v2-link-row" onclick="go('#/messages')">消息中心 <span>咨询 / 订单 / 系统 ›</span></button><p class="tl-v3-desc">将原售前沟通入口统一收进消息中心；本地咨询草稿未发送至任何真实服务者。</p></section>
-      <section class="tl-v3-card"><h3>原型业务流程</h3><p class="tl-v3-desc">售前沟通、方案确认、付款与交付的流程可完整走通。</p><button class="tl-v3-softbtn" onclick="go('#/presale')">查看业务流程 ›</button></section>
-      <div class="tl-v2-footnote">原型仅本地保存资料；正式版需接入真实账号与权限管理。请勿输入敏感身份、联系方式或未授权资料。</div>
+    const goals=studentBG.goals||[];
+    const savedSchools=TL.savedSchools.length+TL.customSchools.length;
+    const savedMentors=TL.savedMentors.length;
+    const planCount=ready?makeSuggestedTasks().length+TL.applications.filter(a=>a.deadline).length:0;
+    return `<div class="page tl-v2-page tl-my-page" data-my-role="student">
+      <header class="tl-my-identity">
+        <div class="tl-my-identity-main">
+          <div class="tl-my-avatar">同</div>
+          <div class="tl-my-identity-copy"><div class="tl-my-name-line"><h1>同路学生</h1><span class="tl-my-role-tag">学生</span></div><p>${ready?H([studentBG.grade,...goals].filter(Boolean).join(' · ')):'完善个人档案，获取更贴合自身需求的建议'}</p></div>
+          <button class="tl-my-edit" onclick="go('#/home')">编辑资料 <span>›</span></button>
+        </div>
+        <div class="tl-my-profile-state"><div><b>个人 BG 与申请诉求</b><span>${ready?'已确认':'待完善'}</span></div><div class="tl-my-progress"><i style="width:${ready?100:0}%"></i></div></div>
+      </header>
+
+      <section class="tl-my-shortcuts">
+        <div class="tl-my-section-title"><h2>常用功能</h2><span>快捷入口</span></div>
+        <div class="tl-my-shortcut-grid">
+          <button onclick="go('#/messages')"><i class="tl-my-shortcut-icon">${myIcon('message')}</i><b>消息中心</b><small>${consults.length?consults.length+' 个咨询会话':'查看咨询消息'}</small></button>
+          <button onclick="${ready?`document.getElementById('tl-my-roadmap')?.scrollIntoView({behavior:'smooth'})`:`go('#/home')`}"><i class="tl-my-shortcut-icon">${myIcon('work')}</i><b>行动计划</b><small>${ready?planCount+' 项参考任务':'完善档案后解锁'}</small></button>
+          <button onclick="S.schoolView='saved';go('#/school')"><i class="tl-my-shortcut-icon">${myIcon('school')}</i><b>院校收藏</b><small>已收藏 ${savedSchools} 项</small></button>
+          <button onclick="S.providerView='saved';go('#/providers')"><i class="tl-my-shortcut-icon">${myIcon('heart')}</i><b>服务者收藏</b><small>已收藏 ${savedMentors} 位</small></button>
+        </div>
+      </section>
+
+      ${ready?`<section class="tl-my-feature">
+        <div class="tl-my-feature-head"><div><small>PERSONAL PROFILE</small><h2>个人 BG 与申请诉求</h2></div><button onclick="editTongluBG()">编辑 ›</button></div>
+        <div class="tl-my-tags"><span>${H(studentBG.grade)}</span>${goals.map(g=>`<span>${H(g)}</span>`).join('')}</div>
+        <p class="tl-my-bg-preview">${H(studentBG.raw)}</p>
+        <div class="tl-my-safe-note">资料由你主动填写并确认，不代表系统已核验。</div>
+      </section>`:`<section class="tl-my-feature tl-my-feature-prompt">
+        <div class="tl-my-feature-head"><div><small>PERSONAL PROFILE</small><h2>完善个人档案</h2></div><span class="tl-my-pending">待完善</span></div>
+        <p>补充本科背景、年级和申请诉求后，才能生成个性化行动计划与推荐。未完成前仍可浏览全部院校和服务者。</p>
+        <button class="tl-my-primary" onclick="go('#/home')">去首页与 AI 对话，完善档案 <b>›</b></button>
+      </section>`}
+
+      <section class="tl-my-group">
+        <div class="tl-my-section-title"><h2>我的保研</h2><span>申请管理</span></div>
+        <button class="tl-my-row" onclick="S.schoolView='records';go('#/school')"><span class="tl-my-row-icon">${myIcon('record')}</span><span class="tl-my-row-copy"><b>投递记录本</b><small>管理已投递院校与申请进度</small></span><span class="tl-my-row-count">${TL.applications.length}</span><span class="tl-my-row-arrow">›</span></button>
+        <button class="tl-my-row" onclick="S.schoolView='saved';go('#/school')"><span class="tl-my-row-icon">${myIcon('school')}</span><span class="tl-my-row-copy"><b>院校收藏</b><small>整理感兴趣的目标院校</small></span><span class="tl-my-row-count">${savedSchools}</span><span class="tl-my-row-arrow">›</span></button>
+      </section>
+
+      <section class="tl-my-group">
+        <div class="tl-my-section-title"><h2>我的服务</h2><span>咨询与辅导</span></div>
+        <button class="tl-my-row" onclick="go('#/messages')"><span class="tl-my-row-icon">${myIcon('message')}</span><span class="tl-my-row-copy"><b>消息与咨询</b><small>查看服务者咨询会话与系统消息</small></span><span class="tl-my-row-count">${consults.length}</span><span class="tl-my-row-arrow">›</span></button>
+        <button class="tl-my-row" onclick="S.providerView='saved';go('#/providers')"><span class="tl-my-row-icon">${myIcon('heart')}</span><span class="tl-my-row-copy"><b>收藏的服务者</b><small>查看已收藏的学长学姐</small></span><span class="tl-my-row-count">${savedMentors}</span><span class="tl-my-row-arrow">›</span></button>
+      </section>
+
+      <section class="tl-my-group">
+        <div class="tl-my-section-title"><h2>个人资料与设置</h2><span>账户管理</span></div>
+        <button class="tl-my-row" onclick="go('#/home')"><span class="tl-my-row-icon">${myIcon('profile')}</span><span class="tl-my-row-copy"><b>补充与修改个人资料</b><small>通过 AI 对话更新 BG 和申请目标</small></span><span class="tl-my-row-arrow">›</span></button>
+        <button class="tl-my-row" onclick="go('#/presale')"><span class="tl-my-row-icon">${myIcon('sparkle')}</span><span class="tl-my-row-copy"><b>了解同路服务流程</b><small>查看咨询、方案与服务流程原型</small></span><span class="tl-my-row-arrow">›</span></button>
+      </section>
+
+      ${ready?`<div id="tl-my-roadmap" class="tl-my-roadmap-wrap">${timelineView()}</div>`:''}
+      <div class="tl-my-footnote">当前为本地体验版。资料、收藏、投递与咨询记录保存在当前浏览器；跨设备同步及真实服务流程需后续接入后端。</div>
     </div>`;
   }
   window.filterTongluPlan=function(c){planCategory=c;render();};

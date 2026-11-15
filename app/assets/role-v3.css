@@ -73,3 +73,70 @@ body[data-chat-home="yes"] #app .tl-v3-home{flex:1;display:flex;flex-direction:c
 .tl-v3-next button:hover{background:#f3ecfd;border-color:#ddcdf3}
 .tl-v3-next button:active{transform:scale(.98)}
 @media (prefers-reduced-motion:reduce){.tl-v3-next button{transition:none}}
+
+
+
+/* ===== 同路统一个人中心：学生 / 服务者共用视觉与信息架构 ===== */
+.tl-my-page{padding:14px 14px 28px!important;max-width:560px;margin:0 auto;color:#49385e}
+.tl-my-identity{padding:17px 16px 14px;border:1px solid #eadff3;border-radius:22px;background:linear-gradient(135deg,#fff 0%,#fbf7ff 66%,#fff9ef 100%);box-shadow:0 7px 22px rgba(79,55,111,.045);margin:2px 0 13px}
+.tl-my-identity-main{display:flex;align-items:center;gap:11px;min-width:0}
+.tl-my-avatar{width:50px;height:50px;flex:none;border-radius:17px;display:grid;place-items:center;background:linear-gradient(145deg,#eadcf7,#fff0d7);color:#7656a4;font-size:22px;font-weight:800}
+.tl-my-identity-copy{flex:1;min-width:0}
+.tl-my-name-line{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.tl-my-name-line h1{font-size:18px;line-height:1.3;margin:0;color:#443253;font-weight:800}
+.tl-my-role-tag{font-size:10px;color:#8764b2;background:#f1e9f8;border:1px solid #e8daf3;padding:3px 8px;border-radius:999px}
+.tl-my-identity-copy p{font-size:11px;line-height:1.5;color:#8d7d9d;margin:4px 0 0;overflow-wrap:anywhere}
+.tl-my-edit{flex:none;padding:7px 9px;border:1px solid #e7d9f1;border-radius:999px;color:#805eaa;background:#fff;font-size:10px;font-weight:700;white-space:nowrap}
+.tl-my-edit span{font-size:15px;margin-left:2px}
+.tl-my-profile-state{margin-top:15px;padding-top:11px;border-top:1px solid rgba(224,211,237,.75)}
+.tl-my-profile-state>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:#695779}
+.tl-my-profile-state>div:first-child span{color:#9b88a8}
+.tl-my-progress{height:5px;margin-top:8px;border-radius:99px;background:#eee7f3;overflow:hidden}
+.tl-my-progress i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#9675c5,#d8b779);min-width:3px}
+.tl-my-shortcuts,.tl-my-feature,.tl-my-group{background:#fff;border:1px solid #ebe2f2;border-radius:21px;box-shadow:0 5px 18px rgba(76,52,109,.025);margin:0 0 13px;padding:15px}
+.tl-my-section-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.tl-my-section-title h2{font-size:14px;color:#4b395f;font-weight:800;margin:0}
+.tl-my-section-title>span{font-size:10px;color:#a092ad}
+.tl-my-shortcut-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.tl-my-shortcut-grid button{display:flex;min-width:0;flex-direction:column;align-items:center;gap:5px;padding:4px 1px 2px;background:transparent;border:0;color:#554466}
+.tl-my-shortcut-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:15px;background:linear-gradient(145deg,#f0e7f8,#fff4e4);color:#8765b1;font-size:22px;font-style:normal;line-height:1}
+.tl-my-shortcut-grid b{font-size:10.5px;white-space:nowrap;font-weight:750}
+.tl-my-shortcut-grid small{font-size:9px;color:#a092ad;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.tl-my-feature{padding:16px}
+.tl-my-feature-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.tl-my-feature-head small{font-size:9px;letter-spacing:1.3px;color:#ae91b6;font-weight:700}
+.tl-my-feature-head h2{font-size:16px;line-height:1.4;color:#49365f;margin:3px 0 0;font-weight:820}
+.tl-my-feature-head>button{font-size:11px;color:#8863b2;font-weight:700;white-space:nowrap;padding:4px 0}
+.tl-my-feature>p{font-size:11px;line-height:1.75;color:#8b7c98;margin:10px 0}
+.tl-my-feature-prompt{background:linear-gradient(130deg,#fff 0%,#fbf7ff 75%,#fffaf1 100%)}
+.tl-my-pending{font-size:10px;color:#a17c45;background:#fff4df;padding:5px 9px;border-radius:999px}
+.tl-my-primary{width:100%;display:flex;align-items:center;justify-content:center;gap:5px;margin-top:12px;padding:11px 13px;border:0;border-radius:13px;background:linear-gradient(100deg,#eee5f7,#f7eddf);color:#7655a4;font-size:12px;font-weight:800}
+.tl-my-primary b{font-size:16px}
+.tl-my-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.tl-my-tags span,.tl-my-meta span{font-size:10px;color:#775b98;background:#f4eef9;border:1px solid #ebe0f3;border-radius:999px;padding:4px 8px}
+.tl-my-bg-preview{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;white-space:pre-wrap}
+.tl-my-safe-note{font-size:9px;color:#aa9caf;line-height:1.5}
+.tl-my-meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tl-my-group{padding:14px 15px 5px}
+.tl-my-group .tl-my-section-title{margin-bottom:5px}
+.tl-my-row{width:100%;display:flex;align-items:center;gap:10px;min-height:55px;padding:9px 0;border:0;border-bottom:1px solid #f1edf4;background:transparent;text-align:left;color:#514160}
+.tl-my-row:last-child{border-bottom:0}
+.tl-my-row-icon{width:33px;height:33px;flex:none;display:grid;place-items:center;border-radius:11px;background:#f5eff9;color:#8865b0;font-size:17px}
+.tl-my-row-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.tl-my-row-copy b{font-size:11.5px;font-weight:750;color:#534163}
+.tl-my-row-copy small{font-size:9.5px;line-height:1.4;color:#a092ad}
+.tl-my-row-count{font-size:10px;color:#a18caf;background:#f7f3fa;border-radius:99px;padding:3px 7px}
+.tl-my-row-arrow{font-size:20px;line-height:1;color:#b5a8c0;margin-left:1px}
+.tl-my-footnote{padding:4px 5px 12px;text-align:center;color:#aa9faf;font-size:9px;line-height:1.7}
+.tl-my-roadmap-wrap{scroll-margin-top:12px}
+.tl-my-roadmap-wrap .tl-v3-card{margin-top:0}
+@media(max-width:380px){
+ .tl-my-page{padding-left:10px!important;padding-right:10px!important}
+ .tl-my-shortcuts,.tl-my-feature,.tl-my-group{padding-left:12px;padding-right:12px}
+ .tl-my-shortcut-icon{width:38px;height:38px}
+ .tl-my-shortcut-grid b{font-size:9.5px}
+ .tl-my-shortcut-grid small{font-size:8px}
+ .tl-my-edit{font-size:9px;padding:6px 7px}
+}
+
+.tl-my-shortcut-icon svg{width:21px;height:21px;display:block}.tl-my-row-icon svg{width:17px;height:17px;display:block}
