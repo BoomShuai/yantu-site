@@ -102,3 +102,18 @@
 @keyframes v5StepBack{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:translateX(0)}}
 @keyframes v5UploadSpin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.v5-step-panel,.v5-student-upload.is-busy .v5-upload-icon{animation:none}.v5-step-tab>span{transition:none}}
+
+/* 默认手动填写，简历作为可展开的选填辅助项。 */
+.v5-intake-intro{margin:-9px 0 18px;color:var(--ink-2);font-size:12px;line-height:1.6}
+.v5-optional-resume{margin-bottom:18px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.v5-optional-resume>summary{display:flex;align-items:center;gap:8px;padding:13px 14px;cursor:pointer;list-style:none;font-size:12px;color:var(--ink-2)}
+.v5-optional-resume>summary::-webkit-details-marker{display:none}
+.v5-optional-resume>summary small{font-size:10px;color:var(--ink-3);padding:2px 7px;border-radius:6px;background:var(--bg)}
+.v5-optional-resume>summary:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:14px}
+.v5-optional-chevron{margin-left:auto;color:var(--ink-3);transition:transform .18s}
+.v5-optional-resume[open] .v5-optional-chevron{transform:rotate(180deg)}
+.v5-optional-content{padding:0 12px 2px}
+.v5-optional-content .v5-student-upload{padding:15px 10px;margin-bottom:14px}
+.v5-optional-content .v5-upload-icon{width:30px;height:30px;font-size:20px}
+.v5-optional-content .v5-student-upload b{font-size:13px}
+@media(prefers-reduced-motion:reduce){.v5-optional-chevron{transition:none}}
