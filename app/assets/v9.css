@@ -1,0 +1,89 @@
+/* 学生资讯：清晰导航、轻量卡片及已有服务者入口。 */
+.v9-page{--v9-accent:#8060ad;--v9-ink:#392e4b;--v9-muted:#90849d;padding:18px 16px 24px;color:var(--v9-ink)}
+.v9-page *{box-sizing:border-box}
+.v9-page button,.v9-page input,.v9-page select{font:inherit}
+.v9-page button{cursor:pointer}
+.v9-page button:focus-visible,.v9-page input:focus-visible,.v9-page select:focus-visible,.v9-section-tabs button:focus-visible{outline:2px solid #9475c0;outline-offset:3px}
+.v9-page a{color:#75539f;text-decoration:none;line-height:1.7}
+.v9-page a:hover{text-decoration:underline}
+.v9-section-tabs{display:flex;gap:20px;padding:0 16px;border-bottom:1px solid #eee8f5;background:#fff;overflow-x:auto;scrollbar-width:none}
+.v9-section-tabs button{position:relative;flex:none;padding:15px 0 13px;border:0;background:transparent;color:#9b90a7;font-size:12px;white-space:nowrap}
+.v9-section-tabs button.active{color:#75539f;font-weight:700}
+.v9-section-tabs button.active:after{content:'';position:absolute;bottom:0;left:25%;right:25%;height:3px;background:#9271bf;border-radius:3px}
+.v9-heading,.v9-subheading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.v9-heading h1,.v9-university-title h1{font-size:21px;line-height:1.45;margin:0;font-weight:700;letter-spacing:-.4px}
+.v9-heading>span{font-size:11px;color:#a194ad;white-space:nowrap}
+.v9-subheading{margin:24px 0 12px}
+.v9-subheading h2{font-size:15px;margin:0}.v9-subheading h3{font-size:13px;margin:0}
+.v9-subheading button,.v9-back-link,.v9-results button,.v9-college-head button{border:0;background:none;color:#8463b1;font-size:11px;padding:4px 0}
+.v9-back-link{margin:0 0 14px;text-align:left}
+.v9-search{display:flex;gap:8px;padding:4px 5px 4px 13px;background:#fff;border:1px solid #e7deef;border-radius:12px;margin:0 0 16px}
+.v9-search input{min-width:0;flex:1;width:100%;border:0;outline:none;background:none;padding:8px 0;font-size:12px;color:#4d405d}
+.v9-search input::placeholder{color:#afa4ba}
+.v9-search button{border:0;border-radius:8px;padding:8px 13px;background:#f2ecfa;color:#7956a5;font-size:11px}
+.v9-filter-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;background:#f3eff8;padding:11px 8px;border-radius:12px}
+.v9-filter-nav.v9-two{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:20px}
+.v9-nav-select{min-width:0;display:flex;flex-direction:column;gap:5px;font-size:10px;color:#9b8cab}
+.v9-nav-select:not(:last-child){border-right:1px solid #e4dcec}
+.v9-nav-select select{width:100%;min-width:0;background:transparent;border:0;color:#64506f;font-size:11px;padding:3px 2px 3px 0}
+.v9-results{display:flex;align-items:center;justify-content:space-between;color:#a295ad;font-size:10px;margin:17px 0 10px}
+.v9-news{position:relative;margin:0 0 10px;border-radius:15px;border:1px solid #ece5f3;background:#fff;overflow:hidden}
+.v9-news-open{display:block;width:100%;padding:16px;text-align:left;background:transparent;border:0;color:inherit}
+.v9-news-meta{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:#a195ab;padding-right:23px}
+.v9-news-meta span:first-child{color:#8967ad}
+.v9-news h2{font-size:14px;line-height:1.65;margin:10px 0 7px;font-weight:650}
+.v9-news p{font-size:11px;line-height:1.7;color:#a094aa;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.v9-news-foot{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px;font-size:9px;color:#b0a2ba}
+.v9-news-foot span:first-child{color:#9377b4}.v9-news-foot span:last-child{margin-left:auto}
+.v9-notice-save{position:absolute;top:11px;right:10px;border:0;background:transparent;color:#a58bbf;font-size:20px;padding:2px 5px}
+.v9-footnote{font-size:10px;line-height:1.8;color:#aaa0b3;margin:18px 2px 0}
+.v9-empty{text-align:center;background:#fff;border:1px dashed #e1d6ec;border-radius:14px;padding:30px 16px;margin:15px 0}
+.v9-empty b{font-size:14px;font-weight:600}.v9-empty p{font-size:11px;line-height:1.8;color:#a497ad;margin:10px 0 16px}
+.v9-empty button{border:0;border-radius:9px;background:#f0e9f9;color:#7c5b9f;padding:9px 15px;font-size:11px}
+.v9-university{width:100%;border:0;border-bottom:1px solid #eee7f4;background:transparent;display:flex;align-items:center;text-align:left;gap:13px;padding:17px 0;color:inherit}
+.v9-school-mark{display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:15px;background:#eee7f8;color:#8966b2;font-size:20px;font-weight:600}
+.v9-grow{flex:1;min-width:0}.v9-university b{display:block;font-size:14px;margin-bottom:5px}
+.v9-university small{font-size:10px;color:#9e90ab}.v9-library-caption{font-size:10px;display:block;color:#afa2ba;margin-top:5px}
+.v9-arrow{font-size:22px;color:#b7a8c6}.v9-university-title{display:flex;align-items:center;gap:13px;margin:4px 0 25px}
+.v9-university-title p{font-size:11px;color:#a394ae;margin:6px 0 0}
+.v9-college{border:1px solid #eae2f3;border-radius:15px;background:#fff;padding:16px;margin:0 0 14px}
+.v9-college-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.v9-college h3{font-size:14px;margin:0;line-height:1.6}
+.v9-college-head button{white-space:nowrap;flex:none}.v9-college>p{font-size:11px;color:#9c8da8;line-height:1.9;margin:9px 0 14px}
+.v9-program-list>button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border:0;border-top:1px solid #f0ebf6;background:none;padding:13px 0;text-align:left;color:#a48bbd}
+.v9-program-list b{font-size:12px;color:#655175;font-weight:550;display:block}.v9-program-list small{font-size:10px;display:block;margin-top:5px;color:#b0a3bb}
+.v9-muted{font-size:11px;color:#b1a2bc;padding:10px 0;line-height:1.8}.v9-source-link{margin-top:12px;font-size:10px}.v9-official-link{font-size:11px;padding:12px 0;border-bottom:1px solid #eae2f2}
+.v9-eyebrow{font-size:10px;line-height:1.8;color:#a68eb9;letter-spacing:.5px;margin:0 0 8px}
+.v9-subheading select{border:1px solid #e8dff2;border-radius:8px;background:#fff;padding:7px 10px;color:#8766aa;font-size:11px}
+.v9-preview-toggle{border:1px dashed #d8c9ea;border-radius:10px;background:transparent;color:#9678b6;font-size:11px;width:100%;padding:12px;text-align:left;margin-bottom:16px}
+.v9-preview{border:1px dashed #bda8d9;background:#f5f0fb;padding:12px;border-radius:13px;margin-bottom:20px}
+.v9-preview .v9-subheading{margin:0 0 9px}.v9-preview>p{font-size:10px;color:#9b87ac;line-height:1.8;margin-bottom:13px}
+.v9-pinned{background:#fff;border:1px solid #e5d9f1;border-radius:12px;padding:13px;margin-bottom:10px}
+.v9-pin-label{font-size:9px;color:#9c80bb}.v9-pinned-person{display:flex;align-items:center;gap:10px;margin:12px 0}
+.v9-avatar{width:39px;height:39px;flex:none;border-radius:50%;background:#eee6f8;display:grid;place-items:center;color:#8e6caf;font-size:16px;font-weight:600}
+.v9-pinned-person b{font-size:13px}.v9-pinned-person p{font-size:10px;color:#aa9ab5;line-height:1.6;margin:5px 0 0}
+.v9-pinned-actions{display:flex;gap:8px}.v9-pinned-actions button{flex:1;border:1px solid #e6dcef;background:#fff;border-radius:8px;padding:8px 5px;color:#9473b2;font-size:10px}
+.v9-pinned-actions button:last-child{background:#8b6cb3;color:#fff;border-color:#8b6cb3}
+.v9-roster-caption{font-size:10px;color:#a38cb5;margin:16px 0 9px}.v9-roster-table{background:#fff;border:1px solid #ece4f4;border-radius:12px;overflow:hidden}
+.v9-roster-row{display:grid;grid-template-columns:1.25fr .7fr .8fr;gap:7px;padding:13px 12px;border-bottom:1px solid #f2edf7;font-size:11px;color:#95839f}
+.v9-roster-row:last-child{border:0}.v9-roster-row.v9-roster-head{background:#f4eff9;font-size:10px;color:#a08caf}.v9-roster-row.is-pinned{background:#f8f3fe;color:#8a66ad}
+.v9-notice-title{font-size:21px;line-height:1.6;margin:8px 0 15px;letter-spacing:-.3px}.v9-notice-dates{display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:#ae9fbb;padding-bottom:20px;border-bottom:1px solid #eae2f2}
+.v9-notice-body{margin:24px 0 28px}.v9-notice-body h2{font-size:13px;margin:0 0 12px}.v9-notice-body p{font-size:12px;line-height:2;color:#9685a4;margin-bottom:18px}.v9-notice-body>a{font-size:11px}
+.v9-position-form{border:1px solid #ded0ef;border-radius:14px;padding:15px;background:#fff}.v9-position-form label{display:block;color:#8461aa;font-size:13px;font-weight:600;margin-bottom:12px}
+.v9-position-form>div{display:flex;gap:8px;align-items:center}.v9-position-form input{flex:1;min-width:0;border:0;background:#f7f3fb;border-radius:8px;padding:11px 9px;color:#806a92;font-size:10px}.v9-position-form input::placeholder{color:#b09ec0}
+.v9-position-form button{border:0;border-radius:8px;background:#8d6db5;color:#fff;font-size:11px;padding:11px 10px;white-space:nowrap}
+.v9-filter-caption{display:flex;align-items:center;gap:8px;margin:19px 0 9px;font-size:11px;color:#8b789b}.v9-filter-caption small{font-size:9px;color:#b5a5c0}
+.v9-multiselect{display:flex;flex-wrap:wrap;gap:7px}.v9-multiselect button{border:1px solid #ebe3f3;border-radius:8px;background:#fff;color:#a595b2;padding:8px 10px;font-size:10px}
+.v9-multiselect button.active{border-color:#c1acda;background:#eee6f8;color:#805aa7;font-weight:600}
+.v9-provider{border:1px solid #e9e0f1;background:#fff;border-radius:15px;padding:16px;margin-bottom:12px}
+.v9-provider-head{display:flex;align-items:center;gap:10px}.v9-provider h2{font-size:15px;margin:0 0 6px}.v9-provider-head p{font-size:10px;color:#a695b3;margin:0;line-height:1.8}
+.v9-availability{font-size:9px;white-space:nowrap;color:#a190af;background:#f3eef9;padding:5px 7px;border-radius:6px;align-self:flex-start}.v9-availability.full{background:#f4f1f5;color:#b7acbf}
+.v9-tags{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}.v9-tags span{font-size:9px;border:1px solid #eee7f4;border-radius:5px;padding:4px 6px;color:#a08aaf}
+.v9-provider-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:15px}.v9-provider-actions button{border:1px solid #e4d9ef;background:#fff;border-radius:8px;color:#a187b7;padding:9px 12px;font-size:10px}
+.v9-provider-actions button.v9-primary{background:#f0e8f9;color:#815aa8;border-color:#e2d4f0}
+.v9-intents{border:1px solid #e9def3;border-radius:12px;padding:12px;margin-bottom:16px;background:#fff;font-size:11px;color:#9b83ae}.v9-intents summary{cursor:pointer}.v9-intents div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:12px}.v9-intents button{border:0;background:none;color:#ac96bf;font-size:10px}
+.v9-context{display:flex;align-items:center;gap:8px;background:#f2edf8;border-radius:10px;padding:9px 12px;margin-bottom:8px;font-size:10px;color:#9c84af}.v9-context span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.v9-context button{border:0;background:none;color:#ab94bd;font-size:16px}
+/* 保持小字号辅助信息在浅色底上的可读性。 */
+.v9-news-meta,.v9-news p,.v9-news-foot,.v9-footnote,.v9-library-caption,.v9-university small,.v9-university-title p,.v9-college>p,.v9-muted,.v9-program-list small,.v9-roster-caption,.v9-roster-row,.v9-notice-dates,.v9-notice-body p,.v9-provider-head p,.v9-tags span,.v9-results,.v9-filter-caption,.v9-eyebrow,.v9-nav-select,.v9-roster-head{color:#85748f}
+.v9-search input::placeholder,.v9-position-form input::placeholder{color:#93849f}
+.v9-multiselect button{color:#877296}.v9-filter-caption small{color:#93829f}
+@media(max-width:360px){.v9-page{padding-left:12px;padding-right:12px}.v9-section-tabs{gap:16px;padding:0 12px}.v9-heading h1{font-size:19px}.v9-nav-select select{font-size:10px}.v9-filter-nav{gap:5px}.v9-position-form>div{flex-direction:column;align-items:stretch}}

@@ -20,6 +20,7 @@
   try { const data=JSON.parse(localStorage.getItem(TASK_KEY)||'{}'); if(data&&typeof data==='object')planTasks=data; } catch (_) {}
   let planCategory = '全部';
   let chatBusy = false;
+  let pendingNotice = null;
   let lastNavFrom = '';
   const savedListScroll = {school:0,providers:0};
   let messageView = '咨询';
@@ -616,6 +617,12 @@
     const form=field.closest('form');
     if(form&&typeof form.requestSubmit==='function')form.requestSubmit();else field.focus();
   };
+  /* 公告是参考资料，不能作为学生本人背景写入档案。 */
+  window.tlStartNotice=function(question,notice){
+    if(chatBusy){toast('上一条回复正在整理，请稍后再试');return;}
+    pendingNotice=notice;
+    window.tlStart(question);
+  };
   window.sendTongluChat=function(event){
     event.preventDefault();if(chatBusy)return;
     const field=document.getElementById('tl-v2-chat-input');if(!field)return;
@@ -625,7 +632,9 @@
     const parse=r=>typeof r==='string'?{text:r}:r;
     const guestReply=parse('这里是保研常识：可以提前准备成绩排名证明、个人陈述和目标项目清单；实际时间以院校官方通知为准。游客不提供个人匹配。如需看服务者，请先选择学生身份并填写 BG。');
     const mentorReply=parse('服务者端可以这样推进：先在「我的」完善服务方向，再到学生需求广场看匿名需求；真实需求匹配和订单管理仍需后端支持。');
-    const reply=currentRole==='guest'?guestReply:currentRole==='mentor'?mentorReply:parse(handleStudentBG(value));
+    const notice=pendingNotice;pendingNotice=null;
+    const noticeReply=notice?{text:`已引用《${notice.title}》。\n${notice.summary||'请先核对学校官方原文。'}\n\n${profileReady()?'当前档案为 '+studentBG.grade+'，目标是 '+studentBG.goals.join(' / ')+'。':'先补充并确认你的年级、专业和申请目标，再逐项对照。'}建议核对：推免或统考招生方式、报名资格、目标专业、材料与截止时间。\n这里使用本地规则整理，不判断录取概率。`,card:nextChips([['核对个人资料',"go('#/profile')"],['返回招生通知',"go('#/school/notices')"]])}:null;
+    const reply=currentRole==='guest'?guestReply:currentRole==='mentor'?mentorReply:noticeReply||parse(handleStudentBG(value));
     messages.push({who:'bot',text:'正在整理…'});
     field.value='';chatBusy=true;
     const serial=++chatSerial;

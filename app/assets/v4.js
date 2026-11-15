@@ -649,7 +649,7 @@
   });
 
   /* 供智能建档层读取规范表单数据；所有改动仍须用户确认。 */
-  window.__TLV4 = { state: V4S, persist: save };
+  window.__TLV4 = { state: V4S, persist: save, metaOf: metaOf };
 
   /* ---------------- 14. 渲染后修正：底部标签高亮 ---------------- */
   var v3Render = render;
