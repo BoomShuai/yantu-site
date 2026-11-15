@@ -1,0 +1,32 @@
+{
+  "id": "nju-2027-shuoshi-zhaosheng-zhangcheng",
+  "sourceUrl": "https://yzb.nju.edu.cn/e7/18/c47863a845592/page.htm",
+  "fetchedUrl": "https://yzb.nju.edu.cn/e7/18/c47863a845592/page.htm",
+  "capturedAt": "2026-11-15T14:48:02.608263+00:00",
+  "title": "南京大学2027年硕士研究生招生章程",
+  "html": "<div><p><div class=\"v10-pdf-pages\"><a href=\"assets/articles/media/2d5fc274a94426b05de2-page-1.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 1 页\" loading=\"lazy\" src=\"assets/articles/media/2d5fc274a94426b05de2-page-1.webp\"/></a><a href=\"assets/articles/media/2d5fc274a94426b05de2-page-2.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 2 页\" loading=\"lazy\" src=\"assets/articles/media/2d5fc274a94426b05de2-page-2.webp\"/></a><a href=\"assets/articles/media/2d5fc274a94426b05de2-page-3.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 3 页\" loading=\"lazy\" src=\"assets/articles/media/2d5fc274a94426b05de2-page-3.webp\"/></a><a href=\"assets/articles/media/2d5fc274a94426b05de2-page-4.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 4 页\" loading=\"lazy\" src=\"assets/articles/media/2d5fc274a94426b05de2-page-4.webp\"/></a><a href=\"assets/articles/media/2d5fc274a94426b05de2-page-5.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 5 页\" loading=\"lazy\" src=\"assets/articles/media/2d5fc274a94426b05de2-page-5.webp\"/></a><a href=\"assets/articles/media/2d5fc274a94426b05de2-page-6.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 6 页\" loading=\"lazy\" src=\"assets/articles/media/2d5fc274a94426b05de2-page-6.webp\"/></a><a href=\"assets/articles/media/2d5fc274a94426b05de2-page-7.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 7 页\" loading=\"lazy\" src=\"assets/articles/media/2d5fc274a94426b05de2-page-7.webp\"/></a><a href=\"assets/articles/media/2d5fc274a94426b05de2-page-8.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 8 页\" loading=\"lazy\" src=\"assets/articles/media/2d5fc274a94426b05de2-page-8.webp\"/></a><a href=\"assets/articles/media/2d5fc274a94426b05de2-page-9.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 9 页\" loading=\"lazy\" src=\"assets/articles/media/2d5fc274a94426b05de2-page-9.webp\"/></a></div></p></div>",
+  "textSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "textLength": 0,
+  "selector": ".wp_articlecontent",
+  "attachments": [],
+  "pdfs": [
+    {
+      "sourceUrl": "https://yzb.nju.edu.cn/_upload/article/files/f5/93/6f271363420698e6b64c9e7a809b/b9739bf6-d622-4583-a5ae-7ffb73610d97.pdf",
+      "title": "南京大学2027年硕士研究生招生章程(1008定稿发布最新).pdf",
+      "file": "assets/articles/media/2d5fc274a94426b05de2.pdf",
+      "sha256": "7b7eb466f413d14903ce7ba48f04516cc73ef71af84d1cec03c2e08ed0c00565",
+      "pages": [
+        "assets/articles/media/2d5fc274a94426b05de2-page-1.webp",
+        "assets/articles/media/2d5fc274a94426b05de2-page-2.webp",
+        "assets/articles/media/2d5fc274a94426b05de2-page-3.webp",
+        "assets/articles/media/2d5fc274a94426b05de2-page-4.webp",
+        "assets/articles/media/2d5fc274a94426b05de2-page-5.webp",
+        "assets/articles/media/2d5fc274a94426b05de2-page-6.webp",
+        "assets/articles/media/2d5fc274a94426b05de2-page-7.webp",
+        "assets/articles/media/2d5fc274a94426b05de2-page-8.webp",
+        "assets/articles/media/2d5fc274a94426b05de2-page-9.webp"
+      ]
+    }
+  ],
+  "unavailableMedia": []
+}

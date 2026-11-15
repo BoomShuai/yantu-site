@@ -1,0 +1,28 @@
+{
+  "id": "fudan-2024-tuimian-zhangcheng",
+  "sourceUrl": "https://gsao.fudan.edu.cn/01/e6/c15028a524774/page.htm",
+  "fetchedUrl": "https://gsao.fudan.edu.cn/01/e6/c15028a524774/page.htm",
+  "capturedAt": "2026-11-15T14:48:02.697130+00:00",
+  "title": "复旦大学2024年招收优秀应届本科毕业生免试攻读研究生章程",
+  "html": "<div><p> <div class=\"v10-pdf-pages\"><a href=\"assets/articles/media/9c2367fc83eadcc781bc-page-1.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 1 页\" loading=\"lazy\" src=\"assets/articles/media/9c2367fc83eadcc781bc-page-1.webp\"/></a><a href=\"assets/articles/media/9c2367fc83eadcc781bc-page-2.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 2 页\" loading=\"lazy\" src=\"assets/articles/media/9c2367fc83eadcc781bc-page-2.webp\"/></a><a href=\"assets/articles/media/9c2367fc83eadcc781bc-page-3.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 3 页\" loading=\"lazy\" src=\"assets/articles/media/9c2367fc83eadcc781bc-page-3.webp\"/></a><a href=\"assets/articles/media/9c2367fc83eadcc781bc-page-4.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 4 页\" loading=\"lazy\" src=\"assets/articles/media/9c2367fc83eadcc781bc-page-4.webp\"/></a><a href=\"assets/articles/media/9c2367fc83eadcc781bc-page-5.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 5 页\" loading=\"lazy\" src=\"assets/articles/media/9c2367fc83eadcc781bc-page-5.webp\"/></a></div>  </p></div>",
+  "textSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "textLength": 0,
+  "selector": ".wp_articlecontent",
+  "attachments": [],
+  "pdfs": [
+    {
+      "sourceUrl": "https://gsao.fudan.edu.cn/_upload/article/files/55/ad/a10bc7c24c5bb1146ad8617085d5/c03b30d0-3533-4ae9-9d2e-bc1d273cc2de.pdf",
+      "title": "c03b30d0-3533-4ae9-9d2e-bc1d273cc2de",
+      "file": "assets/articles/media/9c2367fc83eadcc781bc.pdf",
+      "sha256": "2a5ae28987ecbea75774d52b1ce884da91d07f04f3ed4433c9588643413189d6",
+      "pages": [
+        "assets/articles/media/9c2367fc83eadcc781bc-page-1.webp",
+        "assets/articles/media/9c2367fc83eadcc781bc-page-2.webp",
+        "assets/articles/media/9c2367fc83eadcc781bc-page-3.webp",
+        "assets/articles/media/9c2367fc83eadcc781bc-page-4.webp",
+        "assets/articles/media/9c2367fc83eadcc781bc-page-5.webp"
+      ]
+    }
+  ],
+  "unavailableMedia": []
+}

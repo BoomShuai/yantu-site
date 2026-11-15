@@ -22,7 +22,7 @@
      一、真实院校资讯数据
      ============================================================ */
   var PREC = { minute: "时刻级", date: "日期级", month: "月份级", none: "未公布" };
-  var CATS = ["全部", "夏令营", "预推免", "推免办法", "招生简章", "复试录取", "名单公示", "其他"];
+  var CATS = ["全部", "夏令营", "预推免", "开放日", "宣讲会", "推免办法", "招生简章", "复试录取", "名单公示", "其他"];
   var STATES = ["全部", "进行中", "往期"];
   var RAW = window.TL_SCHOOL_NEWS && Array.isArray(window.TL_SCHOOL_NEWS.items)
     ? window.TL_SCHOOL_NEWS.items : null;

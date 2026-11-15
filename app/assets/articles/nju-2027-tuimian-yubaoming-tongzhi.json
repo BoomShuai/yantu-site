@@ -1,0 +1,25 @@
+{
+  "id": "nju-2027-tuimian-yubaoming-tongzhi",
+  "sourceUrl": "https://yzb.nju.edu.cn/d4/57/c47868a840791/page.htm",
+  "fetchedUrl": "https://yzb.nju.edu.cn/d4/57/c47868a840791/page.htm",
+  "capturedAt": "2026-11-15T14:48:02.668645+00:00",
+  "title": "南京大学2027年接收推荐免试研究生预报名通知",
+  "html": "<div><p><div class=\"v10-pdf-pages\"><a href=\"assets/articles/media/2a4e48ef0debbbf206c0-page-1.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 1 页\" loading=\"lazy\" src=\"assets/articles/media/2a4e48ef0debbbf206c0-page-1.webp\"/></a><a href=\"assets/articles/media/2a4e48ef0debbbf206c0-page-2.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 2 页\" loading=\"lazy\" src=\"assets/articles/media/2a4e48ef0debbbf206c0-page-2.webp\"/></a></div><br/><br/></p><p><img loading=\"lazy\" src=\"assets/articles/media/a19b08dc745a05ac6f10.gif\"/><a href=\"https://yzb.nju.edu.cn/_upload/article/files/7a/8e/658d60bb49a1a429fda589790c43/31b7d56d-2573-47ae-9809-06f539fb834d.doc\" rel=\"noopener noreferrer\" target=\"_blank\" title=\"附件1 南京大学2027年报考攻读博士学位研究生专家推荐信.doc\">附件1 南京大学2027年报考攻读博士学位研究生专家推荐信.doc</a></p><p><img loading=\"lazy\" src=\"assets/articles/media/e0eea17257e95b709a01.gif\"/><a href=\"https://yzb.nju.edu.cn/_upload/article/files/7a/8e/658d60bb49a1a429fda589790c43/5038c47a-e3b0-48a5-b5d9-b29a2d2d9811.pdf\" rel=\"noopener noreferrer\" target=\"_blank\" title=\"附件2 2027年南京大学推免预报名系统填报常见问题说明.pdf\">附件2 2027年南京大学推免预报名系统填报常见问题说明.pdf</a></p></div>",
+  "textSha256": "7bd0eeb9e8adac64aae1edf6f3ab025b166d7c968870a113d484df7dcebaddf1",
+  "textLength": 63,
+  "selector": ".wp_articlecontent",
+  "attachments": [],
+  "pdfs": [
+    {
+      "sourceUrl": "https://yzb.nju.edu.cn/_upload/article/files/7a/8e/658d60bb49a1a429fda589790c43/7e5b13be-be26-41b6-8188-fd3ec1d6b915.pdf",
+      "title": "南京大学2027年接收推荐免试研究生预报名通知.pdf",
+      "file": "assets/articles/media/2a4e48ef0debbbf206c0.pdf",
+      "sha256": "9cd74cce0fbb1053e4b28c81d4cbf1d21c2af79e435a3bdb8e80ed60c8d7e33a",
+      "pages": [
+        "assets/articles/media/2a4e48ef0debbbf206c0-page-1.webp",
+        "assets/articles/media/2a4e48ef0debbbf206c0-page-2.webp"
+      ]
+    }
+  ],
+  "unavailableMedia": []
+}

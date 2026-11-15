@@ -8,7 +8,7 @@
   const link=(url,label)=>safeUrl(url)?`<a href="${E(safeUrl(url))}" target="_blank" rel="noopener noreferrer">${E(label)} ↗</a>`:'';
   const schools=D.schools,schoolByName=name=>schools.find(s=>s.name===name);
   const years=C.recentYears();
-  const filters={news:{major:'全部',type:'全部',city:'全部',year:'全部',q:''},library:{type:'全部',city:'全部'},providers:{identities:[],capabilities:[],q:''}};
+  const filters={news:{category:'全部',major:'全部',type:'全部',city:'全部',year:'全部',q:''},library:{type:'全部',city:'全部'},providers:{identities:[],capabilities:[],q:''}};
   let programmeQuery='',rosterYear='',providerReturn='',noticeContext=null;
   const parts=()=>location.hash.replace(/^#\//,'').split('/');
   const route=path=>go('#/'+path);
@@ -19,18 +19,21 @@
   }
   function search(scope,value,placeholder){return `<form class="v9-search" onsubmit="v9Search(event,'${scope}')"><input name="q" aria-label="${placeholder}" type="search" value="${E(value)}" placeholder="${placeholder}" oninput="v9KeepQuery('${scope}',this.value)" maxlength="100"><button type="submit">搜索</button></form>`;}
   function empty(title,detail,button='重置筛选',handler='v9Reset(\'news\')'){return `<div class="v9-empty"><b>${E(title)}</b><p>${E(detail)}</p><button type="button" onclick="${handler}">${E(button)}</button></div>`;}
-  function schoolTabs(active){return `<nav class="v9-section-tabs" aria-label="院校资讯栏目">${[['notices','招生通知'],['library','院校库'],['saved','院校收藏'],['records','投递记录本']].map(([key,label])=>`<button type="button" class="${active===key?'active':''}" onclick="v9SchoolTab('${key}')">${label}</button>`).join('')}</nav>`;}
+  function schoolTabs(active){return `<nav class="v9-section-tabs" aria-label="院校资讯栏目">${[['notices','招生通知'],['library','院校库']].map(([key,label])=>`<button type="button" aria-current="${active===key?'page':'false'}" class="${active===key?'active':''}" onclick="v9SchoolTab('${key}')">${label}</button>`).join('')}</nav>`;}
+  function categoryBadge(n){const category=C.noticeCategory(n);return `<span class="v10-category ${C.categoryTone(category)}">${E(category)}</span>`;}
   const news=()=>M.notices||[];
+  const sourceUnavailable=n=>window.TL_NEWS_ARTICLES?.items?.[n.id]?.httpStatus===404;
   function newsCard(n){
     const s=schoolByName(n.school);
-    return `<article class="v9-news"><button class="v9-news-open" onclick="v9OpenNotice('${E(n.id)}')"><div class="v9-news-meta"><span>${E(n.school)}</span><span>${E(s?.type||'类型待补充')} · ${E(s?.city||'城市待补充')}</span></div><h2>${E(n.title)}</h2><p>${E(n.summary||n.detail||'点击查看公告详情')}</p><div class="v9-news-foot"><span>${E(n.category||'招生通知')}</span><time>${E(n.publishedText||n.publishedAt||'发布日期未标注')}</time><span>${E(n.status||'')}</span></div></button><button class="v9-notice-save" onclick="toggleSchoolFavorite('${E(n.id)}')" aria-label="${isSchoolSaved(n.id)?'取消收藏通知':'收藏通知'}">${isSchoolSaved(n.id)?'♥':'♡'}</button></article>`;
+    return `<article class="v9-news"><button class="v9-news-open" onclick="v9OpenNotice('${E(n.id)}')"><div class="v9-news-meta">${categoryBadge(n)}<time>${E(n.publishedText||n.publishedAt||'发布日期未标注')}</time></div><h2>${E(n.title)}</h2><div class="v10-school-line"><span class="v10-school-dot">${E(n.school.slice(0,1))}</span><span>${E(n.school)}</span><small>${E(s?.type||'')} · ${E(s?.city||'')}</small></div><div class="v9-news-foot"><span>${E(n.college||'研究生招生')}</span><span class="${n.status==='已截止'?'closed':'notice-status'}">${sourceUnavailable(n)?'原站暂不可用':E(n.status||'')}</span></div></button><button class="v9-notice-save" onclick="toggleSchoolFavorite('${E(n.id)}')" aria-label="${isSchoolSaved(n.id)?'取消收藏通知':'收藏通知'}">${isSchoolSaved(n.id)?'♥':'♡'}</button></article>`;
   }
   function noticesPage(){
     const f=filters.news,list=news().filter(n=>C.newsMatches(n,f,schoolByName(n.school)));
-    list.sort((a,b)=>((a.status==='已截止')-(b.status==='已截止'))||((a.days??Infinity)-(b.days??Infinity))||String(b.publishedAt||'').localeCompare(String(a.publishedAt||'')));
+    list.sort((a,b)=>(Number(sourceUnavailable(a))-Number(sourceUnavailable(b)))||((a.days??Infinity)-(b.days??Infinity))||String(b.publishedAt||'').localeCompare(String(a.publishedAt||'')));
     return schoolTabs('notices')+`<div class="page v9-page"><div class="v9-heading"><h1>招生通知</h1><span>${list.length} 条</span></div>${search('news',f.q,'搜索院校、学院、专业或通知')}
       <nav class="v9-filter-nav" aria-label="招生通知筛选">${select('news','major','专业',Object.keys(C.MAJORS))}${select('news','type','院校类型',['985','211','普通本科'])}${select('news','city','城市',cities)}${select('news','year','年份',years)}</nav>
-      <div class="v9-results"><span>按报名紧迫度排序</span><button onclick="v9Reset('news')">重置</button></div>${list.length?list.map(newsCard).join(''):empty('暂无符合条件的通知','换个条件试试，或清空关键词。')}
+      <div class="v10-category-filters" role="group" aria-label="通知类别">${['全部',...C.CATEGORIES].map(v=>`<button type="button" aria-pressed="${f.category===v}" class="${f.category===v?'active':''}" onclick="v9Filter('news','category','${v}')">${v}</button>`).join('')}</div>
+      <div class="v9-results"><span>${f.category==='全部'?'全部通知':E(f.category)} · ${list.length} 条</span><button onclick="v9Reset('news')">重置筛选</button></div>${list.length?list.map(newsCard).join(''):empty('暂无符合条件的通知','换个条件试试，或清空关键词。')}
       <p class="v9-footnote">年份按公告发布日期筛选。现有资料为静态整理，详情以官方原文为准。</p></div>`;
   }
   function libraryPage(){
@@ -72,15 +75,19 @@
     if(mode==='university')return universityPage(p[2]);
     if(mode==='college')return universityPage(p[2],p[3]);
     if(mode==='major')return majorPage(p[2],p[3]==='preview');
-    if(mode==='saved')return schoolTabs('saved')+`<div class="page tl-page v9-page">${schoolSavedView()}</div>`;
-    if(mode==='records')return schoolTabs('records')+`<div class="page tl-page v9-page">${schoolRecordsView()}</div>`;
+    if(mode==='saved')return `<div class="page tl-page v9-page"><button class="v9-back-link" onclick="go('#/me')">‹ 我的</button>${schoolSavedView()}</div>`;
+    if(mode==='records')return `<div class="page tl-page v9-page"><button class="v9-back-link" onclick="go('#/me')">‹ 我的</button>${schoolRecordsView()}</div>`;
     return noticesPage();
   };
   PAGES.noticeDetail=function(){
     const n=news().find(n=>n.id===S.currentNoticeId);
     if(!n)return empty('未找到通知','请返回招生通知重新选择。','招生通知',"v9SchoolTab('notices')");
-    return `<div class="page v9-page"><button class="v9-back-link" onclick="v9SchoolTab('notices')">‹ 招生通知</button><p class="v9-eyebrow">${E(n.sourceLabel||n.school)}</p><h1 class="v9-notice-title">${E(n.title)}</h1><div class="v9-notice-dates"><span>发布 ${E(n.publishedText||n.publishedAt||'未标注')}</span><span>截止 ${E(n.deadlineText||'待公布')}</span></div><section class="v9-notice-body"><h2>公告摘要</h2><p>${E(n.summary||n.detail||'请通过原文查看完整通知。')}</p>${link(n.url,'查看官方原文')}</section>
-      <form class="v9-position-form" onsubmit="v9AskNotice(event,'${E(n.id)}')"><label for="v9-position-question">帮我定位</label><div><input id="v9-position-question" name="question" placeholder="结合我的背景，看看这条通知是否适合我" maxlength="350"><button type="submit">帮我定位</button></div></form></div>`;
+    const reader=window.TL_NEWS_READERS?.items?.[n.id],canEmbed=reader?.mode==='embed'&&/^https:\/\//.test(safeUrl(reader.readerUrl));
+    const original=window.tlOriginalNotice?.(n);
+    return `<div class="page v9-page v10-notice-detail"><button class="v9-back-link" onclick="v9SchoolTab('notices')">‹ 招生通知</button><div class="v10-detail-category">${categoryBadge(n)}<span>${E(n.school)}</span></div><h1 class="v9-notice-title">${E(n.title)}</h1><p class="v9-eyebrow">${E(n.sourceLabel||n.school)}</p><div class="v9-notice-dates"><span>发布 ${E(n.publishedText||n.publishedAt||'未标注')}</span><span>截止 ${E(n.deadlineText||'待公布')}</span></div>
+      ${original||`<section class="v10-original-reader" aria-label="高校官方原文"><div class="v10-reader-heading"><h2>通知原文</h2><span>高校官方网站</span></div>${canEmbed?`<p class="v10-reader-note">以下直接加载原站页面，可在原文区域滑动阅读完整内容和附件。</p><iframe src="${E(safeUrl(reader.readerUrl))}" title="${E(n.school)}官方通知原文" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"></iframe><p class="v10-reader-note">如原文未正常显示，请使用下方官网链接。</p>`:`<div class="v10-reader-unavailable"><span aria-hidden="true">↗</span><h3>${sourceUnavailable(n)?'原通知链接目前无法访问':'请前往学校官网阅读全文'}</h3><p>${sourceUnavailable(n)?'该链接目前返回 404，暂不能获取完整正文。可通过下方链接核对，或等待学校重新发布。':reader?.reason==='frame-policy'?'该原站限制在其他网站内嵌展示，完整正文与附件请通过下方链接查看。':'当前原站无法在此获取完整通知，完整正文与附件请通过下方链接查看。'}</p></div>`}</section>`}
+      <footer class="v10-original-footer"><span>来源 · ${E(n.school)}官方网站</span>${link(n.url,'前往官网查看完整通知')}<small>${E(n.url)}</small></footer>
+      <form class="v9-position-form" onsubmit="v9AskNotice(event,'${E(n.id)}')"><div class="v10-position-heading"><span class="v10-position-icon" aria-hidden="true">✦</span><label for="v9-position-question">帮我定位</label></div><div><input id="v9-position-question" name="question" placeholder="结合我的背景，看看这条通知是否适合我" maxlength="350"><button type="submit">帮我定位 <span aria-hidden="true">↗</span></button></div></form></div>`;
   };
   function providerCard(p){
     const m=V4.metaOf(p),free=remain(p)>0;const rank=V4.state.ranks.indexOf(p.id);
@@ -109,7 +116,7 @@
     if(p[0]==='school'&&['university','college','major'].includes(p[1])){if(p[1]==='college'){v9OpenUniversity(p[2]);return;}if(p[1]==='major'){const info=programmeInfo(p[2]);if(info){v9OpenCollege(info.school.id,info.college.id);return;}}v9SchoolTab('library');return;}previousBack();};
   window.v9SchoolTab=function(key){S.schoolView=key;programmeQuery='';route('school/'+key);};
   window.v9Filter=function(scope,key,value){if(!filters[scope]||!(key in filters[scope]))return;filters[scope][key]=value;render();};
-  window.v9Reset=function(scope){if(scope==='providers')Object.assign(filters.providers,{identities:[],capabilities:[],q:''});else if(scope==='library')Object.assign(filters.library,{type:'全部',city:'全部'});else Object.assign(filters.news,{major:'全部',type:'全部',city:'全部',year:'全部',q:''});render();};
+  window.v9Reset=function(scope){if(scope==='providers')Object.assign(filters.providers,{identities:[],capabilities:[],q:''});else if(scope==='library')Object.assign(filters.library,{type:'全部',city:'全部'});else Object.assign(filters.news,{category:'全部',major:'全部',type:'全部',city:'全部',year:'全部',q:''});render();};
   window.v9KeepQuery=function(scope,value){if(scope==='programme')programmeQuery=value;else if(filters[scope])filters[scope].q=value;};
   window.v9Search=function(event,scope){event.preventDefault();v9KeepQuery(scope,event.target.elements.q.value);render();};
   window.v9ClearProgrammeQuery=function(){programmeQuery='';render();};
@@ -118,8 +125,8 @@
   window.v9OpenMajor=function(id){rosterYear='';route('school/major/'+id);};
   window.v9PreviewMajor=function(id){route('school/major/'+id+'/preview');};
   window.v9RosterYear=function(year){rosterYear=year;render();};
-  window.v9UniversityNotices=function(id){const s=schools.find(s=>s.id===id);if(!s)return;Object.assign(filters.news,{major:'全部',type:'全部',city:'全部',year:'全部',q:s.name});v9SchoolTab('notices');};
-  window.v9OpenNotice=function(id){S.currentNoticeId=id;route('noticeDetail');};
+  window.v9UniversityNotices=function(id){const s=schools.find(s=>s.id===id);if(!s)return;Object.assign(filters.news,{category:'全部',major:'全部',type:'全部',city:'全部',year:'全部',q:s.name});v9SchoolTab('notices');};
+  window.v9OpenNotice=function(id){S.currentNoticeId=id;const url=new URL(location.href);url.searchParams.set('notice',id);history.replaceState(null,'',url.pathname+url.search+url.hash);route('noticeDetail');};
   window.v9OpenProvider=function(id,fromProgramme){providerReturn=fromProgramme?location.hash:'';v4Open(id);};
   window.v9ProviderFilter=function(key,value){if(!['identities','capabilities'].includes(key))return;const list=filters.providers[key];filters.providers[key]=value==='全部'?[]:list.includes(value)?list.filter(v=>v!==value):[...list,value];render();};
   window.v9AllProviders=function(){S.providerView='all';render();};

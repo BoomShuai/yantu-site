@@ -1,0 +1,27 @@
+{
+  "id": "fudan-2027-tuimian-baoming-tongzhi",
+  "sourceUrl": "https://gsao.fudan.edu.cn/fb/0b/c15029a785163/page.htm",
+  "fetchedUrl": "https://gsao.fudan.edu.cn/fb/0b/c15029a785163/page.htm",
+  "capturedAt": "2026-11-15T14:48:02.662120+00:00",
+  "title": "复旦大学招收2027级推荐免试研究生报名通知",
+  "html": "<div><p> <div class=\"v10-pdf-pages\"><a href=\"assets/articles/media/91d2125e89567592939a-page-1.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 1 页\" loading=\"lazy\" src=\"assets/articles/media/91d2125e89567592939a-page-1.webp\"/></a><a href=\"assets/articles/media/91d2125e89567592939a-page-2.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 2 页\" loading=\"lazy\" src=\"assets/articles/media/91d2125e89567592939a-page-2.webp\"/></a><a href=\"assets/articles/media/91d2125e89567592939a-page-3.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 3 页\" loading=\"lazy\" src=\"assets/articles/media/91d2125e89567592939a-page-3.webp\"/></a><a href=\"assets/articles/media/91d2125e89567592939a-page-4.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 4 页\" loading=\"lazy\" src=\"assets/articles/media/91d2125e89567592939a-page-4.webp\"/></a></div> </p></div>",
+  "textSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "textLength": 0,
+  "selector": ".wp_articlecontent",
+  "attachments": [],
+  "pdfs": [
+    {
+      "sourceUrl": "https://gsao.fudan.edu.cn/_upload/article/files/b5/7b/645ad7024d75a4dc497d1f943f6f/e8adea1d-b84b-42cd-999e-2ea1eca7e95c.pdf",
+      "title": "e8adea1d-b84b-42cd-999e-2ea1eca7e95c",
+      "file": "assets/articles/media/91d2125e89567592939a.pdf",
+      "sha256": "c635383d5e798f2b16bba4ab17bfc6bc51cbee5f216fa0cd1f9cbece850e6270",
+      "pages": [
+        "assets/articles/media/91d2125e89567592939a-page-1.webp",
+        "assets/articles/media/91d2125e89567592939a-page-2.webp",
+        "assets/articles/media/91d2125e89567592939a-page-3.webp",
+        "assets/articles/media/91d2125e89567592939a-page-4.webp"
+      ]
+    }
+  ],
+  "unavailableMedia": []
+}

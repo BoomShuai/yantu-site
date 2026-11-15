@@ -1,0 +1,30 @@
+{
+  "id": "nju-2027-tuimian-niluzheng-renshu-tongji",
+  "sourceUrl": "https://yzb.nju.edu.cn/ea/44/c47863a846404/page.htm",
+  "fetchedUrl": "https://yzb.nju.edu.cn/ea/44/c47863a846404/page.htm",
+  "capturedAt": "2026-11-15T14:48:02.668437+00:00",
+  "title": "南京大学2027年硕士推免生拟录取人数信息统计（供统考考生参考）",
+  "html": "<div><p><div class=\"v10-pdf-pages\"><a href=\"assets/articles/media/a902d88eefb562e4bf99-page-1.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 1 页\" loading=\"lazy\" src=\"assets/articles/media/a902d88eefb562e4bf99-page-1.webp\"/></a><a href=\"assets/articles/media/a902d88eefb562e4bf99-page-2.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 2 页\" loading=\"lazy\" src=\"assets/articles/media/a902d88eefb562e4bf99-page-2.webp\"/></a><a href=\"assets/articles/media/a902d88eefb562e4bf99-page-3.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 3 页\" loading=\"lazy\" src=\"assets/articles/media/a902d88eefb562e4bf99-page-3.webp\"/></a><a href=\"assets/articles/media/a902d88eefb562e4bf99-page-4.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 4 页\" loading=\"lazy\" src=\"assets/articles/media/a902d88eefb562e4bf99-page-4.webp\"/></a><a href=\"assets/articles/media/a902d88eefb562e4bf99-page-5.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 5 页\" loading=\"lazy\" src=\"assets/articles/media/a902d88eefb562e4bf99-page-5.webp\"/></a><a href=\"assets/articles/media/a902d88eefb562e4bf99-page-6.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 6 页\" loading=\"lazy\" src=\"assets/articles/media/a902d88eefb562e4bf99-page-6.webp\"/></a><a href=\"assets/articles/media/a902d88eefb562e4bf99-page-7.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 7 页\" loading=\"lazy\" src=\"assets/articles/media/a902d88eefb562e4bf99-page-7.webp\"/></a></div></p></div>",
+  "textSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "textLength": 0,
+  "selector": ".wp_articlecontent",
+  "attachments": [],
+  "pdfs": [
+    {
+      "sourceUrl": "https://yzb.nju.edu.cn/_upload/article/files/4b/3f/43e2006944a0947e5b0023049118/821f8fbb-0f61-4fd5-a0f3-60ad2815d46f.pdf",
+      "title": "南京大学2027年硕士推免生拟录取人数信息统计（1020更正定稿）.pdf",
+      "file": "assets/articles/media/a902d88eefb562e4bf99.pdf",
+      "sha256": "e2036d7504e466a513fc7fdde111ef89f96cba2343a498756275818c46e5ea49",
+      "pages": [
+        "assets/articles/media/a902d88eefb562e4bf99-page-1.webp",
+        "assets/articles/media/a902d88eefb562e4bf99-page-2.webp",
+        "assets/articles/media/a902d88eefb562e4bf99-page-3.webp",
+        "assets/articles/media/a902d88eefb562e4bf99-page-4.webp",
+        "assets/articles/media/a902d88eefb562e4bf99-page-5.webp",
+        "assets/articles/media/a902d88eefb562e4bf99-page-6.webp",
+        "assets/articles/media/a902d88eefb562e4bf99-page-7.webp"
+      ]
+    }
+  ],
+  "unavailableMedia": []
+}

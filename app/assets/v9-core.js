@@ -13,6 +13,16 @@
     '材料诊断':/材料|简历|文书|个人陈述/,'研究经历':/研究经历|项目梳理/,
     '竞赛':/竞赛|比赛|建模/,'科研':/科研|研究|课题|论文/,'面试模拟':/面试|模拟面试/
   };
+  const CATEGORIES=['夏令营','预推免','开放日','宣讲会','推免办法','招生简章','复试录取','名单公示','其他'];
+  function noticeCategory(n){
+    const title=String(n.title||'');
+    if(/开放日|公开日/.test(title))return '开放日';
+    if(/宣讲会|宣讲活动/.test(title))return '宣讲会';
+    if(/夏令营|优才营/.test(title))return '夏令营';
+    if(/预推免|预报名/.test(title))return '预推免';
+    return CATEGORIES.includes(n.category)?n.category:'其他';
+  }
+  function categoryTone(category){return ({'夏令营':'mint','预推免':'violet','开放日':'blue','宣讲会':'blue','名单公示':'amber'})[category]||'neutral';}
   function recentYears(now=new Date()){
     const year=Number(new Intl.DateTimeFormat('en',{timeZone:'Asia/Shanghai',year:'numeric'}).format(now));
     return Array.from({length:5},(_,i)=>String(year-i));
@@ -20,6 +30,7 @@
   const textOf=n=>[n.school,n.college,n.title,n.summary,n.detail].filter(Boolean).join(' ');
   function newsMatches(n,f,school){
     const text=textOf(n),year=String(n.publishedAt||'').match(/^\d{4}/)?.[0]||'';
+    if(f.category&&f.category!=='全部'&&noticeCategory(n)!==f.category)return false;
     if(f.major&&f.major!=='全部'&&!MAJORS[f.major]?.test(text))return false;
     if(f.type&&f.type!=='全部'&&school?.type!==f.type)return false;
     if(f.city&&f.city!=='全部'&&school?.city!==f.city)return false;
@@ -44,6 +55,6 @@
     }
     return {pins,others:rows.filter(r=>!ids.has(r.id))};
   }
-  const api={MAJORS,CAPABILITIES,recentYears,newsMatches,providerMatches,partitionAdmissions};
+  const api={MAJORS,CAPABILITIES,CATEGORIES,noticeCategory,categoryTone,recentYears,newsMatches,providerMatches,partitionAdmissions};
   root.TongluV9Core=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window==='undefined'?globalThis:window);

@@ -1,0 +1,25 @@
+{
+  "id": "nju-2027-tuimian-jiezhishijian-huizong",
+  "sourceUrl": "https://yzb.nju.edu.cn/d5/23/c47868a840995/page.htm",
+  "fetchedUrl": "https://yzb.nju.edu.cn/d5/23/c47868a840995/page.htm",
+  "capturedAt": "2026-11-15T14:48:02.608374+00:00",
+  "title": "南京大学2027年接收推荐免试研究生预报名截止时间汇总",
+  "html": "<div><p><div class=\"v10-pdf-pages\"><a href=\"assets/articles/media/e2fcecaf5442d6ccf62c-page-1.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 1 页\" loading=\"lazy\" src=\"assets/articles/media/e2fcecaf5442d6ccf62c-page-1.webp\"/></a><a href=\"assets/articles/media/e2fcecaf5442d6ccf62c-page-2.webp\" rel=\"noopener noreferrer\" target=\"_blank\"><img alt=\"原文 PDF 第 2 页\" loading=\"lazy\" src=\"assets/articles/media/e2fcecaf5442d6ccf62c-page-2.webp\"/></a></div></p></div>",
+  "textSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "textLength": 0,
+  "selector": ".wp_articlecontent",
+  "attachments": [],
+  "pdfs": [
+    {
+      "sourceUrl": "https://yzb.nju.edu.cn/_upload/article/files/90/7b/1e9b9c134c68bdb9410d1dd95ac4/6c626c28-936a-4e44-a629-c8b2d6c7220f.pdf",
+      "title": "南京大学2027年接收推荐免试研究生预报名截止时间汇总.pdf",
+      "file": "assets/articles/media/e2fcecaf5442d6ccf62c.pdf",
+      "sha256": "b6f134ccdcf4e1fca53e8e62e43e4ee52e27a39b5f20e77f8575c202b64b1a74",
+      "pages": [
+        "assets/articles/media/e2fcecaf5442d6ccf62c-page-1.webp",
+        "assets/articles/media/e2fcecaf5442d6ccf62c-page-2.webp"
+      ]
+    }
+  ],
+  "unavailableMedia": []
+}
