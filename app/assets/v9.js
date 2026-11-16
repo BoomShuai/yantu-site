@@ -102,7 +102,7 @@
     return `<div class="page v9-page v10-notice-detail"><button class="v9-back-link" onclick="v9SchoolTab('notices')">‹ 招生通知</button><div class="v10-detail-category">${categoryBadge(n)}<span>${E(n.school)}</span></div><h1 class="v9-notice-title">${E(n.title)}</h1><p class="v9-eyebrow">${E(n.sourceLabel||n.school)}</p><div class="v9-notice-dates"><span>发布 ${E(n.publishedText||n.publishedAt||'未标注')}</span><span>截止 ${E(n.deadlineText||'待公布')}</span></div>
       ${original||`<p class="v12-body-unavailable">${E(unavailable)}${originalUrl?'可点击下方按钮查看。':''}</p>`}
       <footer class="v10-original-footer">${originalUrl?link(originalUrl,'查看官网'):'<button type="button" disabled>官网链接待补充</button>'}</footer>
-      <button type="button" class="v12-position-button" onclick="v9AskNotice(null,'${E(n.id)}')"><span>帮我定位</span><span aria-hidden="true">↗</span></button></div>`;
+      </div>`;
   };
   function providerCard(p){
     const m=V4.metaOf(p),free=remain(p)>0;const rank=V4.state.ranks.indexOf(p.id);
@@ -125,7 +125,11 @@
     return html.replace('<form class="tl-v3-form"',`<div class="v9-context"><span>已引用：${E(noticeContext.title)}</span><button type="button" onclick="v9ClearNoticeContext()" aria-label="清除引用通知">×</button></div><form class="tl-v3-form"`);
   };
   const previousActionbar=actionbar;
-  actionbar=function(name){if(name==='providers'||name==='noticeDetail')return '';return previousActionbar(name);};
+  actionbar=function(name){
+    if(name==='noticeDetail')return news().some(n=>n.id===S.currentNoticeId)?`<button type="button" class="v12-position-button" onclick="v9AskNotice(null,'${E(S.currentNoticeId)}')">帮我定位</button>`:'';
+    if(name==='providers')return '';
+    return previousActionbar(name);
+  };
   const previousBack=back;
   back=function(){const p=parts();if(p[0]==='provider'&&providerReturn){const path=providerReturn;providerReturn='';go(path);return;}
     if(p[0]==='school'&&['university','college','major'].includes(p[1])){if(p[1]==='college'){v9OpenUniversity(p[2]);return;}if(p[1]==='major'){const info=programmeInfo(p[2]);if(info){v9OpenCollege(info.school.id,info.college.id);return;}}v9SchoolTab('library');return;}previousBack();};
