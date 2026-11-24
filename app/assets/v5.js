@@ -127,7 +127,7 @@
   }
   const CFG={
     student:[['name','姓名'],['school','本科院校'],['major','本科专业'],['grade','当前年级'],['rank','成绩 / 排名'],['research','科研经历'],['contest','获奖经历'],['goals','目标与诉求'],['targetSchool','学校偏好 / 目标院校'],['targetMajor','目标专业'],['direction','研究方向'],['degree','学位类型'],['cross','跨专业意向']],
-    mentor:[['name','展示姓名或称呼'],['school','本科院校'],['major','本科专业'],['destination','升学去向'],['achievements','科研 / 竞赛成果'],['services','擅长辅导方向'],['served','历史辅导人数（个人申报）'],['results','历史辅导结果（个人申报）'],['experience','个人辅导经验'],['cases','典型服务案例（需脱敏）']]
+    mentor:[['name','展示姓名或称呼'],['school','本科院校'],['major','本科专业'],['destination','升学去向'],['achievements','科研 / 竞赛成果'],['services','可提供的服务'],['served','历史辅导人数（个人申报）'],['results','历史辅导结果（个人申报）'],['experience','个人辅导经验'],['cases','典型服务案例（需脱敏）']]
   };
   const large=new Set(['research','contest','goals','achievements','services','results','experience','cases']);
   // 旧档案只作初始回填；卡片里的修改仍需确认后才写入正式 BG。
@@ -168,28 +168,34 @@
     return '<label class="v5-field"><span>'+E(label)+'</span>'+control+'</label>';
   }
   let lastStudentStep=0;
-  let resumeAssistOpen=false;
-  window.v5ToggleResumeAssist=function(open){resumeAssistOpen=open;};
   function studentStep(){const id=location.hash.split('/')[2]||'basic';return Math.max(0,STUDENT_CARDS.findIndex(c=>c.id===id));}
   function studentIntake(){
     const s=state.student, index=studentStep(), card=STUDENT_CARDS[index];
     const direction=index<lastStudentStep?'back':'forward';lastStudentStep=index;
     const busy=uploading.student;
     const steps=STUDENT_CARDS.map((c,i)=>'<button type="button" class="v5-step-tab '+(i===index?'active':i<index?'done':'')+'"'+(i===index?' aria-current="step"':'')+' onclick="v5GoStep('+i+')"><span>'+(i<index?'✓':'0'+(i+1))+'</span><small>'+c.title+'</small></button>').join('');
-    const upload='<details class="v5-optional-resume"'+(resumeAssistOpen||busy?' open':'')+' ontoggle="v5ToggleResumeAssist(this.open)"><summary><span>用简历自动填写</span><small>选填</small><span class="v5-optional-chevron" aria-hidden="true">⌄</span></summary><div class="v5-optional-content">'+
-      '<label class="v5-upload v5-student-upload'+(busy?' is-busy':'')+'"><span class="v5-upload-icon" aria-hidden="true">'+(busy?'◌':'↑')+'</span><b>'+(busy?'正在识别简历…':s.files.some(f=>f.ok)?'更换个人简历':'上传简历（选填）')+'</b><small>PDF（含扫描版） / Word / TXT · 最大 8 MB</small><input type="file" aria-label="上传个人简历" accept=".pdf,.docx,.txt,.md"'+(busy?' disabled':'')+' onchange="v5ChooseFiles(\'student\',event)" /></label>'+
+    const upload='<div class="v5-resume-entry">'+
+      '<label class="v5-upload v5-student-upload'+(busy?' is-busy':'')+'"><span class="v5-upload-icon" aria-hidden="true">'+(busy?'◌':'↑')+'</span><b>'+(busy?'正在识别简历…':s.files.some(f=>f.ok)?'更换个人简历':'上传个人简历')+'</b><small>支持 PDF（含扫描版） / Word（.docx） / TXT / MD · 单份最大 8 MB</small><span class="v5-upload-action">'+(busy?'请稍候，正在读取文件':'点击选择简历')+'</span><input type="file" aria-label="上传个人简历" accept=".pdf,.docx,.txt,.md"'+(busy?' disabled':'')+' onchange="v5ChooseFiles(\'student\',event)" /></label>'+
+      '<button class="v5-manual-fallback" type="button" onclick="v5ShowManualStudentFields()">上传不了简历？试试填写个人信息 <span aria-hidden="true">→</span></button>'+
       (s.files.length?'<div class="v5-student-files">'+fileRows('student')+'</div>':'')+
-      (s.text?'<details class="v5-source"><summary>查看识别原文</summary><pre>'+E(s.text)+'</pre></details>':'')+'</div></details>';
+      (s.text?'<details class="v5-source"><summary>查看识别原文</summary><pre>'+E(s.text)+'</pre></details>':'')+'</div>';
     return '<div class="page tl-v2-page v5-student-intake" id="v5-intake"><nav class="v5-stepper" aria-label="资料填写步骤">'+steps+'</nav>'+
-      '<div class="v5-step-panel" data-direction="'+direction+'"><div class="v5-step-heading"><h1 tabindex="-1">'+card.title+'</h1><span>0'+(index+1)+' / 04</span></div>'+
-      (index===0?'<p class="v5-intake-intro">可直接填写下方资料，简历上传为选填。</p>'+upload:(s.files.some(f=>f.ok)?'<button class="v5-resume-chip" type="button" onclick="v5OpenResumeAssist()">✓ 简历已识别 · 查看或更换</button>':''))+
-      '<form id="v5-student-form" onsubmit="v5SubmitStudent(event)"><section class="v5-step-fields" aria-label="'+card.title+'">'+card.fields.map(studentField).join('')+'</section>'+
+      '<div class="v5-step-panel" data-direction="'+direction+'"><div class="v5-step-heading"><h1 tabindex="-1">'+(index===0&&T.bg.raw?'修改个人信息':card.title)+'</h1><span>0'+(index+1)+' / 04</span></div>'+
+      (index===0?'<p class="v5-intake-intro">'+(T.bg.raw?'可以在这里修改已整理的个人背景，保存后返回 AI 对话确认最新信息。':'上传简历可帮助你快速整理保研背景，也可以选择手动填写。')+'</p>'+upload:(s.files.some(f=>f.ok)?'<button class="v5-resume-chip" type="button" onclick="v5OpenResumeAssist()">✓ 简历已识别 · 查看或更换</button>':''))+
+      '<form id="v5-student-form" onsubmit="v5SubmitStudent(event)"><section class="v5-step-fields" id="v5-student-manual-fields" aria-label="'+card.title+'">'+card.fields.map(studentField).join('')+'</section>'+
       '<div class="v5-wizard-actions">'+(index>0?'<button type="button" class="v5-btn v5-wizard-back" onclick="v5GoStep('+(index-1)+')">上一步</button>':'')+
       '<button type="submit" class="v5-btn v5-primary v5-student-continue"'+(busy?' disabled':'')+'>'+(index===3?'保存并进入同路':'下一步')+' <span aria-hidden="true">→</span></button></div></form>'+
       '<button type="button" class="v5-student-skip" onclick="go(\'#/home\')">稍后填写</button>'+
       (index===0?'<p class="v5-student-privacy">填写内容自动保存为草稿。</p>':'')+'</div></div>';
   }
-  window.v5OpenResumeAssist=function(){resumeAssistOpen=true;v5GoStep(0);};
+  window.v5OpenResumeAssist=function(){v5GoStep(0);};
+  window.v5ShowManualStudentFields=function(){
+    const fields=$('v5-student-manual-fields');
+    if(!fields)return;
+    fields.scrollIntoView({behavior:'smooth',block:'center'});
+    const first=fields.querySelector('input,textarea,select');
+    if(first)window.setTimeout(()=>first.focus({preventScroll:true}),260);
+  };
   window.v5GoStep=function(index){
     if(index<0||index>=STUDENT_CARDS.length)return;
     syncFields('student');const path='#/profile/'+STUDENT_CARDS[index].id;
@@ -221,7 +227,7 @@
       return '科研、竞赛或排名有需要补充的细节吗？你也可以直接确认当前档案。';
     }
     if(!fields.school||!fields.destination)return '请补充本科院校、专业和实际升学去向。';
-    if(!fields.services)return '你最擅长哪些辅导内容？请结合实际经历描述。';
+    if(!fields.services)return '你能提供哪些具体服务？例如简历润色、面试模拟、竞赛科研辅导或保研辅导，请结合真实经历说明。';
     if(!fields.experience)return '你有哪些亲身经验或常用的辅导方法？';
     if(fields.served&&!fields.cases)return '辅导人数是个人申报，可否补充一项经过授权且去标识化的真实案例？';
     return '如果有证明材料可以后续申请核验；无法证明的成果仍保留“个人申报”。';
@@ -249,7 +255,7 @@
   }
   function intakeCard(k){
     const s=state[k], mentor=k==='mentor';
-    const guide=mentor?'可以写：本科院校与专业、升学去向、科研成果、擅长辅导方向、曾服务对象的类型、具体帮助、结果和个人经验。不要提交其他学生的实名资料。':'可以写：本科院校、专业、年级、排名、科研竞赛、目标院校及你最希望解决的问题，不要求按固定顺序。';
+    const guide=mentor?'可以写：本科院校与专业、升学去向、科研成果、可提供的服务、曾服务对象的类型、具体帮助、结果和个人经验。不要提交其他学生的实名资料。':'可以写：本科院校、专业、年级、排名、科研竞赛、目标院校及你最希望解决的问题，不要求按固定顺序。';
     return '<div class="v5-card" id="v5-intake"><div class="v5-eyebrow">AI PROFILE STUDIO · 本地体验</div><h2>'+(mentor?'智能完善服务者资料':'用你习惯的方式完善 BG')+'</h2>'+
       '<p class="v5-sub">上传 PDF / Word / TXT 简历后，会在本机浏览器里读出正文并自动识别院校、专业、年级、排名、科研竞赛等信息，识别结果可直接核对修改。规范表单仍保留在下方。</p>'+
       '<div class="v5-input-modes"><span><b>01</b> 自由描述</span><span><b>02</b> 上传简历</span><span><b>03</b> 语音口述</span></div>'+

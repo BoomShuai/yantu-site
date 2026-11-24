@@ -63,7 +63,7 @@
     pool.sort((a,b)=>(b.free-a.free)||(b.w-a.w));
     const picks=pool.slice(0,preview?2:3).map(x=>x.p);
     if(!picks.length)return '';
-    return `<div class="tl-v3-rec-inline"><small>${preview?'方向相近的同行者 · 预览排序':'按你的 BG 与服务方向初排'}</small>${picks.map(p=>`<button type="button" onclick="selectProvider('${p.id}')"><span class="tl-avatar">${H(p.name.slice(0,1))}</span><span><b>${H(p.name)}</b><small>${H(recommendationReason(p))}</small></span><i>›</i></button>`).join('')}<button type="button" class="tl-v3-rec-more" onclick="go('#/providers')">${preview?'确认档案后看完整推荐 ›':'打开服务者列表 ›'}</button></div>`;
+    return `<div class="tl-v3-rec-inline"><small>${preview?'方向相近的同行者 · 预览排序':'按你的 BG 与服务方向初排'}</small>${picks.map(p=>`<button type="button" onclick="selectProvider('${p.id}')"><span class="tl-avatar">${H(p.name.slice(0,1))}</span><span><b>${H(p.name)}</b><small>${H(recommendationReason(p))}</small></span><i>›</i></button>`).join('')}<button type="button" class="tl-v3-rec-more" onclick="go('#/providers')">${preview?'确认档案后看完整推荐 ›':'逛同路市集 ›'}</button></div>`;
   }
   const ASK_PEOPLE=/推荐|学姐|学长|服务者|顾问|找谁|谁来帮|约谁|有没有人/;
   /* 已确认档案后，按用户这句话的意图回答，而不是永远回同一句。 */
@@ -137,7 +137,7 @@
     const readyDraft=hasBackground(studentBG.raw)&&!!studentBG.grade&&studentBG.goals.length>0;
     if(studentBG.confirmed)return `<div class="tl-v3-confirmed"><span>✓ 档案已确认 · ${H(studentBG.grade)} · ${H(studentBG.goals.join(' / '))}</span><button onclick="go('#/me')">到「我的」看计划 ›</button></div>`;
     if(!studentBG.raw)return '';
-    return `<div class="tl-v3-check"><small>待确认的个人信息（仅本机保存）</small><p>${H(studentBG.raw)}</p><div class="tl-v3-check-tags"><span>${H(studentBG.grade||'年级待补充')}</span><span>${H(studentBG.goals.join(' / ')||'目标待补充')}</span></div><button ${readyDraft?'':'disabled'} onclick="confirmTongluBG()">${readyDraft?'确认 BG 与诉求，开启个性化规划':'补充年级 / 目标后可确认'}</button><small>追问由本地规则生成，不调用大模型，也不上传到服务器。请勿填写身份证号等敏感信息。</small></div>`;
+    return `<div class="tl-v3-check"><small>待确认的个人信息（仅本机保存）</small><p>${H(studentBG.raw)}</p><div class="tl-v3-check-tags"><span>${H(studentBG.grade||'年级待补充')}</span><span>${H(studentBG.goals.join(' / ')||'目标待补充')}</span></div><div class="tl-v3-check-actions"><button type="button" class="tl-v3-edit" onclick="go('#/profile/basic')">修改个人信息</button><button type="button" class="tl-v3-confirm" ${readyDraft?'':'disabled'} onclick="confirmTongluBG()">${readyDraft?'确认 BG 与诉求':'补充年级 / 目标后可确认'}</button></div><small>追问由本地规则生成，不调用大模型，也不上传到服务器。请勿填写身份证号等敏感信息。</small></div>`;
   }
 
   const H = (s) => escapeTL(s);
@@ -461,7 +461,7 @@
   PAGES.guestProviders=guestProviders;
   PAGES.guestMe=guestMe;
   PAGES.profile=function(){return `<div class="page tl-v2-page"><div class="tl-v3-card"><h3>BG 建档已改为对话方式</h3><p>无需填写多项表单。直接在首页自由描述你的学校、专业、年级和诉求，由对话助手逐步追问。</p><button class="tl-v3-softbtn" onclick="go('#/home')">去首页对话建档 ›</button></div></div>`;};
-  PAGES.diagnosis=function(){if(!profileReady())return `<div class="page tl-v2-page"><div class="tl-v3-card"><h3>请先确认 BG 与诉求</h3><p>未建档无法查看个人定位分析，也不会显示个人匹配度。</p><button class="tl-v3-softbtn" onclick="go('#/home')">去 AI 对话建档 ›</button></div></div>`;return `<div class="page tl-v2-page"><div class="tl-v3-card"><div class="tl-v3-section-head"><div><small>PERSONAL INSIGHTS</small><h3>你的背景与行动建议</h3></div></div><p class="tl-v3-bgtext">${H(studentBG.raw)}</p><p class="tl-v3-desc">暂不展示量化匹配度、录取概率或未经验证的优劣评价。可以到服务者列表了解与你诉求相关的辅导方向，到「我的」查看行动时间线。</p><button class="tl-v3-softbtn" onclick="go('#/providers')">浏览服务者 ›</button></div></div>`;};
+  PAGES.diagnosis=function(){if(!profileReady())return `<div class="page tl-v2-page"><div class="tl-v3-card"><h3>请先确认 BG 与诉求</h3><p>未建档无法查看个人定位分析，也不会显示个人匹配度。</p><button class="tl-v3-softbtn" onclick="go('#/home')">去 AI 对话建档 ›</button></div></div>`;return `<div class="page tl-v2-page"><div class="tl-v3-card"><div class="tl-v3-section-head"><div><small>PERSONAL INSIGHTS</small><h3>你的背景与行动建议</h3></div></div><p class="tl-v3-bgtext">${H(studentBG.raw)}</p><p class="tl-v3-desc">暂不展示量化匹配度、录取概率或未经验证的优劣评价。可以到同路市集了解与你诉求相关的服务方向，到「我的」查看行动时间线。</p><button class="tl-v3-softbtn" onclick="go('#/providers')">逛同路市集 ›</button></div></div>`;};
   PAGES.home=studentHome;
   PAGES.me=studentMe;
   PAGES.providers=providersV2;
@@ -470,7 +470,7 @@
   PAGES.conversation=function(){return conversationCenter();};
   NAV.choose={hidden:true};
   NAV.mentorHome={brand:true};NAV.mentorDemands={title:'学生需求广场'}; NAV.mentorProfile={title:'服务者资料'};NAV.mentorMe={title:'我的服务空间'};
-  NAV.guestHome={brand:true};NAV.guestSchools={title:'院校资讯 · 预览'};NAV.guestProviders={title:'服务者 · 预览'};NAV.guestMe={title:'加入同路'};
+  NAV.guestHome={brand:true};NAV.guestSchools={title:'院校资讯 · 预览'};NAV.guestProviders={title:'同路市集 · 预览'};NAV.guestMe={title:'加入同路'};
   NAV.messages={title:'消息中心'};NAV.conversation={title:'咨询草稿'};
   schoolSavedView=savedSchoolsV2;
   schoolRecordsView=recordsV2;
@@ -484,7 +484,7 @@
       if(name==='provider')return `<button class="btn line" onclick="toggleMentorFavorite('${provider().id}')">${isMentorSaved(provider().id)?'♥ 已收藏':'♡ 收藏同行'}</button><button class="btn primary wide" onclick="go('#/mentorMe')">回我的服务空间</button>`;
     }
     if(name==='providers')return `<button class="btn line" onclick="setProviderView('saved')">我的收藏</button><button class="btn primary wide" onclick="go('#/home')">AI 交流 / 完善 BG</button>`;
-    if(name==='diagnosis')return `<button class="btn line" onclick="go('#/home')">继续 AI 交流</button><button class="btn primary wide" onclick="go('#/providers')">浏览服务者 ›</button>`;
+    if(name==='diagnosis')return `<button class="btn line" onclick="go('#/home')">继续 AI 交流</button><button class="btn primary wide" onclick="go('#/providers')">逛同路市集 ›</button>`;
     if(name==='messages'||name==='conversation')return '';
     if(name==='provider'){
       const p=provider();const full=remain(p)===0;
@@ -555,11 +555,11 @@
   };
 
   const allowedGuest=new Set(['choose','guestHome','guestSchools','guestProviders','guestMe','experience','dataCenter']);
-  const allowedMentor=new Set(['choose','mentorHome','mentorDemands','mentorProfile','mentorMe','school','providers','provider','noticeDetail','workbench','admin','messages','experience','dataCenter']);
+  const allowedMentor=new Set(['choose','mentorHome','mentorDemands','mentorProfile','mentorMe','school','providers','provider','noticeDetail','workbench','admin','messages','conversation','experience','dataCenter']);
   const studentForbidden=new Set(['mentorHome','mentorDemands','mentorProfile','mentorMe','guestHome','guestSchools','guestProviders','guestMe']);
-  const mentorTabs=[['首页','mentorHome',ICON.home],['院校资讯','school',ICON.school],['服务者','providers',ICON.users],['我的','mentorMe',ICON.me]];
-  const guestTabs=[['首页','guestHome',ICON.home],['院校资讯','guestSchools',ICON.school],['服务者','guestProviders',ICON.users],['登录','guestMe',ICON.me]];
-  const studentTabs=[['首页','home',ICON.home],['院校资讯','school',ICON.school],['服务者','providers',ICON.users],['我的','me',ICON.me]];
+  const mentorTabs=[['首页','mentorHome',ICON.home],['院校资讯','school',ICON.school],['同路市集','providers',ICON.users],['我的','mentorMe',ICON.me]];
+  const guestTabs=[['首页','guestHome',ICON.home],['院校资讯','guestSchools',ICON.school],['同路市集','guestProviders',ICON.users],['登录','guestMe',ICON.me]];
+  const studentTabs=[['首页','home',ICON.home],['院校资讯','school',ICON.school],['同路市集','providers',ICON.users],['我的','me',ICON.me]];
   const tabKeys=new Set(['mentorHome','mentorMe','guestHome','guestSchools','guestProviders','guestMe']);
   function renderV3(){
     let key=(location.hash.replace(/^#\/?/,'')||'choose').split('/')[0];

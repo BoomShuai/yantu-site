@@ -87,3 +87,44 @@
 .v9-search input::placeholder,.v9-position-form input::placeholder{color:#93849f}
 .v9-multiselect button{color:#877296}.v9-filter-caption small{color:#93829f}
 @media(max-width:360px){.v9-page{padding-left:12px;padding-right:12px}.v9-section-tabs{gap:16px;padding:0 12px}.v9-heading h1{font-size:19px}.v9-nav-select select{font-size:10px}.v9-filter-nav{gap:5px}.v9-position-form>div{flex-direction:column;align-items:stretch}}
+
+
+/* 同路市集：按保研服务场景组织入口，先选服务，再查看对应服务者。 */
+.v9-market-page .v9-heading{margin-bottom:7px}
+.v9-market-lead{font-size:11px;line-height:1.85;color:#83758f;margin:0 0 14px}
+.v9-market-services{margin:2px 0 18px}
+.v9-market-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:3px 0 10px}
+.v9-market-section-head>span{display:flex;flex-direction:column;gap:3px}
+.v9-market-section-head b{font-size:13px;color:#59456e}
+.v9-market-section-head small{font-size:9.5px;color:#988aa3}
+.v9-market-section-head>button{border:0;background:#f2edf8;color:#8162a6;border-radius:8px;padding:7px 10px;font-size:10px}
+.v9-service-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.v9-service-card{position:relative;display:flex;align-items:flex-start;gap:9px;min-width:0;min-height:136px;padding:12px 10px 11px;border:1px solid #e9e0f0;border-radius:15px;background:linear-gradient(150deg,#fff 0%,#fbf9fd 100%);color:#4b3b5e;text-align:left;box-shadow:0 3px 10px rgba(83,61,117,.035);transition:border-color .16s ease,background .16s ease,box-shadow .16s ease}
+.v9-service-card.active{border-color:#aa91ce;background:linear-gradient(150deg,#f7f2fc 0%,#fffdf8 100%);box-shadow:0 5px 14px rgba(112,82,154,.11)}
+.v9-service-icon{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:10px;background:#f0e9f8;color:#7d5ba5;font-size:13px;font-weight:800}
+.v9-service-card:nth-child(2) .v9-service-icon{background:#f9f0e4;color:#a77b3d}
+.v9-service-card:nth-child(3) .v9-service-icon{background:#eaf2f0;color:#5c8b7d}
+.v9-service-card:nth-child(4) .v9-service-icon{background:#edf0f8;color:#6575a0}
+.v9-service-copy{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+.v9-service-copy>b{font-size:12px;line-height:1.4;color:#49385d}
+.v9-service-copy>small{font-size:9px;line-height:1.55;color:#8f819c}
+.v9-service-examples{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.v9-service-examples i{font-style:normal;font-size:8px;line-height:1.35;color:#8a759f;background:#f4f0f8;border-radius:5px;padding:3px 5px}
+.v9-service-count{position:absolute;right:8px;bottom:8px;font-size:8px;color:#a18fae;white-space:nowrap}
+.v9-service-card.active .v9-service-count{color:#8060aa}
+.v9-service-detail-panel{margin-top:10px;padding:12px;border:1px solid #e9e0f1;border-radius:13px;background:#fff}
+.v9-service-detail-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+.v9-service-detail-head>span{display:flex;flex-direction:column;gap:3px}
+.v9-service-detail-head b{font-size:11px;color:#5e4b70}
+.v9-service-detail-head small{font-size:9px;color:#9c8da7}
+.v9-service-detail-head>button{border:0;background:transparent;color:#9b84b2;font-size:9px;padding:4px}
+.v9-service-detail-chips{display:flex;flex-wrap:wrap;gap:6px}
+.v9-service-detail-chips button{border:1px solid #e9e1f0;border-radius:20px;background:#fff;color:#8d7b9a;padding:6px 9px;font-size:9px;line-height:1.35}
+.v9-service-detail-chips button.active{border-color:#9c7bc0;background:#f1eafa;color:#75539e;font-weight:700}
+.v9-market-page .v9-filter-caption{margin-top:15px}
+.v9-provider-service-label{font-size:9px;color:#8f7b9f;font-weight:700;letter-spacing:.3px;margin:13px 0 -7px}
+.v9-provider .v9-tags{margin:11px 0}
+@media(max-width:350px){.v9-service-grid{gap:7px}.v9-service-card{min-height:145px;padding:10px 8px}.v9-service-icon{width:27px;height:27px}.v9-service-copy>b{font-size:11px}.v9-service-copy>small{font-size:8.5px}}
+@media(prefers-reduced-motion:reduce){.v9-service-card{transition:none}}
+
+.v9-market-footnote{font-size:9px;line-height:1.8;color:#9a8da3;margin:14px 2px 0;padding-top:10px;border-top:1px solid #f0eaf5}

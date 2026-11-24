@@ -117,3 +117,21 @@
 .v5-optional-content .v5-upload-icon{width:30px;height:30px;font-size:20px}
 .v5-optional-content .v5-student-upload b{font-size:13px}
 @media(prefers-reduced-motion:reduce){.v5-optional-chevron{transition:none}}
+
+/* 学生建档：将简历上传作为首屏主入口，手动填写作为清晰的备用入口。 */
+.v5-resume-entry{margin:0 0 20px}
+.v5-student-upload{position:relative;min-height:174px;box-sizing:border-box;justify-content:center;padding:27px 18px 24px;gap:8px;border:1.5px dashed var(--brand-2);border-radius:22px;background:linear-gradient(180deg,var(--card),var(--brand-soft));}
+.v5-student-upload .v5-upload-icon{width:48px;height:48px;border-radius:16px;font-size:27px;margin:0 0 2px}
+.v5-student-upload b{font-size:16px;line-height:1.4}
+.v5-student-upload small{max-width:280px;text-align:center;font-size:11px;line-height:1.6}
+.v5-student-upload .v5-upload-action{display:inline-flex;align-items:center;justify-content:center;min-height:32px;margin-top:4px;padding:0 17px;border-radius:999px;background:var(--brand);color:#fff;font-size:11px;font-weight:650;letter-spacing:.1px}
+.v5-student-upload input{position:absolute;inset:0;z-index:2;width:100%;height:100%;opacity:0;overflow:hidden;cursor:pointer}
+.v5-student-upload.is-busy{cursor:wait}
+.v5-resume-entry .v5-manual-fallback{display:flex;align-items:center;justify-content:center;gap:5px;margin:12px auto 0;padding:7px 10px;border:0;background:transparent;color:var(--brand);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.v5-resume-entry .v5-manual-fallback span{font-size:15px;transition:transform .18s ease}
+.v5-resume-entry .v5-manual-fallback:hover span{transform:translateX(3px)}
+.v5-resume-entry .v5-manual-fallback:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:8px}
+.v5-resume-entry .v5-student-files{margin:12px 0 16px}
+#v5-student-manual-fields{scroll-margin-top:24px}
+@media(max-width:380px){.v5-student-upload{min-height:162px;padding:22px 13px}.v5-student-upload small{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.v5-resume-entry .v5-manual-fallback span{transition:none}}

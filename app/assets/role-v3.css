@@ -140,3 +140,12 @@ body[data-chat-home="yes"] #app .tl-v3-home{flex:1;display:flex;flex-direction:c
 }
 
 .tl-my-shortcut-icon svg{width:21px;height:21px;display:block}.tl-my-row-icon svg{width:17px;height:17px;display:block}
+
+
+/* 待确认 BG：把“修改资料”和“确认档案”作为两个清晰的并列操作。 */
+.tl-v3-check .tl-v3-check-actions{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.35fr);gap:8px;margin:8px 0 4px}
+.tl-v3-check .tl-v3-check-actions button{width:100%;min-width:0;margin:0;padding:10px 7px;border-radius:11px;font-size:11px;font-weight:750;line-height:1.35}
+.tl-v3-check .tl-v3-check-actions .tl-v3-edit{background:#fff;color:#7659a5;border:1px solid #e5d9f1}
+.tl-v3-check .tl-v3-check-actions .tl-v3-confirm{background:linear-gradient(110deg,#8261b8,#9473ca);color:#fff;border:1px solid #8c6ac1}
+.tl-v3-check .tl-v3-check-actions .tl-v3-confirm:disabled{background:#e5ddea;color:#9887ad;border-color:#e5ddea}
+@media(max-width:360px){.tl-v3-check .tl-v3-check-actions{grid-template-columns:1fr 1.2fr}}

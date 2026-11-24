@@ -52,7 +52,7 @@
   const mentorSteps=[
     {title:'基本信息',sub:'先让学生认识你',fields:['name','mbti','bio']},
     {title:'教育背景',sub:'填写真实的本科与升学经历',fields:['school','major','destination']},
-    {title:'服务能力',sub:'说明你能提供哪些帮助',fields:['services','slots']},
+    {title:'服务',sub:'选择并说明你能提供的具体服务',fields:['services','slots']},
     {title:'经历与成果',sub:'说明服务过什么样的学生、提供过哪些帮助以及实际结果',fields:['achievements','servedTypes','served','results','experience','cases']}
   ];
   const fieldMeta={
@@ -62,7 +62,7 @@
     school:['本科院校','input','例如：天津大学'],
     major:['本科专业','input','例如：金融学'],
     destination:['升学去向','input','例如：复旦大学金融专硕'],
-    services:['擅长辅导方向','textarea','例如：材料诊断、科研经历梳理、面试辅导'],
+    services:['可提供的服务','textarea','例如：简历结构优化、面试模拟、科研项目梳理、学科竞赛辅导、院校定位与保研规划'],
     slots:['每周期可接待人数','select',''],
     achievements:['科研 / 竞赛成果','textarea','请填写项目、论文、竞赛及个人贡献'],
     servedTypes:['服务对象背景（请脱敏）','textarea','例如：统计、计算机等专业；双非/一本背景；大二至大三学生'],

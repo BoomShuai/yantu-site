@@ -1,0 +1,109 @@
+/* V12 服务者四栏导航与培训中心 */
+#tabbar.v12-mentor-tabbar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  height: 68px;
+  padding: 7px 8px calc(5px + env(safe-area-inset-bottom, 0px));
+  gap: 4px;
+  background: rgba(255, 253, 255, .98);
+  border-top: 1px solid #e9e0f1;
+  box-shadow: 0 -5px 18px rgba(66, 45, 92, .045);
+  z-index: 30;
+}
+#tabbar.v12-mentor-tabbar .v12-mentor-tab {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 2px 2px;
+  color: #95899f;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  border-radius: 12px;
+  transition: color .18s ease, background .18s ease;
+}
+#tabbar.v12-mentor-tabbar .v12-mentor-tab svg {
+  display: block;
+  width: 21px;
+  height: 21px;
+  flex: none;
+}
+#tabbar.v12-mentor-tabbar .v12-mentor-tab.active {
+  color: #7654ad;
+  background: linear-gradient(180deg, #f7f1fd, #fffaf0);
+  font-weight: 800;
+}
+#tabbar.v12-mentor-tabbar .v12-mentor-tab.active::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 22px;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg, #8060b7, #c49b56);
+  transform: translateX(-50%);
+}
+.v12-training-page { padding-bottom: 26px !important; }
+.v12-training-intro {
+  margin: 14px 0 15px;
+  padding: 17px 16px;
+  border: 1px solid #e9def2;
+  border-radius: 19px;
+  background: linear-gradient(135deg, #fbf8ff 0%, #fffdf7 100%);
+}
+.v12-training-mark {
+  display: inline-flex;
+  margin-bottom: 10px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f0e8f8;
+  color: #8060ad;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .3px;
+}
+.v12-training-intro b { display:block; color:#4a385f; font-size:15px; }
+.v12-training-intro p { margin:7px 0 0; color:#8c7d99; font-size:11px; line-height:1.75; }
+.v12-training-list { display:grid; gap:9px; }
+.v12-training-list article {
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  padding:14px 12px;
+  border:1px solid #eee7f3;
+  border-radius:15px;
+  background:#fff;
+  box-shadow:0 4px 13px rgba(70,50,100,.025);
+}
+.v12-training-no {
+  display:grid;
+  width:31px;
+  height:31px;
+  flex:none;
+  place-items:center;
+  border-radius:10px;
+  background:linear-gradient(145deg,#eee4fa,#fff3d9);
+  color:#8060ad;
+  font-size:10px;
+  font-weight:800;
+}
+.v12-training-list article div { flex:1; min-width:0; }
+.v12-training-list article b { display:block; color:#4b3b5e; font-size:12px; }
+.v12-training-list article p { margin:5px 0 6px; color:#887b94; font-size:10.5px; line-height:1.65; }
+.v12-training-list article small { color:#a38eae; font-size:9px; }
+.v12-training-arrow { color:#b29a7a; font-size:19px; line-height:1; }
+.v12-training-note { margin:13px 2px 0; color:#a194aa; font-size:9px; line-height:1.65; }
+@media(max-width:350px) {
+  #tabbar.v12-mentor-tabbar { padding-left:5px; padding-right:5px; gap:2px; }
+  #tabbar.v12-mentor-tabbar .v12-mentor-tab { font-size:9.5px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  #tabbar.v12-mentor-tabbar .v12-mentor-tab { transition:none; }
+}

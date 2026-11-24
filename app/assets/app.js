@@ -79,7 +79,7 @@ const NAV = {
   profile: { title: "建立定位档案" },
   diagnosis: { title: "定位结果" },
   provider: { title: "服务者详情" },
-  providers: { title: "服务者" },
+  providers: { title: "同路市集" },
   presale: { title: "售前沟通" },
   proposal: { title: "服务方案" },
   checkout: { title: "付款与订单" },
