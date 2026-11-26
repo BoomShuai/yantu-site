@@ -243,7 +243,7 @@
 
     return '<div class="page tl-v2-page v4-page">' +
       '<div class="v4-kicker">ADMISSION INTELLIGENCE</div><h1 class="v4-h1">院校资讯</h1>' +
-      '<p class="v4-sub">整理自各高校研究生院与学院官网的公开通知，每条都带原文链接。时间只按原文精度呈现，不推测截止时刻。</p>' +
+      '<p class="v4-sub">整理自各高校研究生院与学院官网的公开通知，点击可查看原文链接。</p>' +
       '<div class="v7-tools">' +
       '<div class="tl-search"><input id="v7-news-q" type="search" placeholder="搜索院校、学院或标题" value="' + E(q) + '" oninput="v7NewsQ(this.value)" /></div>' +
       '<div class="v7-seg">' + seg + "</div>" +
@@ -253,7 +253,7 @@
       '<div class="v7-count">共 <b>' + list.length + "</b> 条" + updatedLabel() + " · 按截止紧迫度排序" +
       (q ? " · 关键词「" + E(q) + "」" : "") + "</div>" +
       (list.length ? list.map(cardHTML).join("") : empty) +
-      '<p class="v4-note">整理自公开渠道 · 请以院校官网与官方通知为准。平台不对截止时刻做推测。</p>' +
+      '<p class="v4-note">通知整理自公开渠道，请以各院校官网最新公告为准。</p>' +
       "</div>";
   };
 
@@ -382,7 +382,7 @@
   (function deepLink() {
     var D = window.__TL_DEEP || {};
     var r = D.role;
-    if (!r || ["student", "mentor", "guest"].indexOf(r) < 0) return;
+    if (!r || ["student", "mentor"].indexOf(r) < 0) return;
     if (typeof window.selectTongluRole !== "function") return;
     var want = D.hash || "";
     window.selectTongluRole(r);

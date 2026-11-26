@@ -133,5 +133,23 @@
 .v5-resume-entry .v5-manual-fallback:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:8px}
 .v5-resume-entry .v5-student-files{margin:12px 0 16px}
 #v5-student-manual-fields{scroll-margin-top:24px}
-@media(max-width:380px){.v5-student-upload{min-height:162px;padding:22px 13px}.v5-student-upload small{font-size:10px}}
+
+/* 独立简历上传首屏：突出大上传框，下方一行小字跳转手动填写 */
+.v5-upload-landing{display:flex;flex-direction:column;padding-top:26px}
+.v5-upload-landing-head{margin:0 0 22px}
+.v5-upload-landing-head h1{margin:0 0 8px;font-size:24px;font-weight:750;color:var(--ink,#261e34);letter-spacing:-.3px}
+.v5-upload-landing-head .v5-intake-intro{margin:0;color:var(--ink-2,#776b87);font-size:12.5px;line-height:1.65}
+.v5-upload-landing .v5-student-upload{min-height:212px;padding:34px 20px 28px}
+.v5-no-resume-link{display:block;margin:14px auto 0;padding:6px 10px;border:0;background:transparent;color:var(--ink-2,#7e6f94);font:inherit;font-size:12px;line-height:1.5;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(126,93,184,.35);cursor:pointer;transition:color .15s ease}
+.v5-no-resume-link:hover,.v5-no-resume-link:active{color:var(--brand,#7e5db8)}
+.v5-no-resume-link:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:8px}
+
+/* 手动填写页顶部的轻量简历入口条 */
+.v5-resume-bar{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 16px;padding:10px 13px;border:1px solid var(--line,#e9dff3);border-radius:13px;background:var(--card,#fff);color:var(--ink-2,#625475);font:inherit;font-size:12px;text-align:left;cursor:pointer}
+.v5-resume-bar em{font-style:normal;color:var(--brand,#7e5db8);font-weight:650;white-space:nowrap}
+.v5-resume-bar.is-ok{background:var(--brand-soft,#f7f1ff);border-color:#e2d2f4;color:#4f3775}
+.v5-file.v5-file-err>span{color:#c94a59;font-weight:800}
+.v5-file.v5-file-err small{color:#b94452}
+
+@media(max-width:380px){.v5-student-upload{min-height:162px;padding:22px 13px}.v5-upload-landing .v5-student-upload{min-height:194px;padding:28px 16px 24px}.v5-student-upload small{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.v5-resume-entry .v5-manual-fallback span{transition:none}}

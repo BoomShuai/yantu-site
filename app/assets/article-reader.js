@@ -20,7 +20,10 @@
       target.innerHTML='<article class="v10-article">'+article.html+'</article>'+((attachments||pdfs)?'<section class="v10-attachments" aria-label="原通知附件"><h3>原通知附件</h3>'+pdfs+attachments+'</section>':'')+pending;
       target.dataset.loaded='true';
     }catch(error){
-      if(target.isConnected)target.innerHTML='<div class="v10-reader-unavailable"><h3>原文暂时读取失败</h3><p>请使用下方官网链接查看完整通知与附件。</p></div>';
+      if(target.isConnected){
+        target.innerHTML='<div class="v10-reader-unavailable"><h3>原文暂时读取失败</h3><p>你可以重试，或使用下方官网链接查看完整通知与附件。</p><button type="button" class="v9-primary">重新加载正文</button></div>';
+        target.querySelector?.('button')?.addEventListener('click',()=>{target.setAttribute('aria-busy','true');mount(id,sourceUrl);});
+      }
     }finally{if(target.isConnected)target.setAttribute('aria-busy','false');}
   }
   window.tlOriginalNotice=function(n){

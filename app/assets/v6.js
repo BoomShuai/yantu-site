@@ -1,5 +1,5 @@
 /* 同路 V6 · AI / 数据产品预留层
- * 本地版：不连接 AI、数据库或支付；所有事实来源、审核与授权状态明确展示。
+ * 本地版：不连接 AI、设备同步或支付；所有事实来源、审核与授权状态明确展示。
  * 依赖 data.js/app.js/role-v3.js/v4.js/v5.js；不覆盖已有业务及数据结构。
  */
 (function(){
@@ -9,18 +9,18 @@
   const H=x=>escapeTL(x==null?'':String(x));
   const $=id=>document.getElementById(id);
   const STORAGE='tonglu-v6-demo-experience-plans';
-  const KEY_GROUP=['tonglu-purple-gold-v1','tonglu-role-v3-mentor-draft','tonglu-v3-student-bg','tonglu-v3-plan-tasks','tonglu-v4-local-consultations','tonglu-v4-supplement','tonglu-v5-intake-draft',STORAGE];
+  const KEY_GROUP=[...new Set(['tonglu-purple-gold-v1','tonglu-role-v3-mentor-draft','tonglu-v3-student-bg','tonglu-v3-plan-tasks','tonglu-v4-local-consultations','tonglu-v4-supplement','tonglu-v5-intake-draft','tonglu-v8-mentor-step','tonglu-mentor-legacy-draft-v1','tonglu-feedback-v1',STORAGE,...Object.values(window.TongluMarket?.KEYS||{})])];
   const formatDate=()=>new Date().toLocaleDateString('zh-CN');
   let store={extraTasks:[], accepted:[], consent:{model:false, sharing:false}, lastExperienceQuery:''};
   try{const saved=JSON.parse(localStorage.getItem(STORAGE)||'{}');if(saved&&typeof saved==='object'){store={...store,...saved,extraTasks:Array.isArray(saved.extraTasks)?saved.extraTasks:[],accepted:Array.isArray(saved.accepted)?saved.accepted:[],consent:{...store.consent,...saved.consent}};}}catch(_){ }
-  const persist=()=>{try{localStorage.setItem(STORAGE,JSON.stringify(store));return true;}catch(e){toast('本地存储失败，本次操作可能不会保留');return false;}};
+  const persist=()=>{try{localStorage.setItem(STORAGE,JSON.stringify(store));return true;}catch(e){toast('未能保存本次修改，请检查设备存储空间后重试');return false;}};
   function route(key){go('#/'+key)}
   function note(text){return '<p class="v6-note">'+text+'</p>';}
   const exampleCases=[
-    {id:'demo-ai-01',title:'计算机 / AI · 项目经历如何描述',direction:'人工智能',stage:'材料准备',year:'虚构案例',tags:['人工智能','计算机','科研','竞赛','保研'],q:'项目很多但不知道如何证明个人贡献',a:'把每个项目整理成背景、你的行动、可核验成果；面试中使用实际代码或研究笔记说明方法。',source:'内容设计示例，不代表真实学长经历'},
-    {id:'demo-stat-02',title:'数学统计 · 竞赛成果整理',direction:'统计与数学',stage:'规划',year:'虚构案例',tags:['统计','数学','竞赛','保研','材料'],q:'建模比赛成果和申请目标联系不明确',a:'按建模问题、个人负责内容、验证过程与复盘经验整理成结构化清单。',source:'内容设计示例，不代表真实申请记录'},
-    {id:'demo-fin-03',title:'金融商科 · 面试准备路径',direction:'金融与商科',stage:'面试',year:'虚构案例',tags:['金融','商科','面试','保研'],q:'对面试中的项目追问准备不足',a:'针对每一段研究或实习经历准备事实、方法、结果、局限性四个部分，避免编造。',source:'内容设计示例，不代表真实录取结果'},
-    {id:'demo-general-04',title:'跨方向申请 · 材料逻辑',direction:'通用',stage:'申请前',year:'虚构案例',tags:['跨专业','材料','保研','科研'],q:'本科专业与目标方向差异较大',a:'先检查目标项目是否接收跨专业，再说明既有课程与项目如何支持新方向，缺少部分要明确承认。',source:'内容设计示例，不代表具体院校要求'}
+    {id:'demo-ai-01',title:'计算机 / AI · 项目经历如何描述',direction:'人工智能',stage:'材料准备',year:'准备建议',tags:['人工智能','计算机','科研','竞赛','保研'],q:'项目很多但不知道如何证明个人贡献',a:'把每个项目整理成背景、你的行动、可核验成果；面试中使用实际代码或研究笔记说明方法。',source:'通用准备建议，请结合自身经历使用'},
+    {id:'demo-stat-02',title:'数学统计 · 竞赛成果整理',direction:'统计与数学',stage:'规划',year:'准备建议',tags:['统计','数学','竞赛','保研','材料'],q:'建模比赛成果和申请目标联系不明确',a:'按建模问题、个人负责内容、验证过程与复盘经验整理成结构化清单。',source:'通用准备建议，请结合申请要求使用'},
+    {id:'demo-fin-03',title:'金融商科 · 面试准备路径',direction:'金融与商科',stage:'面试',year:'准备建议',tags:['金融','商科','面试','保研'],q:'对面试中的项目追问准备不足',a:'针对每一段研究或实习经历准备事实、方法、结果、局限性四个部分，避免编造。',source:'通用面试准备建议，不代表录取结果'},
+    {id:'demo-general-04',title:'跨方向申请 · 材料逻辑',direction:'通用',stage:'申请前',year:'准备建议',tags:['跨专业','材料','保研','科研'],q:'本科专业与目标方向差异较大',a:'先检查目标项目是否接收跨专业，再说明既有课程与项目如何支持新方向，缺少部分要明确承认。',source:'请以目标院校当年的官方要求为准'}
   ];
   let expFilter='全部', expQuery='', expOpen='';
   function scoreCase(x){const context=T.profileReady()?T.bg.raw+' '+(T.bg.goals||[]).join(' '):'';let score=0;for(const tag of x.tags)if(context.includes(tag))score++;return score;}
@@ -28,16 +28,16 @@
   function experiencePage(){
     if(T.role==='guest')return '<div class="page tl-v2-page v4-page"><div class="v4-kicker">CASE LIBRARY</div><h1 class="v4-h1">保研经验库</h1><div class="v6-card"><b>游客可预览经验库的内容结构</b><p>完整检索、收藏与个性化问答将在账号系统上线后开放。</p><button class="v6-primary" onclick="go(\'#/choose\')">选择身份体验 ›</button></div></div>';
     const cards=casesFiltered().map(c=>'<article class="v6-case"><div class="v6-case-top"><span class="v6-pill">'+H(c.direction)+'</span><span class="v6-muted">'+H(c.year)+'</span></div><h3>'+H(c.title)+'</h3><p>关注问题：'+H(c.q)+'</p><div class="v6-case-foot"><span>'+H(c.stage)+'</span><button type="button" onclick="v6OpenExperience(\''+c.id+'\')">'+(expOpen===c.id?'收起':'查看经验摘要')+' ›</button></div>'+(expOpen===c.id?'<div class="v6-extract"><b>内容摘要</b><p>'+H(c.a)+'</p><small>'+H(c.source)+'</small></div>':'')+'</article>').join('');
-    return '<div class="page tl-v2-page v4-page"><div class="v4-kicker">EXPERIENCE INDEX</div><h1 class="v4-h1">经验库 · 内容体验</h1><p class="v4-sub">未来按真实授权经历、具体院校、专业和年份检索；当前只提供虚构案例示例，不是已采集的数据。</p>'+note('正式版接入 RAG：先检索可用且经过授权的经验片段，再给出带来源、年份和限制说明的回答。暂不收费、不提供录取概率。')+
-      '<div class="v6-card"><b>查找相关经验</b><label class="v6-field">关键词<input id="v6-experience-query" value="'+H(expQuery)+'" placeholder="例如：人工智能 项目 竞赛" maxlength="80" /></label><button class="v6-primary" onclick="v6SearchExperience()">查找内容</button><div class="v6-filters">'+['全部','保研','竞赛','科研','面试','材料'].map(f=>'<button class="'+(expFilter===f?'active':'')+'" onclick="v6FilterExperience(\''+f+'\')">'+f+'</button>').join('')+'</div><div class="v6-inline">'+(T.profileReady()?'已读取你确认的 BG 关键词，用于本地排序。':'尚未确认 BG，按通用主题浏览。')+'</div></div>'+
-      '<div class="v6-card v6-soft"><b>未来的智能问答</b><p>问答将引用来源片段，并区分申请者亲身经历、经验建议与推断。公开院校通知需另行核实。</p><div class="v6-placeholder">大模型接入位置：/api/v1/experience/search + /api/v1/experience/answer</div></div>'+
+    return '<div class="page tl-v2-page v4-page"><div class="v4-kicker">EXPERIENCE INDEX</div><h1 class="v4-h1">保研经验库</h1><p class="v4-sub">按方向查找准备建议，结合自己的经历规划下一步。</p>'+note('以下内容为通用准备指南，不代表个人申请结果。')+
+      '<div class="v6-card"><b>查找相关经验</b><label class="v6-field">关键词<input id="v6-experience-query" value="'+H(expQuery)+'" placeholder="例如：人工智能 项目 竞赛" maxlength="80" /></label><button class="v6-primary" onclick="v6SearchExperience()">查找内容</button><div class="v6-filters">'+['全部','保研','竞赛','科研','面试','材料'].map(f=>'<button class="'+(expFilter===f?'active':'')+'" onclick="v6FilterExperience(\''+f+'\')">'+f+'</button>').join('')+'</div><div class="v6-inline">'+(T.profileReady()?'已结合你的资料整理相关主题。':'完善个人资料后，可以优先查看相关主题。')+'</div></div>'+
+      '<div class="v6-card v6-soft"><b>如何使用这些建议</b><p>先找到相关主题，再核对自己的准备情况；报名条件与日期以院校官网为准。</p><div class="v6-placeholder">这些指南不包含个人录取概率。</div></div>'+
       '<h2 class="v6-section-heading">'+(expQuery?'检索结果':'精选主题')+' · '+casesFiltered().length+' 条</h2>'+(cards||'<div class="v6-empty">未找到相关主题。可以尝试更短的关键词，或切换「全部」。</div>')+'</div>';
   }
   window.v6FilterExperience=function(x){expFilter=x;render();};
   window.v6SearchExperience=function(){expQuery=( $('v6-experience-query')?.value ||'' ).trim().slice(0,80);store.lastExperienceQuery=expQuery;persist();render();};
   window.v6OpenExperience=function(id){expOpen=expOpen===id?'':id;render();};
   
-  // 提醒：不能把聊天内容在用户未确认时自动转为正式 BG。
+  // 提醒：不能把聊天内容在用户未确认时自动转为正式个人资料。
   // 该按钮只打开建档预览：最终保存仍需要用户逐字段确认。
   window.v6PrepareConversation=function(){
     if(T.role!=='student'){toast('请先使用学生身份');return;}
@@ -69,14 +69,14 @@
   const oldMentorProfile=PAGES.mentorProfile;
   PAGES.mentorProfile=function(){
     const html=oldMentorProfile();if(T.role!=='mentor')return html;
-    const trust='<div class="v6-card"><h3>资质证明与服务记录 · 预留</h3><p>整理学历、获奖证明、脱敏授权案例后，可在正式平台提交审核。当前不会上传、验证或公开文件。</p><div class="v6-trust-row"><span>个人申报</span><small>可以修改，并可生成介绍草稿</small></div><div class="v6-trust-row"><span>平台核验</span><small>尚未接入审核流程</small></div><div class="v6-trust-row"><span>真实订单</span><small>尚未接入服务数据库，次数不允许手填为认证</small></div><div class="v6-placeholder">预留接口：/api/v1/mentors/me/verification /api/v1/orders/stats</div></div>';
+    const trust='<div class="v6-card"><h3>资质证明与服务记录</h3><p>整理学历、获奖证明、脱敏授权案例后，可在正式平台提交审核。当前不会上传、验证或公开文件。</p><div class="v6-trust-row"><span>个人申报</span><small>可以修改，并可生成介绍草稿</small></div><div class="v6-trust-row"><span>平台核验</span><small>尚未接入审核流程</small></div><div class="v6-trust-row"><span>真实订单</span><small>尚未接入服务设备同步，次数不允许手填为认证</small></div><div class="v6-placeholder">请提交真实有效的证明，并为过往案例隐去个人信息。</div></div>';
     return html.replace('<div class="v5-card"',trust+'<div class="v5-card"');
   };
   function buildPlanSuggestions(){
     if(!T.profileReady())return [];
     const grade=T.bg.grade||'未填', goals=T.bg.goals||[], raw=T.bg.raw||'';
     const items=[];
-    const add=(id,cat,title,detail)=>items.push({id,cat,title,detail,source:'基于已确认的 '+grade+'、'+cat+' 目标（本地规则）'});
+    const add=(id,cat,title,detail)=>items.push({id,cat,title,detail,source:'根据你的 '+grade+'、'+cat+' 目标整理'});
     if(goals.includes('保研')){
       if(grade==='大一'||grade==='大二')add('v6-early-bg','保研','建立可以持续更新的经历清单','把课程、英语、项目与个人贡献记录到档案；按学期回顾，不预设学校截止日。');
       else add('v6-later-apply','保研','核对目标项目的官方通知','把最新招生条件和截止日期关联到投递记录，避免按往年时间做决定。');
@@ -89,11 +89,11 @@
     return items.slice(0,5);
   }
   function planSuggestionCard(){
-    if(!T.profileReady())return '<section class="v6-card v6-soft"><h3>AI 成长规划 · 待解锁</h3><p>确认年级、个人 BG 与诉求后，这里会提供可采纳的参考任务。不会在未确认资料前擅自制定个人计划。</p><button class="v6-secondary" onclick="go(\'#/profile\')">完善个人 BG ›</button></section>';
+    if(!T.profileReady())return '<section class="v6-card v6-soft"><h3>成长规划 · 待解锁</h3><p>完善年级、院校背景与申请目标后，即可生成可采纳的参考任务清单。</p><button class="v6-secondary" onclick="go(\'#/profile/basic\')">完善个人档案 ›</button></section>';
     const suggested=buildPlanSuggestions().filter(x=>!store.accepted.includes(x.id));
     const accepted=store.extraTasks||[];
-    return '<section class="v6-card"><div class="v6-card-head"><h3>成长规划建议</h3><span class="v6-pill">待你确认</span></div><p>依据已确认 BG、目标和现有投递记录提出参考任务。当前为本地规则模板，未来支持 AI 提议；不会自动修改你的日程。</p>'+
-      (suggested.length?suggested.map(it=>'<div class="v6-task"><span class="v6-pill">'+H(it.cat)+'</span><b>'+H(it.title)+'</b><p>'+H(it.detail)+'</p><small>'+H(it.source)+'</small><button onclick="v6AcceptPlan(\''+it.id+'\')">加入我的计划 ›</button></div>').join(''):'<p class="v6-empty">当前的建议已处理。你可以继续完善 BG 或变更目标，下一轮再核对新的计划。</p>')+
+    return '<section class="v6-card"><div class="v6-card-head"><h3>成长规划建议</h3><span class="v6-pill">待你确认</span></div><p>依据你的背景、目标和投递记录生成参考任务，采纳后可自由调整进度与截止日期。</p>'+
+      (suggested.length?suggested.map(it=>'<div class="v6-task"><span class="v6-pill">'+H(it.cat)+'</span><b>'+H(it.title)+'</b><p>'+H(it.detail)+'</p><small>'+H(it.source)+'</small><button onclick="v6AcceptPlan(\''+it.id+'\')">加入我的计划 ›</button></div>').join(''):'<p class="v6-empty">已查看完这些建议。更新个人资料或申请目标后，可以继续整理计划。</p>')+
       '<h4>我已采纳的任务 · '+accepted.length+'</h4>'+(accepted.length?accepted.map(it=>'<div class="v6-task confirmed"><b>'+H(it.title)+'</b><p>'+H(it.detail)+'</p><div class="v6-task-edit"><label>状态 <select onchange="v6EditPlan(\''+it.id+'\',\'status\',this.value)">'+['未开始','进行中','已完成'].map(s=>'<option'+(s===(it.status||'未开始')?' selected':'')+'>'+s+'</option>').join('')+'</select></label><label>自设截止日 <input type="date" value="'+H(it.due||'')+'" onchange="v6EditPlan(\''+it.id+'\',\'due\',this.value)"></label></div><button class="v6-textbtn" onclick="v6DropPlan(\''+it.id+'\')">从我的计划移除</button></div>').join(''):'<p class="v6-muted">采纳后会显示在这里，可设自己的截止日与完成状态。</p>')+
       '<p class="v6-note">自动规划与学校真实日期不是一回事；重要时间请核实官方公告。</p></section>';
   }
@@ -105,30 +105,31 @@
   PAGES.me=function(){
     const html=oldMe();if(T.role!=='student')return html;
     return html.replace('<section class="tl-v3-card"><h3>我的收藏与投递</h3>',planSuggestionCard()+'<section class="tl-v3-card"><h3>我的收藏与投递</h3>')
-      .replace('<section class="tl-v3-card"><h3>资料与档案</h3>', '<section class="tl-v3-card"><h3>资料与档案</h3><button class="tl-v2-link-row" onclick="go(\'#/experience\')">真实经验库 · 未来 RAG <span>进入 ›</span></button>')
-      .replace('<div class="tl-v2-footnote">', '<section class="tl-v3-card"><h3>隐私与本机资料</h3><button class="tl-v2-link-row" onclick="go(\'#/dataCenter\')">资料管理与接口状态 <span>查看 / 导出 / 清理 ›</span></button></section><div class="tl-v2-footnote">');
+      .replace('<section class="tl-v3-card"><h3>资料与档案</h3>', '<section class="tl-v3-card"><h3>资料与档案</h3><button class="tl-v2-link-row" onclick="go(\'#/experience\')">保研经验库 <span>进入 ›</span></button>')
+      .replace('<div class="tl-v2-footnote">', '<section class="tl-v3-card"><h3>隐私与资料管理</h3><button class="tl-v2-link-row" onclick="go(\'#/dataCenter\')">资料管理与导出 <span>查看 / 导出 / 清理 ›</span></button></section><div class="tl-v2-footnote">');
   };
   const oldSchool=PAGES.school;
   PAGES.school=function(){const html=oldSchool();if(T.role!=='student')return html;return html.replace('<div class="v4-kicker">ADMISSION INTELLIGENCE</div>','<div class="v4-kicker">ADMISSION INTELLIGENCE</div><div class="v6-school-shortcut"><button onclick="go(\'#/experience\')">保研经验库 · 探索来源化经验 ›</button></div>');};
   const oldMentorMe=PAGES.mentorMe;
-  PAGES.mentorMe=function(){const html=oldMentorMe();if(T.role!=='mentor')return html;return html.replace('<div class="tl-v2-footnote">','<section class="v6-card"><h3>数据与核验管理</h3><p>当前服务次数、学历核验和资质审核均为占位，未连接真实后台。</p><button class="v6-secondary" onclick="go(\'#/dataCenter\')">查看资料管理与接口状态 ›</button></section><div class="tl-v2-footnote">');};
+  PAGES.mentorMe=function(){const html=oldMentorMe();if(T.role!=='mentor')return html;return html.replace('<div class="tl-v2-footnote">','<section class="v6-card"><h3>数据与核验管理</h3><p>核验状态与服务次数以实际完成的审核和订单为准。</p><button class="v6-secondary" onclick="go(\'#/dataCenter\')">查看资料与保存设置 ›</button></section><div class="tl-v2-footnote">');};
   
   function dataCenter(){
     if(T.role==='guest')return '<div class="page tl-v2-page v4-page"><div class="v6-card"><h3>游客没有个人档案</h3><p>请选择身份后再使用资料管理。</p><button class="v6-secondary" onclick="go(\'#/choose\')">选择身份 ›</button></div></div>';
     const keys=KEY_GROUP.filter(k=>{try{return localStorage.getItem(k)!==null;}catch(_){return false;}});
-    return '<div class="page tl-v2-page v4-page"><div class="v4-kicker">DATA & PERMISSIONS</div><h1 class="v4-h1">我的资料与权限</h1><p class="v4-sub">数据目前只存在本机浏览器，尚未建立账号或云数据库。不要存入真实身份证、电话、未授权的简历或完整辅导案例。</p>'+
-      '<div class="v6-card"><h3>数据存放位置</h3><p>目前只保存在这台设备的浏览器 localStorage。无法自动跨设备同步，也不能当作正式备份。</p><div class="v6-trust-row"><span>本机记录</span><small>'+keys.length+' 组 · 仅本机</small></div><div class="v6-trust-row"><span>身份与访问</span><small>仅前端角色切换，尚无真实鉴权</small></div><div class="v6-trust-row"><span>模型调用</span><small>关闭 · 尚未接入后台或发送简历</small></div><div class="v6-trust-row"><span>数据库</span><small>未连接 · 仅预留接口约定</small></div></div>'+
-      '<div class="v6-card"><h3>将来的数据处理授权（仅记录偏好）</h3><label class="v6-toggle"><input type="checkbox" '+(store.consent.model?'checked':'')+' onchange="v6Consent(\'model\',this.checked)"><span>未来允许在明确告知后，将必要的 BG 字段交给 AI 模型处理</span></label><label class="v6-toggle"><input type="checkbox" '+(store.consent.sharing?'checked':'')+' onchange="v6Consent(\'sharing\',this.checked)"><span>未来允许将我选定的必要信息分享给我主动联系的服务者</span></label><p class="v6-note">这些勾选只影响本地界面展示，不代表已取得正式版法律授权，也不会触发任何传输。正式版应重新单独告知、获得有效授权并支持随时撤回。</p></div>'+
-      '<div class="v6-card"><h3>数据管理</h3><p>仅导出本机已有的记录，文件可能包含你输入的内容，请自行安全保管。</p><div class="v6-actions"><button class="v6-secondary" onclick="v6ExportData()">导出本机记录</button><button class="v6-danger" onclick="v6ClearData()">清除本机记录</button></div></div>'+
-      '<div class="v6-card v6-soft"><h3>正式版服务预留</h3><p>统一通过后端保存和授权处理；不直接将 API Key 放进 H5。接口草案见压缩包内 <code>docs/API_INTEGRATION.md</code>。</p><div class="v6-placeholder">/api/v1/auth · /api/v1/profiles · /api/v1/ai/extract · /api/v1/mentors · /api/v1/experience</div></div></div>';
+    return '<div class="page tl-v2-page v4-page"><div class="v4-kicker">DATA & PERMISSIONS</div><h1 class="v4-h1">我的资料与权限</h1><p class="v4-sub">在这里查看保存方式、管理资料和导出当前设备上的记录。</p>'+
+      '<div class="v6-card"><h3>数据存放位置</h3><p>资料保存在当前设备，换设备或清理浏览器数据后无法自动恢复。需要保留时，请先导出。</p><div class="v6-trust-row"><span>已保存记录</span><small>'+keys.length+' 组 · 当前设备</small></div><div class="v6-trust-row"><span>身份与访问</span><small>学生与服务者分别使用各自的功能入口</small></div><div class="v6-trust-row"><span>自动整理资料</span><small>当前不会将简历发送至外部服务</small></div><div class="v6-trust-row"><span>设备同步</span><small>暂不支持跨设备同步</small></div></div>'+
+      '<div class="v6-card"><h3>资料使用偏好</h3><label class="v6-toggle"><input type="checkbox" '+(store.consent.model?'checked':'')+' onchange="v6Consent(\'model\',this.checked)"><span>愿意在单独确认后，使用自动整理资料服务</span></label><label class="v6-toggle"><input type="checkbox" '+(store.consent.sharing?'checked':'')+' onchange="v6Consent(\'sharing\',this.checked)"><span>愿意在单独确认后，分享选定资料给我联系的服务者</span></label><p class="v6-note">这里只保存你的偏好，不会发送资料。实际使用或分享前会再次请你确认。</p></div>'+
+      '<div class="v6-card"><h3>数据管理</h3><p>导出文件包含你填写的资料与记录，请妥善保管。</p><div class="v6-actions"><button class="v6-secondary" onclick="v6ExportData()">导出已保存记录</button><button class="v6-danger" onclick="v6ClearData()">清除已保存记录</button></div></div>'+
+      '<div class="v6-card v6-soft"><h3>资料保护提示</h3><p>不要在公开需求中填写身份证号、住址或联系方式。分享经历时，请先移除其他人的个人信息。</p><div class="v6-placeholder">导出后请在你信任的设备上保存。</div></div></div>';
   }
   window.v6Consent=function(key,checked){if(Object.prototype.hasOwnProperty.call(store.consent,key)){store.consent[key]=!!checked;persist();}};
-  window.v6ExportData=function(){if(!confirm('将下载含你输入内容的本地 JSON 文件。请在安全设备上保存，确认导出吗？'))return;const data={schema:'tonglu-demo-export-v1',generatedAt:new Date().toISOString(),records:{}};for(const key of KEY_GROUP){try{const val=localStorage.getItem(key);if(val!==null)data.records[key]=JSON.parse(val);}catch(_){}}
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='tonglu-local-demo-export.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);toast('已生成本机数据导出文件');};
-  window.v6ClearData=function(){if(!confirm('确定清除同路此原型的本机 BG、收藏、投递、任务和草稿吗？此操作不可撤销。'))return;if(!confirm('再次确认：清除后刷新页面才能以空白状态开始，是否继续？'))return;for(const key of KEY_GROUP){try{localStorage.removeItem(key);}catch(_){}}location.reload();};
+  window.v6ExportData=function(){if(!confirm('将导出你在当前设备保存的资料与记录，请妥善保管。确认导出吗？'))return;const data={schema:'tonglu-export-v2',generatedAt:new Date().toISOString(),records:{}};const privateKeys=[window.TongluMarket?.KEYS.auth,window.TongluMarket?.KEYS.accounts,window.TongluMarket?.KEYS.profileIdentity];for(const key of KEY_GROUP){if(privateKeys.includes(key))continue;try{const val=localStorage.getItem(key);if(val!==null)data.records[key]=JSON.parse(val);}catch(_){}}
+    if(window.TongluMarket?.auth())data.mentorProfile=window.TongluMarket.profile();
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='tonglu-records.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);toast('记录已导出，请妥善保管');};
+  window.v6ClearData=function(){if(!confirm('确定清除当前设备上的个人资料、收藏、投递、任务和草稿吗？清除后无法恢复。'))return;if(!confirm('清除后将重新打开页面。请确认已经保留需要的记录，继续清除吗？'))return;for(const key of KEY_GROUP){try{localStorage.removeItem(key);}catch(_){}}location.reload();};
   PAGES.experience=experiencePage;PAGES.dataCenter=dataCenter;
   NAV.experience={title:'保研经验库'};NAV.dataCenter={title:'资料与数据管理'};
-  if(!SCREENS.some(x=>x.key==='experience'))SCREENS.push({no:'D6',key:'experience',title:'经验检索与来源示例',prd:'V6'});
-  if(!SCREENS.some(x=>x.key==='dataCenter'))SCREENS.push({no:'D7',key:'dataCenter',title:'本机资料与接口占位',prd:'V6'});
+  if(!SCREENS.some(x=>x.key==='experience'))SCREENS.push({no:'D6',key:'experience',title:'经验与准备建议',prd:'V6'});
+  if(!SCREENS.some(x=>x.key==='dataCenter'))SCREENS.push({no:'D7',key:'dataCenter',title:'资料与保存设置',prd:'V6'});
   window.__TLV6={getExperienceCases:()=>exampleCases.slice(),getPlanSuggestions:buildPlanSuggestions,getStore:()=>JSON.parse(JSON.stringify(store))};
 })();

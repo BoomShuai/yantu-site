@@ -8,7 +8,7 @@
   let planPrefill = '';
   let mentorFilter = '全部';
   const messages = [];
-  const stubMentor = {name:'',school:'',major:'',destination:'',services:'材料诊断、专业方向咨询',bio:'',slots:'3'};
+  const stubMentor = {name:'',school:'',major:'',destination:'',services:'',bio:'',slots:'3',teachingYears:'',specialty:'',summerCamp:'',preAdmission:'',conditions:'',certificates:'',capabilities:[],educationProof:null,certFiles:[],registered:false};
   let mentorDraft = {...stubMentor};
   try {mentorDraft = {...stubMentor,...JSON.parse(localStorage.getItem(K)||'{}')};} catch (_) {}
   const PROFILE_KEY = 'tonglu-v3-student-bg';
@@ -29,8 +29,8 @@
   let consults = [];
   try {const v=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');if(Array.isArray(v)) consults=v.filter(x=>x&&typeof x==='object').slice(0,60);}catch(_){}
   let chatSerial = 0;
-  function persistBG(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(studentBG));return true;}catch(e){toast('本地存储不可用，资料可能不会保留');return false;}}
-  function persistPlans(){try{localStorage.setItem(TASK_KEY,JSON.stringify(planTasks));return true;}catch(e){toast('本地存储不可用，进度可能不会保留');return false;}}
+  function persistBG(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(studentBG));return true;}catch(e){toast('资料暂时无法保存，请检查设备存储空间后重试');return false;}}
+  function persistPlans(){try{localStorage.setItem(TASK_KEY,JSON.stringify(planTasks));return true;}catch(e){toast('进度暂时无法保存，请检查设备存储空间后重试');return false;}}
   function detectGrade(text){const x=String(text).match(/(?:大|本科)\s*([一二三四五12345])/);if(!x)return '';return {1:'大一',2:'大二',3:'大三',4:'大四',5:'大五','一':'大一','二':'大二','三':'大三','四':'大四','五':'大五'}[x[1]]||'';}
   function detectGoals(text){const goals=[];const v=String(text);if(/保研|推免|夏令营|预推免|申请院校|升学/.test(v))goals.push('保研');if(/竞赛|比赛|数学建模|建模|挑战杯|大创|互联网\+|蓝桥杯/.test(v))goals.push('竞赛');if(/科研|研究|课题|论文|实验室/.test(v))goals.push('科研');if(/学习|英语|四六级|绩点|课程/.test(v))goals.push('学业');return goals;}
   function hasBackground(text){
@@ -63,7 +63,7 @@
     pool.sort((a,b)=>(b.free-a.free)||(b.w-a.w));
     const picks=pool.slice(0,preview?2:3).map(x=>x.p);
     if(!picks.length)return '';
-    return `<div class="tl-v3-rec-inline"><small>${preview?'方向相近的同行者 · 预览排序':'按你的 BG 与服务方向初排'}</small>${picks.map(p=>`<button type="button" onclick="selectProvider('${p.id}')"><span class="tl-avatar">${H(p.name.slice(0,1))}</span><span><b>${H(p.name)}</b><small>${H(recommendationReason(p))}</small></span><i>›</i></button>`).join('')}<button type="button" class="tl-v3-rec-more" onclick="go('#/providers')">${preview?'确认档案后看完整推荐 ›':'逛同路市集 ›'}</button></div>`;
+    return `<div class="tl-v3-rec-inline"><small>${preview?'方向相近的服务者':'为你推荐的服务者'}</small>${picks.map(p=>`<button type="button" onclick="selectProvider('${p.id}')"><span class="tl-avatar">${H(p.name.slice(0,1))}</span><span><b>${H(p.name)}</b><small>${H(recommendationReason(p))}</small></span><i>›</i></button>`).join('')}<button type="button" class="tl-v3-rec-more" onclick="go('#/providers')">${preview?'确认档案后看更多推荐 ›':'逛同路集市 ›'}</button></div>`;
   }
   const ASK_PEOPLE=/推荐|学姐|学长|服务者|顾问|找谁|谁来帮|约谁|有没有人/;
   /* 已确认档案后，按用户这句话的意图回答，而不是永远回同一句。 */
@@ -87,40 +87,39 @@
   function adviceReply(){
     const g=bgGaps();
     const lines=g.map((x,i)=>`${'①②③'[i]} ${x[0]}：${x[1]}`);
-    return {text:`按你现在的档案（${studentBG.grade} · ${studentBG.goals.join(' / ')}），我会先补这三件事：\n${lines.join('\n')}\n这只是通用的准备顺序，不涉及任何院校的录取判断。`,
+    return {text:`结合你目前的档案（${studentBG.grade} · ${studentBG.goals.join(' / ')}），建议优先推进这三件事：\n${lines.join('\n')}\n具体节奏可以结合目标院校的申请要求调整。`,
       card:nextChips([['看我的成长规划',"go('#/me')"],['看院校资讯',"go('#/school')"]])};
   }
   function confirmedReply(value){
     const v=String(value||'');
-    if(ASK_INTERVIEW.test(v))return {text:'面试准备建议先把简历里每一条都准备成「背景—动作—结果」三句话，再准备一段 1 分钟自我介绍。院校的复试形式与时间以原文通知为准，院校资讯里能直接看到原文链接。',
+    if(ASK_INTERVIEW.test(v))return {text:'面试准备建议先把简历里的每段经历整理成「背景—行动—结果」三句话，再准备 1 分钟自我介绍。各院校复试形式与时间可在院校资讯中查看。',
       card:nextChips([['看院校资讯',"go('#/school')"],['看保研经验库',"go('#/experience')"]])};
-    if(ASK_MATERIAL.test(v))return {text:'材料按「先有再改」的顺序：成绩单与排名证明 → 简历 → 个人陈述 → 推荐信。简历可以回到「我的」重新上传或补充，识别结果一律以你核对后的内容为准。',
-      card:nextChips([['补充我的档案',"go('#/profile')"],['看我的成长规划',"go('#/me')"]])};
-    if(ASK_TIME.test(v))return {text:'时间安排分两层：一层是你自己的准备节奏，在「我的 · 成长规划」里按已确认的目标生成；另一层是院校的截止时间，只能以院校资讯里那条通知的原文为准——原文只写到日就按日算，不会替你补成具体时刻。',
+    if(ASK_MATERIAL.test(v))return {text:'申请材料建议按「成绩单与排名证明 → 简历 → 个人陈述 → 推荐信」的顺序准备，随时可以回到资料页更新或更换简历。',
+      card:nextChips([['修改个人资料',"go('#/profile/basic')"],['看我的成长规划',"go('#/me')"]])};
+    if(ASK_TIME.test(v))return {text:'个人准备节奏可以在「我的 · 行动时间线」里按阶段查看；各院校报名截止时间以院校资讯中的最新官方通知为准。',
       card:nextChips([['看我的成长规划',"go('#/me')"],['看院校资讯',"go('#/school')"]])};
-    if(ASK_SCHOOL.test(v))return {text:'院校信息我按原文整理，不替你判断能不能上。你可以先在院校资讯里按院校和类别筛一遍，看到合适的就收藏，再加进投递记录本自己维护进度。',
+    if(ASK_SCHOOL.test(v))return {text:'你可以在院校资讯里按院校和类型筛选招生通知，遇到合适的先收藏，再加入投递记录本跟踪进度。',
       card:nextChips([['打开院校资讯',"go('#/school')"],['看我的投递记录',"go('#/school')"]])};
-    if(ASK_PEOPLE.test(v))return {text:'这几位是按你已确认的档案读取的服务者，可以点开看服务说明和可约时间；满额的服务者不会显示可约。',card:recCardHtml(false)};
+    if(ASK_PEOPLE.test(v))return {text:'这几位是结合你的背景方向推荐的服务者，点开可查看履历、服务内容与可预约情况。',card:recCardHtml(false)};
     if(ASK_ADVICE.test(v))return adviceReply();
-    if(hasBackground(studentBG.raw)&&studentBG.confirmed)return {text:'收到，我把这句补进你的档案草稿。想让我按目标排一份准备顺序，可以直接问「我现在最该补什么」。',
+    if(hasBackground(studentBG.raw)&&studentBG.confirmed)return {text:'已记下这部分补充。如果想看下一步的准备重点，可以直接点下方快捷问题。',
       card:nextChips([['我现在最该补什么',"tlStart('我现在最该补什么？')"],['看我的成长规划',"go('#/me')"]])};
-    return {text:'档案已更新。这几位是按你当前诉求读取的服务者，随时可以继续补充新的经历。',card:recCardHtml(false)};
+    return {text:'档案已更新，以下是与你方向相近的服务者，有新经历也可以随时补充。',card:recCardHtml(false)};
   }
   function inferNextQuestion(lastText){
     const chips=bgChips();
-    const heard=chips.length?`已记下 ${chips.length} 项：${chips.join(' · ')}。`:'';
+    const heard=chips.length?`已记录 ${chips.length} 项：${chips.join(' · ')}。`:'';
     if(!hasBackground(studentBG.raw)){
-      /* 直接打听人时不要空转着继续追问背景，先给一版按服务方向的粗排，并说清它还不是匹配结果。 */
-      if(ASK_PEOPLE.test(String(lastText||'')))return {text:'还没确认档案，所以下面不算匹配结果，只是按服务方向与你说的诉求做的一版粗排。补充一句学校和年级，或者点头像进详情看服务说明，都可以。',card:recCardHtml(true)};
-      return {text:'再多说一点就行：学校、专业、年级，或者你正在准备的方向。不用按表格填，一句话也可以。'};
+      if(ASK_PEOPLE.test(String(lastText||'')))return {text:'先为你展示几位方向相近的服务者，点开可查看履历与服务说明。补充学校和年级后，推荐会更贴合你的情况。',card:recCardHtml(true)};
+      return {text:'可以简单说说你的学校、专业、年级或准备方向，一句就行，也可以先上传简历。'};
     }
-    if(!studentBG.grade)return {text:`${heard}还差一个年级——你现在大几？`,card:recCardHtml(true)};
-    if(!studentBG.goals.length)return {text:`${heard}你主要想实现什么？保研、竞赛、科研，可以同时有几个。`,card:recCardHtml(true)};
+    if(!studentBG.grade)return {text:`${heard}你目前大几？`,card:recCardHtml(true)};
+    if(!studentBG.goals.length)return {text:`${heard}目前主要关注哪些方向？比如保研、竞赛、科研，可以多选。`,card:recCardHtml(true)};
     if(studentBG.confirmed)return confirmedReply(lastText);
-    return {text:`${heard}方向已经很清楚了。下面这几位可以先点开看看；点一下「确认档案」，我就把完整推荐和个人时间计划一起打开。`,card:recCardHtml(true)};
+    return {text:`${heard}信息基本齐全了。你可以先看看下面几位服务者，点击「确认个人档案」后即可解锁完整行动时间线。`,card:recCardHtml(true)};
   }
   function handleStudentBG(value){
-    if(/^(你好|您好|在吗|hi|hello|嗨|哈喽)[!！。~\s]*$/i.test(value))return '你好！你可以直接说背景和诉求，例如「我是某大学统计专业大二，想保研，也在准备数学建模竞赛」。也可以只说一句，我再往下问。';
+    if(/^(你好|您好|在吗|hi|hello|嗨|哈喽)[!！。~\s]*$/i.test(value))return '你好！直接说说你的学校、专业、年级和保研想法就行，比如「某大学统计大二，想准备保研和数学建模」。';
     if(/考研|出国|就业|工作|实习了/.test(value)&&!/保研|推免/.test(value+studentBG.raw)){/* 不阻断，仅记录 */}
     studentBG.raw=(studentBG.raw ? studentBG.raw+'\n' : '')+value;
     studentBG.raw=studentBG.raw.slice(-12000);
@@ -137,7 +136,7 @@
     const readyDraft=hasBackground(studentBG.raw)&&!!studentBG.grade&&studentBG.goals.length>0;
     if(studentBG.confirmed)return `<div class="tl-v3-confirmed"><span>✓ 档案已确认 · ${H(studentBG.grade)} · ${H(studentBG.goals.join(' / '))}</span><button onclick="go('#/me')">到「我的」看计划 ›</button></div>`;
     if(!studentBG.raw)return '';
-    return `<div class="tl-v3-check"><small>待确认的个人信息（仅本机保存）</small><p>${H(studentBG.raw)}</p><div class="tl-v3-check-tags"><span>${H(studentBG.grade||'年级待补充')}</span><span>${H(studentBG.goals.join(' / ')||'目标待补充')}</span></div><div class="tl-v3-check-actions"><button type="button" class="tl-v3-edit" onclick="go('#/profile/basic')">修改个人信息</button><button type="button" class="tl-v3-confirm" ${readyDraft?'':'disabled'} onclick="confirmTongluBG()">${readyDraft?'确认 BG 与诉求':'补充年级 / 目标后可确认'}</button></div><small>追问由本地规则生成，不调用大模型，也不上传到服务器。请勿填写身份证号等敏感信息。</small></div>`;
+    return `<div class="tl-v3-check"><small>待确认的个人档案</small><p>${H(studentBG.raw)}</p><div class="tl-v3-check-tags"><span>${H(studentBG.grade||'请选择年级')}</span><span>${H(studentBG.goals.join(' / ')||'请填写申请目标')}</span></div><div class="tl-v3-check-actions"><button type="button" class="tl-v3-edit" onclick="go('#/profile/basic')">修改个人信息</button><button type="button" class="tl-v3-confirm" ${readyDraft?'':'disabled'} onclick="confirmTongluBG()">${readyDraft?'确认个人档案':'补充年级 / 目标后可确认'}</button></div></div>`;
   }
 
   const H = (s) => escapeTL(s);
@@ -147,30 +146,56 @@
     history.replaceState(null,'',url.pathname+url.search+url.hash);
     if(r==='student')go('#/profile');else if(r==='mentor')go('#/mentorHome');else go('#/guestHome');
   };
-  const roleName = () => ({student:'学生体验',mentor:'服务者体验',guest:'游客体验'}[role]||'选择身份');
+  const roleName = () => ({student:'学生',mentor:'服务者',guest:'游客'}[role]||'选择身份');
   const origRender = render;
   const origActionbar = actionbar;
   const origHome = pageHome;
   const origSaved = schoolSavedView;
   const origRecords = schoolRecordsView;
   const origOpenDrawer = openDrawer;
-  function demoLabel(){return '<span class="tl-v2-demo">体验模式 · 未登录</span>';}
+  function demoLabel(){return '<span class="tl-v2-demo">同路</span>';}
 
   function roleChoose(){
     return `<section class="tl-role-chooser">
       <div class="tl-role-identity"><img src="assets/tonglu-logo.svg" alt="同路 Logo" /><span>同 路</span><small>与你并肩，走向理想院校</small></div>
-      <h1>请选择你的体验身份</h1><p>三个入口，一段共同的保研旅程。</p>
-      ${[['student','学生','建立个人档案 · AI 辅助规划','graduation-cap'],['mentor','服务者','完善履历与服务 · 查看学生需求','users'],['guest','游客','先看看平台有什么，再决定是否加入','compass']].map(([r,n,d,i])=>`<button class="tl-role-card" onclick="selectTongluRole('${r}')"><span class="tl-role-icon">${r==='student'?'✦':r==='mentor'?'◇':'◌'}</span><span><b>${n}</b><small>${d}</small></span><span class="tl-role-arrow">›</span></button>`).join('')}
-      <p class="tl-role-legal">目前只切换体验角色，不验证账号身份、不提交个人资料至服务器。正式上线需要角色鉴权和数据保护。</p>
+      <h1>选择你的身份</h1><p>请选择适合你的入口进入同路</p>
+      ${[['student','学生','完善个人档案 · 保研规划与服务对接','graduation-cap'],['mentor','服务者','发布个人服务 · 查看学生需求','users']].map(([r,n,d,i])=>`<button class="tl-role-card" onclick="selectTongluRole('${r}')"><span class="tl-role-icon">${r==='student'?'✦':'◇'}</span><span><b>${n}</b><small>${d}</small></span><span class="tl-role-arrow">›</span></button>`).join('')}
     </section>`;
   }
 
+  function publishedDemandCount(){
+    try {
+      const list=JSON.parse(localStorage.getItem('tonglu-student-demands-v1')||'[]');
+      return Array.isArray(list)?list.filter(x=>x&&x.status==='published').length:0;
+    } catch(_){ return 0; }
+  }
+  function homeQuickList(){
+    if(role!=='student'||messages.length)return '';
+    const count=publishedDemandCount();
+    const ready=profileReady();
+    return `<div class="tl-v3-quick-list" aria-label="快捷入口">
+      <div class="tl-v3-quick-label">为你推荐</div>
+      <button type="button" class="tl-v3-quick-item is-primary" onclick="openStudentDemand()">✦ 发布我的需求</button>
+      <button type="button" class="tl-v3-quick-item" onclick="go('#/studentDemandList')">${count?'查看我的需求（'+count+'）':'查看我的需求'}</button>
+      <button type="button" class="tl-v3-quick-item" onclick="go('${ready?'#/profile/basic':'#/profile'}')">${ready?'修改个人信息 / 上传简历':'上传简历'}</button>
+      <button type="button" class="tl-v3-quick-item" onclick="tlStart('帮我梳理当前年级的保研时间线与准备重点')">帮我梳理当前年级的保研时间线与准备重点</button>
+    </div>`;
+  }
   function introAI(){
     const isGuest=role==='guest';const isMentor=role==='mentor';
+    const isStudent=role==='student';
+    const ready=profileReady();
     return `<section class="tl-v3-ai">
       <div class="tl-v3-chatlog" id="tl-v2-chat" aria-live="polite">${messages.length?aiMessagesHtml():`<div class="tl-v3-welcome"><h1 aria-label="你好，欢迎来到同路">${Array.from('你好，欢迎来到同路').map((char,i)=>`<span class="tl-welcome-char" aria-hidden="true" style="--char:${i}">${char}</span>`).join('')}</h1></div>`}</div>
       ${messages.length&&!studentBG.confirmed?profileConfirmInline():''}
-      <form class="tl-v3-form" onsubmit="sendTongluChat(event)"><textarea id="tl-v2-chat-input" maxlength="800" rows="2" aria-label="给同路 AI 助手输入消息" placeholder="${isGuest?'问问保研流程…':isMentor?'询问服务规划…':'描述你的 BG、目标或困惑…'}" required></textarea><button type="submit" aria-label="发送">↑</button></form>
+      ${homeQuickList()}
+      <form class="tl-v3-form" onsubmit="sendTongluChat(event)">
+        <textarea id="tl-v2-chat-input" maxlength="800" rows="2" aria-label="输入你的问题" placeholder="${isGuest?'了解保研流程…':isMentor?'询问服务规划…':'输入你的背景、目标或保研问题…'}" required></textarea>
+        <div class="tl-v3-form-bar">
+          <div class="tl-v3-form-tools">${isStudent?`<button type="button" class="tl-v3-tool-btn" onclick="go('${ready?'#/profile/basic':'#/profile'}')">＋ ${ready?'修改资料':'上传简历'}</button><button type="button" class="tl-v3-tool-btn" onclick="openStudentDemand()">发布需求</button>`:''}</div>
+          <button type="submit" class="tl-v3-send-btn" aria-label="发送">↑</button>
+        </div>
+      </form>
     </section>`;
   }
   function aiOnlyHome(){return `<div class="page tl-v3-home">${introAI()}</div>`;}
@@ -191,7 +216,7 @@
     {id:'s01',major:'金融 / 商科',needs:'院校规划、个人陈述修改',stage:'准备材料',tags:['材料诊断','院校规划'],about:'希望了解申请方向与材料结构；个人信息已作匿名化处理。'},
     {id:'s02',major:'计算机 / 人工智能',needs:'科研经历梳理、面试准备',stage:'院校调研',tags:['科研经历','面试辅导'],about:'主要关注科研经历表达与复试沟通的准备方式。'},
     {id:'s03',major:'数学 / 统计',needs:'申请材料、研究计划',stage:'建立院校清单',tags:['材料诊断','院校规划'],about:'希望梳理竞赛项目与研究经历之间的关联。'},
-    {id:'s04',major:'工程 / 自动化',needs:'竞赛经历、科研规划',stage:'完善 BG',tags:['科研经历','竞赛'],about:'需要帮助评估项目经历的呈现方式和材料完整度。'}
+    {id:'s04',major:'工程 / 自动化',needs:'竞赛经历、科研规划',stage:'完善个人资料',tags:['科研经历','竞赛'],about:'需要帮助评估项目经历的呈现方式和材料完整度。'}
   ];
   function demandReasons(d) {
     const services=String(mentorDraft.services||'').toLowerCase();
@@ -200,18 +225,18 @@
   }
   function mentorDemands(){
     const list = DEMAND.filter(d=>mentorFilter==='全部'||d.tags.includes(mentorFilter));
-    return `<div class="page tl-v2-page">
-      <div class="tl-v2-kicker">MENTOR WORKSPACE</div><h1 class="tl-v2-headline">发现适合你辅导的学生需求</h1><p class="tl-v2-sub">先展示匿名需求，再决定是否提供服务。这里不展示学生个人隐私或虚构的匹配百分比。</p>
+    return `<div class="page tl-v2-page tl-mentor-publish-restored">
+      <div class="tl-v2-kicker">MENTOR WORKSPACE</div><h1 class="tl-v2-headline">发布中心</h1><p class="tl-v2-sub">在这里查看学生发布的需求，了解可以提供帮助的方向。学生信息以匿名方式展示。</p>
       <div class="tl-v2-mini-profile"><span class="tl-v2-avatar">${H((mentorDraft.name||'服').slice(0,1))}</span><div><b>${H(mentorDraft.name||'完善你的服务者资料')}</b><small>${H(mentorDraft.destination||'去向院校待填写')} · ${H(mentorDraft.services||'服务方向待填写')}</small></div><button onclick="go('#/mentorProfile')">编辑 ›</button></div>
       <div class="tl-v2-filters">${['全部','院校规划','材料诊断','科研经历','面试辅导','竞赛'].map(t=>`<button class="${mentorFilter===t?'on':''}" onclick="setMentorDemandFilter('${t}')">${t}</button>`).join('')}</div>
-      <div class="tl-v2-panel-title"><h3>学生需求广场</h3><span>${list.length} 条待接需求</span></div>
+      <div class="tl-v2-panel-title"><h3>学生需求</h3><span>${list.length} 条待接需求</span></div>
       ${list.map(d=>`<article class="tl-v2-demand"><div class="tl-v2-panel-title"><b>匿名需求 · ${H(d.major)}</b><span>${H(d.stage)}</span></div><h3>${H(d.needs)}</h3><div class="tl-v2-reason">${H(demandReasons(d))}</div><div class="tl-v2-demand-actions"><button onclick="showTongluDemand('${d.id}')">了解需求</button><button onclick="go('#/mentorProfile')">完善服务资料 ›</button></div></article>`).join('')||'<div class="tl-v2-empty">暂无符合筛选条件的待接需求。</div>'}
-      <section class="tl-v2-panel"><div class="tl-v2-panel-title"><h3>服务工作台</h3><button onclick="go('#/workbench')">查看原型后台 ›</button></div><div class="tl-v2-stats"><span><strong>—</strong><small>真实完成服务数</small></span><span><strong>—</strong><small>待处理申请</small></span><span><strong>${H(mentorDraft.slots)}</strong><small>自设可接单名额</small></span></div><p class="tl-v2-sub">真实服务次数、预约记录与评价需从经过授权的服务订单后台计算；这里暂不虚构业绩。</p></section>
-      <div class="tl-v2-footnote">以上需求均为匿名虚构样例，当前不支持真实联系学生或接单。</div>
+      <section class="tl-v2-panel"><div class="tl-v2-panel-title"><h3>服务工作台</h3><button onclick="go('#/workbench')">进入工作台 ›</button></div><div class="tl-v2-stats"><span><strong>—</strong><small>已完成服务</small></span><span><strong>—</strong><small>待处理申请</small></span><span><strong>${H(mentorDraft.slots)}</strong><small>可接单名额</small></span></div><p class="tl-v2-sub">服务记录与评价将随接单进度自动更新。</p></section>
+      <div class="tl-v2-footnote">以上为匿名示例需求，仅供了解服务方向。学生实际发布的需求显示在下方，可查看详情与接单。</div>
     </div>`;
   }
   function mentorProfile(){
-    return `<div class="page tl-v2-page"><div class="tl-v2-kicker">MENTOR PROFILE</div><h1 class="tl-v2-headline">完善服务者资料</h1><p class="tl-v2-sub">未来用于学生筛选、资质核验和服务展示。当前只保存在本机浏览器。</p>
+    return `<div class="page tl-v2-page"><div class="tl-v2-kicker">MENTOR PROFILE</div><h1 class="tl-v2-headline">完善服务者资料</h1><p class="tl-v2-sub">用于服务展示与资质审核，填写越清晰越容易获得学生咨询。</p>
       <form class="tl-v2-profile-form" onsubmit="saveTongluMentor(event)">
       ${[['name','展示姓名或称呼','例如：陈同学'],['school','本科院校','例如：天津大学'],['major','本科专业','例如：金融学'],['destination','升学去向','例如：复旦大学金融专硕'],['services','可提供的服务','例如：材料诊断、科研经历、院校规划'],['bio','奖项、科研与辅导经验','请填写真实经历，未经核验不显示认证']].map(([id,label,placeholder])=>`<label>${label}${id==='bio'?`<textarea name="${id}" maxlength="300" rows="4" placeholder="${placeholder}">${H(mentorDraft[id])}</textarea>`:`<input name="${id}" maxlength="120" placeholder="${placeholder}" value="${H(mentorDraft[id])}" />`}</label>`).join('')}
       <label>自设可接单名额<select name="slots">${['0','1','2','3','4','5'].map(v=>`<option value="${v}" ${mentorDraft.slots===v?'selected':''}>${v} 人</option>`).join('')}</select></label>
@@ -245,7 +270,7 @@
     const saved=TL.savedMentors.length;
     const filled=[mentorDraft.name,mentorDraft.school,mentorDraft.major,mentorDraft.destination,mentorDraft.services,mentorDraft.bio].filter(v=>String(v||'').trim()).length;
     const rate=Math.round(filled/6*100);
-    return `<div class="page tl-v2-page tl-my-page" data-my-role="mentor">
+    return `<div class="page tl-v2-page tl-my-page tl-mentor-restored" data-my-role="mentor">
       <header class="tl-my-identity">
         <div class="tl-my-identity-main">
           <div class="tl-my-avatar">${H(name.slice(0,1))}</div>
@@ -309,7 +334,7 @@
     return out;
   }
   function timelineView(){
-    if(!profileReady())return `<section class="tl-v3-card tl-v3-empty-plan"><h3>我的行动时间线</h3><p>还没有显示个性化计划。先到首页通过 AI 对话介绍 BG、年级和诉求，并确认档案。</p><button class="tl-v3-softbtn" onclick="go('#/home')">去首页完善档案 ›</button></section>`;
+    if(!profileReady())return `<section class="tl-v3-card tl-v3-empty-plan"><h3>我的行动时间线</h3><p>完善个人档案后，将为你生成对应年级的保研参考待办。</p><button class="tl-v3-softbtn" onclick="go('#/profile/basic')">完善个人档案 ›</button></section>`;
     const grade=studentBG.grade;
     const items=makeSuggestedTasks();
     const appItems=TL.applications.filter(a=>a.deadline).map(a=>({id:'application-'+a.id,cat:'院校投递',title:a.school+' · '+a.program,note:'自设报名提醒日期：'+a.deadline,deadline:a.deadline}));
@@ -318,15 +343,15 @@
     const filter=cats.includes(planCategory)?planCategory:'全部';
     const visible=all.filter(t=>filter==='全部'||t.cat===filter);
     const completed=all.filter(t=>(planTasks[t.id]||{}).status==='已完成').length;
-    return `<section class="tl-v3-card"><div class="tl-v3-section-head"><div><small>MY ROADMAP · ${H(grade)}</small><h3>我的行动时间线</h3></div><span class="tl-v3-gold-label">${completed}/${all.length} 已完成</span></div>
-      <p class="tl-v3-desc">当前日期：${new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'})}。依据你主动确认的年级与目标生成参考待办；具体日程请核实官方来源。</p>
+    return `<section class="tl-v3-card"><div class="tl-v3-section-head"><div><small>行动计划 · ${H(grade)}</small><h3>我的行动时间线</h3></div><span class="tl-v3-gold-label">${completed}/${all.length} 已完成</span></div>
+      <p class="tl-v3-desc">根据你的年级与目标生成的参考待办，具体时间以各院校最新官方通知为准。</p>
       <div class="tl-v3-filters">${cats.map(c=>`<button class="${filter===c?'on':''}" onclick="filterTongluPlan('${c}')">${c}</button>`).join('')}</div>
       <div class="tl-v3-plan-list">${visible.map(t=>{
         const state=planTasks[t.id]||{};
         const status=state.status||'未开始';const due=state.due||t.deadline||'';
         return `<div class="tl-v3-plan-item"><div class="tl-v3-plan-dot ${status==='已完成'?'done':''}"></div><div class="tl-v3-plan-main"><div class="tl-v3-plan-title"><b>${H(t.title)}</b><span>${H(t.cat)}</span></div><p>${H(t.note)}</p><div class="tl-v3-plan-edit"><select aria-label="任务状态" onchange="updateTongluPlan('${t.id}','status',this.value)">${['未开始','进行中','已完成'].map(v=>`<option ${status===v?'selected':''}>${v}</option>`).join('')}</select><label>个人截止日 <input type="date" aria-label="个人设置的截止日期" value="${H(due)}" onchange="updateTongluPlan('${t.id}','due',this.value)"></label></div></div></div>`;
       }).join('')}</div>
-      <div class="tl-v3-note">投递记录的截止日期来自你的手动设置，页面不会把示意时间当成院校官方报名日期。</div></section>`;
+      <div class="tl-v3-note">支持为每项任务自定义截止日提醒。</div></section>`;
   }
   function studentMe(){
     const ready=profileReady();
@@ -339,30 +364,29 @@
         <div class="tl-my-identity-main">
           <div class="tl-my-avatar">同</div>
           <div class="tl-my-identity-copy"><div class="tl-my-name-line"><h1>同路学生</h1><span class="tl-my-role-tag">学生</span></div><p>${ready?H([studentBG.grade,...goals].filter(Boolean).join(' · ')):'完善个人档案，获取更贴合自身需求的建议'}</p></div>
-          <button class="tl-my-edit" onclick="go('#/home')">编辑资料 <span>›</span></button>
+          <button class="tl-my-edit" onclick="go('#/profile/basic')">编辑资料 <span>›</span></button>
         </div>
-        <div class="tl-my-profile-state"><div><b>个人 BG 与申请诉求</b><span>${ready?'已确认':'待完善'}</span></div><div class="tl-my-progress"><i style="width:${ready?100:0}%"></i></div></div>
+        <div class="tl-my-profile-state"><div><b>个人档案与申请目标</b><span>${ready?'已完善':'待完善'}</span></div><div class="tl-my-progress"><i style="width:${ready?100:0}%"></i></div></div>
       </header>
 
       <section class="tl-my-shortcuts">
         <div class="tl-my-section-title"><h2>常用功能</h2><span>快捷入口</span></div>
         <div class="tl-my-shortcut-grid">
           <button onclick="go('#/messages')"><i class="tl-my-shortcut-icon">${myIcon('message')}</i><b>消息中心</b><small>${consults.length?consults.length+' 个咨询会话':'查看咨询消息'}</small></button>
-          <button onclick="${ready?`document.getElementById('tl-my-roadmap')?.scrollIntoView({behavior:'smooth'})`:`go('#/home')`}"><i class="tl-my-shortcut-icon">${myIcon('work')}</i><b>行动计划</b><small>${ready?planCount+' 项参考任务':'完善档案后解锁'}</small></button>
+          <button onclick="${ready?`document.getElementById('tl-my-roadmap')?.scrollIntoView({behavior:'smooth'})`:`go('#/profile/basic')`}"><i class="tl-my-shortcut-icon">${myIcon('work')}</i><b>行动计划</b><small>${ready?planCount+' 项参考任务':'完善档案后解锁'}</small></button>
           <button onclick="S.schoolView='saved';go('#/school')"><i class="tl-my-shortcut-icon">${myIcon('school')}</i><b>院校收藏</b><small>已收藏 ${savedSchools} 项</small></button>
           <button onclick="S.providerView='saved';go('#/providers')"><i class="tl-my-shortcut-icon">${myIcon('heart')}</i><b>服务者收藏</b><small>已收藏 ${savedMentors} 位</small></button>
         </div>
       </section>
 
       ${ready?`<section class="tl-my-feature">
-        <div class="tl-my-feature-head"><div><small>PERSONAL PROFILE</small><h2>个人 BG 与申请诉求</h2></div><button onclick="editTongluBG()">编辑 ›</button></div>
+        <div class="tl-my-feature-head"><div><small>个人档案</small><h2>个人档案与申请目标</h2></div><button onclick="editTongluBG()">编辑 ›</button></div>
         <div class="tl-my-tags"><span>${H(studentBG.grade)}</span>${goals.map(g=>`<span>${H(g)}</span>`).join('')}</div>
         <p class="tl-my-bg-preview">${H(studentBG.raw)}</p>
-        <div class="tl-my-safe-note">资料由你主动填写并确认，不代表系统已核验。</div>
       </section>`:`<section class="tl-my-feature tl-my-feature-prompt">
-        <div class="tl-my-feature-head"><div><small>PERSONAL PROFILE</small><h2>完善个人档案</h2></div><span class="tl-my-pending">待完善</span></div>
-        <p>补充本科背景、年级和申请诉求后，才能生成个性化行动计划与推荐。未完成前仍可浏览全部院校和服务者。</p>
-        <button class="tl-my-primary" onclick="go('#/home')">去首页与 AI 对话，完善档案 <b>›</b></button>
+        <div class="tl-my-feature-head"><div><small>个人档案</small><h2>完善个人档案</h2></div><span class="tl-my-pending">待完善</span></div>
+        <p>上传简历或补充院校、年级与申请方向，便于生成专属行动计划和推荐合适的服务者。</p>
+        <button class="tl-my-primary" onclick="go('#/profile')">完善个人档案 <b>›</b></button>
       </section>`}
 
       <section class="tl-my-group">
@@ -379,12 +403,11 @@
 
       <section class="tl-my-group">
         <div class="tl-my-section-title"><h2>个人资料与设置</h2><span>账户管理</span></div>
-        <button class="tl-my-row" onclick="go('#/home')"><span class="tl-my-row-icon">${myIcon('profile')}</span><span class="tl-my-row-copy"><b>补充与修改个人资料</b><small>通过 AI 对话更新 BG 和申请目标</small></span><span class="tl-my-row-arrow">›</span></button>
-        <button class="tl-my-row" onclick="go('#/presale')"><span class="tl-my-row-icon">${myIcon('sparkle')}</span><span class="tl-my-row-copy"><b>了解同路服务流程</b><small>查看咨询、方案与服务流程原型</small></span><span class="tl-my-row-arrow">›</span></button>
+        <button class="tl-my-row" onclick="go('#/profile/basic')"><span class="tl-my-row-icon">${myIcon('profile')}</span><span class="tl-my-row-copy"><b>补充与修改个人资料</b><small>上传个人简历或更新背景与申请目标</small></span><span class="tl-my-row-arrow">›</span></button>
+        <button class="tl-my-row" onclick="go('#/presale')"><span class="tl-my-row-icon">${myIcon('sparkle')}</span><span class="tl-my-row-copy"><b>了解同路服务流程</b><small>查看咨询、方案确认与交付流程</small></span><span class="tl-my-row-arrow">›</span></button>
       </section>
 
       ${ready?`<div id="tl-my-roadmap" class="tl-my-roadmap-wrap">${timelineView()}</div>`:''}
-      <div class="tl-my-footnote">当前为本地体验版。资料、收藏、投递与咨询记录保存在当前浏览器；跨设备同步及真实服务流程需后续接入后端。</div>
     </div>`;
   }
   window.filterTongluPlan=function(c){planCategory=c;render();};
@@ -393,7 +416,7 @@
   window.confirmTongluBG=function(){
     if(!hasBackground(studentBG.raw)||!studentBG.grade||!studentBG.goals.length){toast('还差年级或目标，补充一句就行');return;}
     studentBG.confirmed=true;studentBG.updatedAt=new Date().toISOString();persistBG();stripRecCards();
-    messages.push({who:'bot',text:'档案已确认。下面这几位是按你刚才说的方向排的，点开可以直接看履历；「我的」里也已经有对应你年级和目标的行动时间线。请注意：这是本地规则排序，不是录取概率或正式匹配分。',card:recCardHtml(false)});
+    messages.push({who:'bot',text:'档案已确认。为你挑了几位方向契合的服务者，点开可查看履历；「我的」页面也已生成对应年级的行动时间线。',card:recCardHtml(false)});
     render();
   };
 
@@ -423,7 +446,7 @@
     const recommendationsHtml=recommendations.length?`<section class="tl-v3-card tl-v3-recommend"><div class="tl-v3-section-head"><div><small>PERSONAL PICKS · 本地规则</small><h3>优先为你推荐</h3></div><span class="tl-v3-gold-label">${recommendations.length} 位</span></div><p class="tl-v3-desc">根据你确认的诉求与服务方向关键词初步排列，不代表真实匹配分数、身份核验或服务效果。</p>${recommendations.map(p=>`<div class="tl-v3-rec-row"><div class="tl-avatar">${H(p.name.slice(0,1))}</div><div><b>${H(p.name)}</b><small>${H(recommendationReason(p))}</small></div><button onclick="selectProvider('${p.id}')">详情 ›</button></div>`).join('')}</section>`:'';
     return `<div class="page tl-v2-page"><div class="tl-v2-kicker">MENTOR COMMUNITY</div><h1 class="tl-v2-headline">${role==='mentor'?'看看其他同行的服务方向':'全部服务者'}</h1>
       <p class="tl-v2-sub">按专业方向、服务内容和可核验资料选择。不展示匹配分数或录取概率。</p>
-      ${isStudent&&!profileReady()?`<div class="tl-v3-unmatched">还没有确认 BG。下面是按你已说的年级和目标做的粗排，补齐并确认后顺序会更贴合；任何时候都不显示个人匹配度或录取概率。<button onclick="go('#/home')">去首页补充 ›</button></div>`:''}
+      ${isStudent&&!profileReady()?`<div class="tl-v3-unmatched">还没有确认个人资料。下面是按你已说的年级和目标做的粗排，补齐并确认后顺序会更贴合；任何时候都不显示个人匹配度或录取概率。<button onclick="go('#/home')">去首页补充 ›</button></div>`:''}
       ${recommendationsHtml}
       <div class="tl-switch"><button class="${S.providerView==='all'?'on':''}" onclick="setProviderView('all')">全部服务者</button><button class="${S.providerView==='saved'?'on':''}" onclick="setProviderView('saved')">♡ 已收藏 (${TL.savedMentors.length})</button></div>
       <form class="tl-search" onsubmit="searchMentors(event)"><input id="tl-provider-search" aria-label="搜索服务者" placeholder="搜索专业、服务或姓名" value="${H(S.providerSearch)}" /><button type="submit">搜索</button></form>
@@ -440,12 +463,12 @@
       ${TL.customSchools.map(s=>`<div class="tl-saved-row tl-v2-saved"><div class="grow"><b>${H(s.name)}</b><small>自选关注院校</small></div>${addPlanBtn(s.id,'',false)}<button class="tl-heart on" aria-label="取消收藏" onclick="removeCustomSchool('${s.id}')">♥</button></div>`).join('')}
       ${M.notices.filter(n=>isSchoolSaved(n.id)).map(n=>`<div class="tl-saved-row tl-v2-saved"><div class="grow"><b>${H(n.title)}</b><small>${H(n.source)} · ${H(n.status)}</small></div>${addPlanBtn(n.id,'',true)}<button class="tl-heart on" aria-label="取消收藏" onclick="toggleSchoolFavorite('${n.id}')">♥</button></div>`).join('')}
       ${!TL.customSchools.length&&!TL.savedSchools.length?'<div class="tl-v2-empty">还没有收藏的院校。可以先浏览资讯或添加院校。</div>':''}
-      <div class="tl-v2-footnote">收藏和投递记录仅保存在当前浏览器，尚未接入真实账户。</div>`;
+    `;
   }
   function recordsV2(){
     let html=origRecords();
     if(planPrefill){html=html.replace('name="school" maxlength="80"',`name="school" value="${H(planPrefill)}" maxlength="80"`);}
-    html=html.replace('name="date" type="date"', 'name="date" type="date"').replace('<button class="tl-submit" type="submit">', '<label class="tl-v3-deadline-label">报名截止日期（手动填写，非官方同步）<input name="deadline" type="date"></label><button class="tl-submit" type="submit">');
+    html=html.replace('name="date" type="date"', 'name="date" type="date"').replace('<button class="tl-submit" type="submit">', '<label class="tl-v3-deadline-label">报名截止日期（选填）<input name="deadline" type="date"></label><button class="tl-submit" type="submit">');
     return html;
   }
   function noticeDetailV2(){const n=M.notices.find(x=>x.id===S.currentNoticeId);if(!n)return pageNoticeDetail();return pageNoticeDetail()+`<div class="tl-v2-detail-action"><button class="tl-v2-secondary" onclick="planTongluSchool('${n.id}',true)">加入投递计划</button></div>`;}
@@ -460,8 +483,8 @@
   PAGES.guestSchools=guestSchools;
   PAGES.guestProviders=guestProviders;
   PAGES.guestMe=guestMe;
-  PAGES.profile=function(){return `<div class="page tl-v2-page"><div class="tl-v3-card"><h3>BG 建档已改为对话方式</h3><p>无需填写多项表单。直接在首页自由描述你的学校、专业、年级和诉求，由对话助手逐步追问。</p><button class="tl-v3-softbtn" onclick="go('#/home')">去首页对话建档 ›</button></div></div>`;};
-  PAGES.diagnosis=function(){if(!profileReady())return `<div class="page tl-v2-page"><div class="tl-v3-card"><h3>请先确认 BG 与诉求</h3><p>未建档无法查看个人定位分析，也不会显示个人匹配度。</p><button class="tl-v3-softbtn" onclick="go('#/home')">去 AI 对话建档 ›</button></div></div>`;return `<div class="page tl-v2-page"><div class="tl-v3-card"><div class="tl-v3-section-head"><div><small>PERSONAL INSIGHTS</small><h3>你的背景与行动建议</h3></div></div><p class="tl-v3-bgtext">${H(studentBG.raw)}</p><p class="tl-v3-desc">暂不展示量化匹配度、录取概率或未经验证的优劣评价。可以到同路市集了解与你诉求相关的服务方向，到「我的」查看行动时间线。</p><button class="tl-v3-softbtn" onclick="go('#/providers')">逛同路市集 ›</button></div></div>`;};
+  PAGES.profile=function(){return `<div class="page tl-v2-page"><div class="tl-v3-card"><h3>个人资料建档已改为对话方式</h3><p>无需填写多项表单。直接在首页自由描述你的学校、专业、年级和诉求，由对话助手逐步追问。</p><button class="tl-v3-softbtn" onclick="go('#/home')">去首页对话建档 ›</button></div></div>`;};
+  PAGES.diagnosis=function(){if(!profileReady())return `<div class="page tl-v2-page"><div class="tl-v3-card"><h3>请先完善个人档案</h3><p>补充院校、年级与目标方向后即可查看个人定位建议。</p><button class="tl-v3-softbtn" onclick="go('#/profile/basic')">去完善档案 ›</button></div></div>`;return `<div class="page tl-v2-page"><div class="tl-v3-card"><div class="tl-v3-section-head"><div><small>PERSONAL INSIGHTS</small><h3>你的背景与行动建议</h3></div></div><p class="tl-v3-bgtext">${H(studentBG.raw)}</p><p class="tl-v3-desc">可以到同路集市浏览对应方向的服务者，或在「我的」中查看个人行动时间线。</p><button class="tl-v3-softbtn" onclick="go('#/providers')">逛同路集市 ›</button></div></div>`;};
   PAGES.home=studentHome;
   PAGES.me=studentMe;
   PAGES.providers=providersV2;
@@ -470,7 +493,7 @@
   PAGES.conversation=function(){return conversationCenter();};
   NAV.choose={hidden:true};
   NAV.mentorHome={brand:true};NAV.mentorDemands={title:'学生需求广场'}; NAV.mentorProfile={title:'服务者资料'};NAV.mentorMe={title:'我的服务空间'};
-  NAV.guestHome={brand:true};NAV.guestSchools={title:'院校资讯 · 预览'};NAV.guestProviders={title:'同路市集 · 预览'};NAV.guestMe={title:'加入同路'};
+  NAV.guestHome={brand:true};NAV.guestSchools={title:'院校资讯 · 预览'};NAV.guestProviders={title:'同路集市 · 预览'};NAV.guestMe={title:'加入同路'};
   NAV.messages={title:'消息中心'};NAV.conversation={title:'咨询草稿'};
   schoolSavedView=savedSchoolsV2;
   schoolRecordsView=recordsV2;
@@ -483,8 +506,8 @@
       if(name==='providers')return `<button class="btn line" onclick="setProviderView('saved')">我的收藏</button><button class="btn primary wide" onclick="go('#/mentorHome')">返回需求广场</button>`;
       if(name==='provider')return `<button class="btn line" onclick="toggleMentorFavorite('${provider().id}')">${isMentorSaved(provider().id)?'♥ 已收藏':'♡ 收藏同行'}</button><button class="btn primary wide" onclick="go('#/mentorMe')">回我的服务空间</button>`;
     }
-    if(name==='providers')return `<button class="btn line" onclick="setProviderView('saved')">我的收藏</button><button class="btn primary wide" onclick="go('#/home')">AI 交流 / 完善 BG</button>`;
-    if(name==='diagnosis')return `<button class="btn line" onclick="go('#/home')">继续 AI 交流</button><button class="btn primary wide" onclick="go('#/providers')">逛同路市集 ›</button>`;
+    if(name==='providers')return `<button class="btn line" onclick="setProviderView('saved')">我的收藏</button><button class="btn primary wide" onclick="go('#/home')">返回首页</button>`;
+    if(name==='diagnosis')return `<button class="btn line" onclick="go('#/home')">返回首页</button><button class="btn primary wide" onclick="go('#/providers')">逛同路集市 ›</button>`;
     if(name==='messages'||name==='conversation')return '';
     if(name==='provider'){
       const p=provider();const full=remain(p)===0;
@@ -555,15 +578,37 @@
   };
 
   const allowedGuest=new Set(['choose','guestHome','guestSchools','guestProviders','guestMe','experience','dataCenter']);
-  const allowedMentor=new Set(['choose','mentorHome','mentorDemands','mentorProfile','mentorMe','school','providers','provider','noticeDetail','workbench','admin','messages','conversation','experience','dataCenter']);
-  const studentForbidden=new Set(['mentorHome','mentorDemands','mentorProfile','mentorMe','guestHome','guestSchools','guestProviders','guestMe']);
-  const mentorTabs=[['首页','mentorHome',ICON.home],['院校资讯','school',ICON.school],['同路市集','providers',ICON.users],['我的','mentorMe',ICON.me]];
-  const guestTabs=[['首页','guestHome',ICON.home],['院校资讯','guestSchools',ICON.school],['同路市集','guestProviders',ICON.users],['登录','guestMe',ICON.me]];
-  const studentTabs=[['首页','home',ICON.home],['院校资讯','school',ICON.school],['同路市集','providers',ICON.users],['我的','me',ICON.me]];
+  const allowedMentor=new Set(['choose','mentorAuth','mentorMarket','mentorSku','mentorPeers','mentorOrders','mentorHome','mentorDemands','mentorProfile','mentorMe','school','providers','provider','sku','noticeDetail','workbench','admin','messages','conversation','experience','dataCenter']);
+  const studentForbidden=new Set(['mentorAuth','mentorMarket','mentorSku','mentorPeers','mentorOrders','mentorHome','mentorDemands','mentorProfile','mentorMe','guestHome','guestSchools','guestProviders','guestMe']);
+  const mentorTabs=[['首页','mentorHome',ICON.home],['院校资讯','school',ICON.school],['同路集市','providers',ICON.users],['我的','mentorMe',ICON.me]];
+  const guestTabs=[['首页','guestHome',ICON.home],['院校资讯','guestSchools',ICON.school],['同路集市','guestProviders',ICON.users],['登录','guestMe',ICON.me]];
+  const studentTabs=[['首页','home',ICON.home],['院校资讯','school',ICON.school],['同路集市','providers',ICON.users],['消息','messages',ICON.messages],['我的','me',ICON.me]];
   const tabKeys=new Set(['mentorHome','mentorMe','guestHome','guestSchools','guestProviders','guestMe']);
   function renderV3(){
+    if(role&&!['student','mentor'].includes(role))role=null;
     let key=(location.hash.replace(/^#\/?/,'')||'choose').split('/')[0];
-    if((!role&&key!=='choose')||(role==='guest'&&!allowedGuest.has(key))||(role==='mentor'&&!allowedMentor.has(key))||(role==='student'&&studentForbidden.has(key))){history.replaceState(null,'',location.pathname+location.search+'#/choose');key='choose';}
+    if((/^guest/.test(key))||(!role&&key!=='choose')||(role==='guest'&&!allowedGuest.has(key))||(role==='mentor'&&!allowedMentor.has(key))||(role==='student'&&studentForbidden.has(key))){history.replaceState(null,'',location.pathname+location.search+'#/choose');key='choose';}
+    if(role==='student'){
+      // 已淘汰的固定人选、模拟订单与管理页面不能进入公开用户流程。
+      const legacy={presale:'messages',proposal:'messages',checkout:'messages',delivery:'messages',quota:'about',admin:'me',workbench:'me'};
+      if(key==='provider'){
+        const item=window.TongluMarket?.skus().find(x=>!x.example&&x.providerId===S.activeProvider&&x.status==='on_shelf');
+        history.replaceState(null,'',location.pathname+location.search+(item?'#/sku/'+item.id:'#/providers'));key=item?'sku':'providers';
+      }else if(legacy[key]){key=legacy[key];history.replaceState(null,'',location.pathname+location.search+'#/'+key);}
+    }
+    if(role==='mentor'){
+      const aliases={mentorHome:'messages',providers:'mentorMarket',provider:'mentorPeers',admin:'mentorPeers',dataCenter:'mentorPeers'};
+      if(aliases[key]){key=aliases[key];history.replaceState(null,'',location.pathname+location.search+'#/'+key);}
+    }
+    if(role==='mentor'&&key!=='choose'&&window.TongluMarket){
+      let auth=null,registered=false;
+      try{auth=window.TongluMarket.auth();registered=!!window.TongluMarket.profile().registered;}catch(_){}
+      const target=!auth?'mentorAuth':!registered&&key!=='mentorAuth'?'mentorProfile':key;
+      if(target!==key){
+        if(!['mentorAuth','mentorProfile'].includes(key))window.__TLMentorReturn=location.hash;
+        history.replaceState(null,'',location.pathname+location.search+'#/'+target);key=target;
+      }
+    }
     document.body.dataset.role=role||'none';
     document.body.dataset.chatHome=(key==='home'||key==='mentorHome'||key==='guestHome')?'yes':'no';
     document.body.classList.toggle('tl-debug', QS.has('debug') && role!=='guest' && !!role);
@@ -571,10 +616,10 @@
     const tab=document.getElementById('tabbar');
     if(role && key!=='choose'){
       const tabs=role==='mentor'?mentorTabs:role==='guest'?guestTabs:studentTabs;
-      const activeKey=(key==='provider'||key==='presale'||key==='proposal'||key==='checkout'||key==='delivery'||key==='conversation')?'providers':
-        (key==='noticeDetail'?'school':(key==='messages'?(role==='mentor'?'mentorMe':'me'):(['workbench','admin','mentorProfile','mentorDemands'].includes(key)?'mentorMe':(['diagnosis','quota','nocandidate'].includes(key)?'me':key))));
+      const activeKey=(key==='sku'||key==='provider'||key==='presale'||key==='proposal'||key==='checkout'||key==='delivery')?'providers':
+        (key==='noticeDetail'?'school':((key==='messages'||key==='conversation')?(role==='mentor'?'mentorMe':'messages'):(['workbench','admin','mentorProfile','mentorDemands'].includes(key)?'mentorMe':(['diagnosis','quota','nocandidate'].includes(key)?'me':key))));
       tab.innerHTML=tabs.map(([title,path,icon])=>`<button class="tab ${path===activeKey?'active':''}" onclick="go('#/${path}')">${icon}<span>${title}</span></button>`).join('');
-      tab.className='tabbar';
+      tab.className=role==='student'?'tabbar tl-student-tabbar-5':'tabbar';
     }else{tab.className='tabbar hidden';tab.innerHTML='';}
     const appArea=document.getElementById('app');
     if(key==='providers'&&lastNavFrom==='provider') appArea.scrollTop=savedListScroll.providers;
@@ -601,16 +646,16 @@
   };
   back=function(){
     const key=(location.hash.replace(/^#\/?/,'')||'choose').split('/')[0];
-    const backTo={provider:'providers',noticeDetail:'school',conversation:'messages',messages:role==='mentor'?'mentorMe':'me',presale:'messages',proposal:'presale',checkout:'proposal',delivery:'messages',mentorProfile:'mentorMe',mentorDemands:'mentorMe',workbench:'mentorMe',admin:'mentorMe',diagnosis:'me'};
-    const home=role==='mentor'?'mentorHome':role==='guest'?'guestHome':'home';
+    const backTo={sku:'providers',provider:'providers',noticeDetail:'school',conversation:'messages',messages:role==='mentor'?'messages':'home',presale:'messages',proposal:'presale',checkout:'proposal',delivery:'messages',mentorProfile:'mentorMe',mentorDemands:'mentorMe',workbench:'mentorMe',admin:'mentorMe',diagnosis:'me'};
+    const home=role==='mentor'?'messages':'home';
     go('#/'+(backTo[key]||home));
   };
   // Replace original hash-change listener with role-aware guard instead of rendering twice.
   window.removeEventListener('hashchange',origRender);
   window.addEventListener('hashchange',renderV3);
-  openDrawer=function(){if(role==='guest'||!role){toast('游客体验不包含内部流程，请先选择学生或服务者身份');return;}origOpenDrawer();};
+  openDrawer=function(){if(role==='guest'||!role){toast('请先选择学生或服务者身份');return;}origOpenDrawer();};
   // The original script's hashchange listener invokes the reassigned render binding.
-  window.selectTongluRole=function (r){if(!['student','mentor','guest'].includes(r))return;messages.length=0;chatSerial+=1;chatBusy=false;goRole(r);};
+  window.selectTongluRole=function (r){if(!['student','mentor'].includes(r))return;messages.length=0;chatSerial+=1;chatBusy=false;goRole(r);};
   window.tlStart=function(text){
     const field=document.getElementById('tl-v2-chat-input');if(!field)return;
     field.value=String(text||'').slice(0,800);
@@ -630,14 +675,15 @@
     messages.push({who:'me',text:value});
     const currentRole=role;
     const parse=r=>typeof r==='string'?{text:r}:r;
-    const guestReply=parse('这里是保研常识：可以提前准备成绩排名证明、个人陈述和目标项目清单；实际时间以院校官方通知为准。游客不提供个人匹配。如需看服务者，请先选择学生身份并填写 BG。');
+    const guestReply=parse('这里是保研常识：可以提前准备成绩排名证明、个人陈述和目标项目清单；实际时间以院校官方通知为准。游客不提供个人匹配。如需看服务者，请先选择学生身份并填写个人资料。');
     const mentorReply=parse('服务者端可以这样推进：先在「我的」完善服务方向，再到学生需求广场看匿名需求；真实需求匹配和订单管理仍需后端支持。');
     const notice=pendingNotice;pendingNotice=null;
-    const noticeReply=notice?{text:`已引用《${notice.title}》。\n${notice.summary||'请先核对学校官方原文。'}\n\n${profileReady()?'当前档案为 '+studentBG.grade+'，目标是 '+studentBG.goals.join(' / ')+'。':'先补充并确认你的年级、专业和申请目标，再逐项对照。'}建议核对：推免或统考招生方式、报名资格、目标专业、材料与截止时间。\n这里使用本地规则整理，不判断录取概率。`,card:nextChips([['核对个人资料',"go('#/profile')"],['返回招生通知',"go('#/school/notices')"]])}:null;
+    const noticeReply=notice?{text:`已引用《${notice.title}》。\n${notice.summary||'请核对学校官方原文。'}\n\n${profileReady()?'当前档案为 '+studentBG.grade+'，关注方向为 '+studentBG.goals.join(' / ')+'。':'补充并确认年级、专业和申请目标后，可逐项对照准备。'}建议重点核对：招生方式、报名资格、目标专业、申请材料与截止时间。`,card:nextChips([['核对个人资料',"go('#/profile/basic')"],['返回招生通知',"go('#/school/notices')"]])}:null;
     const reply=currentRole==='guest'?guestReply:currentRole==='mentor'?mentorReply:noticeReply||parse(handleStudentBG(value));
     messages.push({who:'bot',text:'正在整理…'});
     field.value='';chatBusy=true;
     const serial=++chatSerial;
+    document.querySelector('.tl-v3-quick-list')?.remove();
     const log=document.getElementById('tl-v2-chat');if(log){log.innerHTML=aiMessagesHtml();log.scrollTop=log.scrollHeight;}
     setTimeout(()=>{if(serial!==chatSerial||role!==currentRole)return;stripRecCards();const last=messages[messages.length-1];last.text=reply.text;if(reply.card)last.card=reply.card;chatBusy=false;render();const c=document.getElementById('tl-v2-chat');if(c)c.scrollTop=c.scrollHeight;},440);
   };
@@ -647,7 +693,7 @@
     event.preventDefault();const f=event.target;
     const next={};for(const k of Object.keys(stubMentor)){const field=f.elements.namedItem(k);next[k]=field?String(field.value||'').trim().slice(0,k==='bio'?300:120):'';}
     mentorDraft=next;
-    try{localStorage.setItem(K,JSON.stringify(mentorDraft));toast('服务者资料已保存在本机');}catch(e){toast('本机存储不可用，请检查浏览器设置');}
+    try{localStorage.setItem(K,JSON.stringify(mentorDraft));toast('服务者资料已保存到当前设备');}catch(e){toast('未能保存，请检查浏览器设置后重试');}
     go('#/mentorHome');
   };
   window.needTongluSignIn=function(){toast('请先选择学生或服务者身份体验');setTimeout(()=>go('#/choose'),520);};
@@ -680,7 +726,7 @@
   window.__TL={get role(){return role;},get bg(){return studentBG;},profileReady,hasBackground,H,
     persistBG,persistMentor:draft=>{mentorDraft={...mentorDraft,...draft};try{localStorage.setItem(K,JSON.stringify(mentorDraft));return true;}catch(e){toast("本地保存失败");return false;}},get mentorDraft(){return mentorDraft;},
     planTasks:()=>planTasks,consults:()=>consults,recommendationWeight,recommendationReason,
-    setRole:r=>{role=r;},openNext:(m,l,p)=>showNext(m,l,()=>go('#/'+p))};
+    setRole:r=>{role=['student','mentor'].includes(r)?r:null;},get savedMentors(){return TL.savedMentors;},openNext:(m,l,p)=>showNext(m,l,()=>go('#/'+p))};
   // Enter the role gateway on every new load. Local draft and saved lists remain separate.
   history.replaceState(null,'',location.pathname+location.search+'#/choose');
   render();showBrandSplash();

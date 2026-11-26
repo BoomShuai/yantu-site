@@ -107,3 +107,28 @@
 @media(prefers-reduced-motion:reduce) {
   #tabbar.v12-mentor-tabbar .v12-mentor-tab { transition:none; }
 }
+.v12-mentor-reg-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 12px 0 8px;
+  padding: 12px 13px;
+  border: 1px solid #e6d8f2;
+  border-radius: 15px;
+  background: linear-gradient(130deg, #fbf8ff 0%, #fffcf5 100%);
+}
+.v12-mentor-reg-banner > div { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.v12-mentor-reg-banner b { font-size: 12.5px; color: #4b3962; }
+.v12-mentor-reg-banner small { font-size: 10px; line-height: 1.5; color: #8c7e9b; }
+.v12-mentor-reg-banner > button {
+  flex: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: linear-gradient(120deg, #7e5db3, #9e80cb);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}

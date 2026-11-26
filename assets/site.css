@@ -405,3 +405,20 @@ html[data-theme="dark"] .cta-logo { filter: saturate(1.1) brightness(1.16); }
   .btn { height: 44px; padding: 0 20px; font-size: 13.5px; }
   .hero-btns { gap: 9px; }
 }
+
+/* 与应用保持相同紫色系，补齐小屏、长文与点按反馈。 */
+.btn,.btn-nav,.theme-toggle { min-height: 44px; touch-action: manipulation; }
+.btn { height: auto; padding-block: 12px; line-height: 1.5; }
+.theme-toggle { min-width: 44px; }
+.nav-in,.hero-in,.sec-in,.foot-in { min-width: 0; }
+.hero-copy,.flow-step,.ti,.faq details { min-width: 0; }
+.hero h1,.lead,.flow-step p,.ti p,.faq .ans,.foot-note { overflow-wrap: anywhere; }
+.logo-txt small,.foot-note,.foot-l p { font-size: 12px; line-height: 1.7; }
+.faq summary { min-height: 52px; gap: 12px; }
+.faq summary::after { flex: none; }
+.faq .ans { font-size: 14px; line-height: 1.9; }
+.btn:focus-visible,.btn-nav:focus-visible,.theme-toggle:focus-visible,.faq summary:focus-visible,.nav a:focus-visible { outline: 3px solid var(--brand-2); outline-offset: 3px; }
+.btn:active,.btn-nav:active,.theme-toggle:active { opacity: .8; transform: translateY(1px); }
+.s-toast { max-width: calc(100% - 32px); bottom: calc(24px + env(safe-area-inset-bottom,0px)); line-height: 1.7; }
+.foot { padding-bottom: calc(26px + env(safe-area-inset-bottom,0px)); }
+@media(max-width:360px) { .nav-in { gap: 8px; padding-inline: 12px; }.nav-right { gap: 6px; }.btn-nav { padding-inline: 12px; }.hero-btns { flex-wrap: wrap; }.hero-btns .btn { flex: 1; min-width: 120px; } }

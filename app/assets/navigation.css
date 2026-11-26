@@ -1,0 +1,27 @@
+/* 学生与服务者底栏共用视觉；仅保留各自的栏目数量。 */
+html body[data-role] #tabbar.tabbar:not(.hidden) {
+  display:grid; align-items:stretch; gap:4px;
+  height:calc(var(--ui-tab-height) + var(--ui-safe-bottom));
+  min-height:calc(var(--ui-tab-height) + var(--ui-safe-bottom));
+  padding:8px 6px calc(6px + var(--ui-safe-bottom));
+  background:var(--card); border-top:1px solid var(--line);
+  box-shadow:0 -4px 16px rgba(66,45,92,.035);
+}
+html body[data-role="student"] #tabbar.tabbar { grid-template-columns:repeat(5,minmax(0,1fr)); }
+html body[data-role="mentor"] #tabbar.tabbar { grid-template-columns:repeat(4,minmax(0,1fr)); }
+html body[data-role] #tabbar.tabbar .tab {
+  position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-width:0; min-height:44px; gap:4px; padding:3px 1px;
+  border:0; border-radius:12px; color:var(--ink-3); background:transparent;
+  font-size:10.5px; font-weight:500; line-height:1.2; white-space:nowrap;
+  transition:color .15s ease,background .15s ease;
+}
+html body[data-role] #tabbar.tabbar .tab svg { width:21px; height:21px; flex:none; }
+html body[data-role] #tabbar.tabbar .tab.active {
+  color:var(--brand); background:var(--brand-soft); font-weight:700;
+}
+html body[data-role] #tabbar.tabbar .tab::before,
+html body[data-role] #tabbar.tabbar .tab::after { content:none; display:none; }
+html body[data-role] #tabbar.tabbar.hidden { display:none; }
+html[data-theme="dark"] body[data-role] #tabbar.tabbar .tab.active { color:var(--ink); background:var(--brand-soft); }
+@media(prefers-reduced-motion:reduce) { html body[data-role] #tabbar.tabbar .tab { transition:none; } }

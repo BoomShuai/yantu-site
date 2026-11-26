@@ -16,8 +16,9 @@
   const getProvider=id=>providers().find(p=>p.id===id);
   const activeId=()=>{try{return sessionStorage.getItem(ACTIVE_KEY)||localStorage.getItem(ACTIVE_KEY)||'';}catch(_){return '';}};
   const setActive=id=>{try{sessionStorage.setItem(ACTIVE_KEY,id);localStorage.setItem(ACTIVE_KEY,id);}catch(_){}};
-  const currentChat=()=>consults().find(c=>c.id===activeId())||null;
-  const persistChats=()=>{try{localStorage.setItem(CHAT_KEY,JSON.stringify(consults().slice(0,60)));return true;}catch(e){toast('本机存储不可用，消息没有保存');return false;}};
+  const canReadChat=c=>T.role!=='mentor'||!!(c&&window.TongluMarket?.auth()?.mentorId===c.providerId);
+  const currentChat=()=>consults().find(c=>c.id===activeId()&&canReadChat(c))||null;
+  const persistChats=()=>{try{localStorage.setItem(CHAT_KEY,JSON.stringify(consults().slice(0,60)));return true;}catch(e){toast('消息未能保存，请检查设备存储空间后重试');return false;}};
   const saveMentor=patch=>T.persistMentor(patch);
   const draft=()=>T.mentorDraft||{};
   const MBTI_KEY='tonglu-v8-provider-mbti';
@@ -47,33 +48,98 @@
     return html;
   };
 
-  /* 服务者入驻：四步引导；简历/文字/语音入口收进可折叠的辅助录入区。 */
+  /* 服务者注册与资料完善：简历大框上传 + 个人信息/辅导经验 + 学历证明/入营 + 能力/条件 + 证书/经验 */
   const MBTI=['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
+  const TEACHING_YEARS=['暂无辅导经验（新入驻）','1 年以内','1–2 年','2–3 年','3–5 年','5 年以上'];
+  const CAPABILITY_GROUPS=[
+    {group:'简历润色',items:['简历结构优化','科研经历表达','竞赛经历表达','个人陈述修改']},
+    {group:'面试模拟',items:['综合面试','专业课面试','英语面试','面试复盘']},
+    {group:'科研竞赛规划（保研延伸）',items:['已有项目经历梳理','文献阅读复盘','大创经历表达','竞赛经历复盘']},
+    {group:'保研规划辅导',items:['院校定位','夏令营申请','预推免申请','全流程规划']}
+  ];
   const mentorSteps=[
-    {title:'基本信息',sub:'先让学生认识你',fields:['name','mbti','bio']},
-    {title:'教育背景',sub:'填写真实的本科与升学经历',fields:['school','major','destination']},
-    {title:'服务',sub:'选择并说明你能提供的具体服务',fields:['services','slots']},
-    {title:'经历与成果',sub:'说明服务过什么样的学生、提供过哪些帮助以及实际结果',fields:['achievements','servedTypes','served','results','experience','cases']}
+    {title:'基本信息',sub:'上传个人简历或填写个人信息与辅导经验',fields:['name','teachingYears','mbti','specialty','bio']},
+    {title:'学历与入营',sub:'填写教育背景、上传学历证明及入营情况',fields:['school','major','destination','educationProof','summerCamp','preAdmission']},
+    {title:'服务能力',sub:'写明你的能力、可提供的服务与接单条件',fields:['capabilities','services','conditions','slots']},
+    {title:'证书与经验',sub:'补充科研成果、获奖证书与历史辅导经验',fields:['achievements','certificates','certFiles','servedTypes','served','experience','cases']}
   ];
   const fieldMeta={
-    name:['展示姓名或称呼','input','例如：陈同学'],
-    mbti:['MBTI 性格类型','select',''],
-    bio:['个人简介','textarea','简单介绍你的学习经历和沟通风格'],
-    school:['本科院校','input','例如：天津大学'],
-    major:['本科专业','input','例如：金融学'],
-    destination:['升学去向','input','例如：复旦大学金融专硕'],
-    services:['可提供的服务','textarea','例如：简历结构优化、面试模拟、科研项目梳理、学科竞赛辅导、院校定位与保研规划'],
+    name:['姓名或称呼 *','input','例如：陈同学'],
+    teachingYears:['辅导经验 *','select',''],
+    mbti:['MBTI 性格类型（选填）','select',''],
+    specialty:['个人特长','input','例如：跨专业保研规划、英文面试模拟、科研经历表达'],
+    bio:['个人简介','textarea','简单介绍你的学习经历、辅导风格与优势'],
+    school:['本科院校 *','input','例如：天津大学'],
+    major:['本科专业 *','input','例如：金融学'],
+    destination:['升学去向 / 录取院校与专业','input','例如：复旦大学金融专硕'],
+    educationProof:['学历证明 *','proof',''],
+    summerCamp:['夏令营入营情况','textarea','例如：清华经管夏令营入营、复旦泛海优秀营员（如无可填暂无）'],
+    preAdmission:['预推免 / 推免入营情况','textarea','例如：上海交大安泰预推免拟录取、人大财政金融入营'],
+    capabilities:['可提供的核心能力与服务 *','capabilities',''],
+    services:['服务内容与能力补充说明','textarea','例如：可提供简历精修、专业课/英语模拟面试、科研项目梳理、夏令营投递规划等'],
+    conditions:['接单条件 / 偏好说明','textarea','例如：擅长经管/计算机方向、大二至大三学生；每周可约晚间及周末沟通'],
     slots:['每周期可接待人数','select',''],
     achievements:['科研 / 竞赛成果','textarea','请填写项目、论文、竞赛及个人贡献'],
-    servedTypes:['服务对象背景（请脱敏）','textarea','例如：统计、计算机等专业；双非/一本背景；大二至大三学生'],
+    certificates:['荣誉与证书说明','textarea','例如：国家奖学金、美赛 M 奖、雅思 7.5、CCF 认证等'],
+    certFiles:['荣誉 / 能力证书上传（选填）','certs',''],
+    servedTypes:['曾服务对象背景（请脱敏）','textarea','例如：统计、计算机等专业；双非/一本背景；大二至大三学生'],
     served:['历史辅导人数（个人申报）','input','例如：曾辅导 5 位同学'],
-    results:['历史辅导结果（个人申报）','textarea','说明辅导内容及已知结果，不要夸大或承诺录取'],
     experience:['个人辅导经验','textarea','你通常如何帮助学生？有哪些方法和心得？'],
     cases:['典型服务案例（请脱敏）','textarea','描述学生原始需求、你提供的帮助和交付内容']
   };
+  function formatFileSize(bytes){
+    if(!bytes||bytes<1024)return (bytes||0)+' B';
+    if(bytes<1024*1024)return (bytes/1024).toFixed(0)+' KB';
+    return (bytes/1024/1024).toFixed(1)+' MB';
+  }
+  function mentorResumeBox(){
+    const st=window.__TLV5&&window.__TLV5.getState?window.__TLV5.getState().mentor:null;
+    const busy=window.__TLV5&&window.__TLV5.isUploading?window.__TLV5.isUploading('mentor'):false;
+    const files=st&&Array.isArray(st.files)?st.files:[];
+    const hasOk=files.some(f=>f.ok);
+    const fileList=files.length?'<div class="v8-uploaded-list">'+files.map((f,i)=>'<div class="v8-uploaded-item"><span>'+(f.ok?'✓':'▤')+'</span><div><b>'+esc(f.name)+'</b><small id="v5-file-status-mentor-'+i+'">'+esc(f.status||'已添加')+'</small></div><button type="button"'+(busy?' disabled':'')+' onclick="v5RemoveFile(\'mentor\','+i+')">移除</button></div>').join('')+'</div>':'';
+    return '<div class="v5-resume-entry v8-mentor-resume-entry">'+
+      '<label class="v5-upload v5-student-upload'+(busy?' is-busy':'')+'"><span class="v5-upload-icon" aria-hidden="true">'+(busy?'◌':'↑')+'</span><b>'+(busy?'正在识别个人简历…':'上传个人简历')+'</b><small>PDF / DOCX / TXT / MD · 最大 8 MB</small><span class="v5-upload-action">'+(busy?'请稍候，正在读取文件':'选择简历')+'</span><input type="file" aria-label="上传服务者个人简历" title="上传个人简历" accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"'+(busy?' disabled':'')+' onchange="v5ChooseFiles(\'mentor\',event)" /></label>'+
+      '<button class="v5-no-resume-link" type="button" onclick="tlV8FocusMentorManual()">没有简历？试试填写个人情况</button>'+
+      fileList+
+    '</div>';
+  }
+  function proofUploadControl(d){
+    const proof=d.educationProof&&d.educationProof.name?d.educationProof:null;
+    const preview=proof?'<div class="v8-proof-card">'+(proof.preview?'<img class="v8-proof-thumb" src="'+proof.preview+'" alt="学历证明预览" />':'<span class="v8-proof-badge">PDF</span>')+'<div class="v8-proof-meta"><b>'+esc(proof.name)+'</b><small>'+esc(formatFileSize(proof.size))+' · 已上传 · 待审核</small></div><button type="button" class="v8-proof-remove" onclick="tlV8RemoveEduProof()">移除</button></div>':'';
+    return '<div class="v8-field"><span>学历证明 * <em class="v8-field-tip">学信网证明 / 学生证 / 录取通知书</em></span>'+
+      '<label class="v8-proof-upload"><span class="v8-proof-icon" aria-hidden="true">⬆</span><span><b>'+(proof?'重新上传学历证明':'上传学历证明')+'</b><small>支持 JPG / PNG / WEBP / PDF · 单份最大 8 MB</small></span><input type="file" aria-label="上传学历证明" accept="image/*,.pdf" onchange="tlV8UploadEduProof(event)" /></label>'+
+      preview+
+      '<small>仅用于服务者资质核验，不对外展示原件敏感信息。</small></div>';
+  }
+  function certUploadControl(d){
+    const list=Array.isArray(d.certFiles)?d.certFiles:[];
+    const items=list.length?'<div class="v8-uploaded-list">'+list.map((f,i)=>'<div class="v8-uploaded-item"><span>'+(f.isImage?'🖼':'▤')+'</span><div><b>'+esc(f.name)+'</b><small>'+esc(formatFileSize(f.size))+' · 已上传</small></div><button type="button" onclick="tlV8RemoveCertFile('+i+')">移除</button></div>').join('')+'</div>':'';
+    return '<div class="v8-field"><span>荣誉 / 能力证书上传（选填，最多 6 份）</span>'+
+      '<label class="v8-proof-upload compact"><span class="v8-proof-icon" aria-hidden="true">＋</span><span><b>上传获奖 / 英语 / 技能证书</b><small>支持 JPG / PNG / WEBP / PDF</small></span><input type="file" aria-label="上传证书" accept="image/*,.pdf" multiple onchange="tlV8UploadCertFiles(event)" /></label>'+
+      items+'</div>';
+  }
+  function capabilityPickerControl(d){
+    const selected=Array.isArray(d.capabilities)?d.capabilities:[];
+    return '<div class="v8-field"><span>可提供的核心能力与服务 * <em class="v8-field-tip">可多选</em></span>'+
+      '<div class="v8-cap-groups">'+CAPABILITY_GROUPS.map(g=>{
+        const mainOn=selected.includes(g.group);
+        return '<div class="v8-cap-group"><button type="button" class="v8-cap-main'+(mainOn?' active':'')+'" aria-pressed="'+mainOn+'" onclick="tlV8ToggleCapability(\''+esc(g.group)+'\')"><span>'+esc(g.group)+'</span><em>'+(mainOn?'✓ 已选':'选择')+'</em></button>'+
+          '<div class="v8-cap-chips">'+g.items.map(item=>{
+            const on=selected.includes(item);
+            return '<button type="button" class="v8-cap-chip'+(on?' active':'')+'" aria-pressed="'+on+'" onclick="tlV8ToggleCapability(\''+esc(item)+'\')">'+esc(item)+'</button>';
+          }).join('')+'</div></div>';
+      }).join('')+'</div></div>';
+  }
   function mentorControl(id,d){
     const [label,type,placeholder]=fieldMeta[id];
     const value=d[id]||'';
+    if(type==='proof')return proofUploadControl(d);
+    if(type==='certs')return certUploadControl(d);
+    if(type==='capabilities')return capabilityPickerControl(d);
+    if(id==='teachingYears'){
+      return '<label class="v8-field"><span>'+label+'</span><select name="teachingYears" onchange="tlV8MentorField(\'teachingYears\',this.value)"><option value="">请选择辅导经验</option>'+TEACHING_YEARS.map(v=>'<option value="'+esc(v)+'"'+(value===v?' selected':'')+'>'+esc(v)+'</option>').join('')+'</select><small>请按实际情况选择辅导年限，帮助学生了解你。</small></label>';
+    }
     if(id==='mbti'){
       return '<label class="v8-field"><span>'+label+'</span><select name="mbti" onchange="tlV8MentorField(\'mbti\',this.value)"><option value="">暂不填写</option>'+MBTI.map(v=>'<option value="'+v+'"'+(value===v?' selected':'')+'>'+v+'</option>').join('')+'</select><small>仅用于了解沟通偏好，不作为服务能力或推荐排序依据。</small></label>';
     }
@@ -82,82 +148,150 @@
       return '<label class="v8-field"><span>'+label+'</span><select name="slots" onchange="tlV8MentorField(\'slots\',this.value)">'+opts.map(v=>'<option value="'+v+'"'+(String(value||'3')===v?' selected':'')+'>'+v+' 人</option>').join('')+'</select></label>';
     }
     const attr=' oninput="tlV8MentorField(\''+id+'\',this.value)"';
-    if(type==='textarea')return '<label class="v8-field"><span>'+label+'</span><textarea name="'+id+'" rows="'+(id==='bio'?3:4)+'" maxlength="'+(id==='bio'?300:1000)+'" placeholder="'+placeholder+'"'+attr+'>'+esc(value)+'</textarea></label>';
+    if(type==='textarea')return '<label class="v8-field"><span>'+label+'</span><textarea name="'+id+'" rows="'+(id==='bio'||id==='summerCamp'||id==='preAdmission'?3:4)+'" maxlength="'+(id==='bio'?300:1000)+'" placeholder="'+placeholder+'"'+attr+'>'+esc(value)+'</textarea></label>';
     return '<label class="v8-field"><span>'+label+'</span><input name="'+id+'" maxlength="120" placeholder="'+placeholder+'" value="'+esc(value)+'"'+attr+' /></label>';
-  }
-  function mentorFiles(){
-    const st=window.__TLV5&&window.__TLV5.getState?window.__TLV5.getState().mentor:null;
-    if(!st||!st.files||!st.files.length)return '<small class="v8-muted">尚未上传简历。</small>';
-    return '<div class="v8-file-list">'+st.files.map(f=>'<div><b>'+esc(f.name)+'</b><small>'+esc(f.status||'已添加')+'</small></div>').join('')+'</div>';
-  }
-  function aiImportBox(){
-    const st=window.__TLV5&&window.__TLV5.getState?window.__TLV5.getState().mentor:null;
-    const text=st&&st.text?st.text:'';
-    return '<details class="v8-ai-import"><summary><span>简历 / 文字 / 语音辅助录入</span><small>可选 · 不影响逐步填写</small></summary>'+
-      '<p>可以先写一段经历、上传简历或语音口述，系统会把识别结果填入下方资料草稿。当前使用本地解析规则，不调用真实大模型。</p>'+
-      '<label class="v8-field"><span>自由描述</span><textarea id="v5-mentor-text" rows="4" maxlength="12000" placeholder="例如：本科院校、专业、保研去向、科研竞赛、辅导经历……" oninput="v5KeepText(\'mentor\',this.value)">'+esc(text)+'</textarea></label>'+
-      '<div class="v8-ai-actions"><button type="button" onclick="v5Voice(\'mentor\')">语音转文字</button><label class="v8-upload">上传 PDF / Word / TXT<input type="file" accept=".pdf,.docx,.txt,.md" multiple onchange="v5ChooseFiles(\'mentor\',event)"></label></div>'+
-      mentorFiles()+
-      '<button type="button" class="v8-ai-primary" onclick="tlV8ImportMentor()">整理并填入资料</button>'+
-      '<small class="v8-muted">文件在本机浏览器解析；未经本人确认的内容不会用于正式资料展示。学历、成果和辅导结果仍需另行核验。</small></details>';
   }
   function mentorWizard(){
     if(T.role!=='mentor')return '<div class="page tl-v2-page"><p>请切换到服务者身份后完善资料。</p></div>';
     const d=draft(), step=mentorSteps[mentorStep]||mentorSteps[0];
     const progress=mentorSteps.map((x,i)=>'<span class="'+(i<mentorStep?'done':i===mentorStep?'active':'')+'"></span>').join('');
     const tabs=mentorSteps.map((x,i)=>'<button type="button" class="'+(i===mentorStep?'active':i<mentorStep?'done':'')+'" onclick="tlV8MentorGo('+i+')"><b>'+(i<mentorStep?'✓':'0'+(i+1))+'</b><small>'+x.title+'</small></button>').join('');
-    const intro=mentorStep===3?'<div class="v8-declaration">请说明服务对象的专业、年级或背景类型（不要填写可识别学生身份的信息），再补充辅导人数、实际提供的帮助和结果。没有历史辅导经历可如实填写“暂无”。辅导人数、服务结果和案例均为个人申报内容；平台真实订单次数未来由后台自动统计，不由个人手填认证。</div>':'';
-    return '<div class="page tl-v2-page v8-mentor-wizard"><div class="v4-kicker">MENTOR PROFILE · STEP BY STEP</div>'+
-      '<h1 class="v4-h1">完善服务者资料</h1><p class="v4-sub">分步骤填写，随时保存。资料将用于个人展示与服务方向筛选。</p>'+
-      '<div class="v8-step-progress">'+progress+'</div><nav class="v8-step-tabs" aria-label="服务者资料步骤">'+tabs+'</nav>'+
+    const intro=mentorStep===3?'<div class="v8-declaration">请确保学历、入营经历、荣誉证书与辅导经验真实准确；涉及过往辅导案例时请做好隐私脱敏。</div>':'';
+    return '<div class="page tl-v2-page v8-mentor-wizard"><div class="v4-kicker">MENTOR REGISTRATION</div>'+
+      '<h1 class="v4-h1">'+(d.registered?'编辑服务者资料':'服务者注册与资料完善')+'</h1><p class="v4-sub">上传简历或填写个人情况、学历证明、入营经历与服务能力。</p>'+
+      '<div class="v8-step-progress">'+progress+'</div><nav class="v8-step-tabs" aria-label="服务者注册步骤">'+tabs+'</nav>'+
       '<section class="v8-step-card"><div class="v8-step-title"><div><small>STEP 0'+(mentorStep+1)+' / 04</small><h2>'+step.title+'</h2><p>'+step.sub+'</p></div><span>'+(mentorStep+1)+'/4</span></div>'+
-      (mentorStep===0?aiImportBox():'')+
-      '<div class="v8-step-fields">'+step.fields.map(id=>mentorControl(id,d)).join('')+'</div>'+intro+
-      '<div class="v8-step-actions">'+(mentorStep>0?'<button type="button" class="v8-btn secondary" onclick="tlV8MentorGo('+(mentorStep-1)+')">上一步</button>':'<button type="button" class="v8-btn secondary" onclick="go(\'#/mentorMe\')">稍后填写</button>')+
-      (mentorStep<3?'<button type="button" class="v8-btn primary" onclick="tlV8MentorGo('+(mentorStep+1)+')">下一步 →</button>':'<button type="button" class="v8-btn primary" onclick="tlV8MentorSave()">保存服务者资料</button>')+'</div></section>'+
-      '<p class="v8-footnote">所有资料保存在当前浏览器。平台核验、真实订单和跨设备同步需后续接入后台。</p></div>';
+      (mentorStep===0?mentorResumeBox():'')+
+      '<div class="v8-step-fields" id="v8-mentor-manual-fields">'+step.fields.map(id=>mentorControl(id,d)).join('')+'</div>'+intro+
+      '<div class="v8-step-actions">'+(mentorStep>0?'<button type="button" class="v8-btn secondary" onclick="tlV8MentorGo('+(mentorStep-1)+')">上一步</button>':'<button type="button" class="v8-btn secondary" onclick="go(\'#/choose\')">返回身份选择</button>')+
+      (mentorStep<3?'<button type="button" class="v8-btn primary" onclick="tlV8MentorGo('+(mentorStep+1)+')">下一步 →</button>':'<button type="button" class="v8-btn primary" onclick="tlV8MentorSave()">'+(d.registered?'保存修改':'完成注册并进入')+'</button>')+'</div></section>'+
+      '<p class="v8-footnote">提交后将进行资料审核，当前记录提交信息，认证以实际审核结果为准。</p></div>';
   }
+  window.tlV8FocusMentorManual=function(){
+    const box=document.getElementById('v8-mentor-manual-fields');
+    if(!box)return;
+    box.scrollIntoView({behavior:'smooth',block:'center'});
+    const first=box.querySelector('input,select,textarea');
+    if(first)setTimeout(()=>first.focus({preventScroll:true}),240);
+  };
   window.tlV8MentorField=function(id,value){
     if(!fieldMeta[id])return;
     const patch={};patch[id]=String(value||'').trim().slice(0,id==='bio'?300:1000);
     saveMentor(patch);
   };
+  window.tlV8ToggleCapability=function(name){
+    const d=draft();
+    const cur=Array.isArray(d.capabilities)?d.capabilities.slice():[];
+    const idx=cur.indexOf(name);
+    if(idx>=0)cur.splice(idx,1);else cur.push(name);
+    const patch={capabilities:cur};
+    if(!String(d.services||'').trim()&&cur.length)patch.services=cur.join('、');
+    saveMentor(patch);
+    render();
+  };
+  window.tlV8UploadEduProof=function(event){
+    const input=event.target, f=input&&input.files&&input.files[0];
+    if(!f)return;
+    if(f.size>8*1024*1024){toast('学历证明文件不能超过 8 MB');input.value='';return;}
+    const isImg=/^image\//i.test(f.type)||/\.(png|jpe?g|webp|gif)$/i.test(f.name);
+    const isPdf=/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name);
+    if(!isImg&&!isPdf){toast('请上传图片（JPG/PNG/WEBP）或 PDF 格式的学历证明');input.value='';return;}
+    const commit=preview=>{
+      saveMentor({educationProof:{name:String(f.name).slice(0,120),size:f.size,type:f.type||(isPdf?'application/pdf':'image/*'),preview:preview||'',uploadedAt:new Date().toISOString()}});
+      try{input.value='';}catch(_){}
+      toast('学历证明已上传');
+      render();
+    };
+    if(isImg&&f.size<=900*1024&&typeof FileReader!=='undefined'){
+      const reader=new FileReader();
+      reader.onload=()=>commit(typeof reader.result==='string'?reader.result:'');
+      reader.onerror=()=>commit('');
+      reader.readAsDataURL(f);
+    }else{commit('');}
+  };
+  window.tlV8RemoveEduProof=function(){
+    saveMentor({educationProof:null});
+    toast('已移除学历证明');
+    render();
+  };
+  window.tlV8UploadCertFiles=function(event){
+    const input=event.target, selected=Array.from(input&&input.files||[]);
+    if(!selected.length)return;
+    const d=draft();
+    const list=Array.isArray(d.certFiles)?d.certFiles.slice():[];
+    let added=0;
+    for(const f of selected){
+      if(list.length>=6){toast('最多上传 6 份证书证明');break;}
+      if(f.size>8*1024*1024){toast(f.name+' 超过 8 MB，已跳过');continue;}
+      const isImg=/^image\//i.test(f.type)||/\.(png|jpe?g|webp|gif)$/i.test(f.name);
+      const isPdf=/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name);
+      if(!isImg&&!isPdf){toast(f.name+' 格式不支持，请上传图片或 PDF');continue;}
+      list.push({name:String(f.name).slice(0,120),size:f.size,isImage:isImg,uploadedAt:new Date().toISOString()});
+      added++;
+    }
+    try{input.value='';}catch(_){}
+    if(added){saveMentor({certFiles:list});toast('已添加 '+added+' 份证书证明');render();}
+  };
+  window.tlV8RemoveCertFile=function(index){
+    const d=draft();
+    const list=Array.isArray(d.certFiles)?d.certFiles.slice():[];
+    list.splice(index,1);
+    saveMentor({certFiles:list});
+    render();
+  };
   function validateMentorStep(n){
     const d=draft();
-    if(n===0&&!String(d.name||'').trim()){toast('先填写展示姓名或称呼');return false;}
+    if(n===0&&!String(d.name||'').trim()){toast('请先填写姓名或称呼');return false;}
     if(n===1&&(!String(d.school||'').trim()||!String(d.major||'').trim())){toast('请先填写本科院校和专业');return false;}
-    if(n===2&&!String(d.services||'').trim()){toast('请填写至少一项擅长辅导方向');return false;}
+    if(n===2&&!(Array.isArray(d.capabilities)&&d.capabilities.length)&&!String(d.services||'').trim()){toast('请至少选择一项服务能力或填写服务说明');return false;}
     return true;
   }
   window.tlV8MentorGo=function(n){
     if(!Number.isInteger(n)||n<0||n>3)return;
-    if(n>mentorStep){for(let i=mentorStep;i<n;i++){if(!validateMentorStep(i))return;}}
+    if(n>mentorStep){for(let i=mentorStep;i<n;i++){if(!validateMentorStep(i)){mentorStep=i;render();return;}}}
     mentorStep=n;try{localStorage.setItem(STEP_KEY,String(n));}catch(_){}
     render();
   };
+  window.tlV8ResetMentorStep=function(){mentorStep=0;try{localStorage.setItem(STEP_KEY,'0');}catch(_){}};
   window.tlV8MentorSave=function(){
     const d=draft();
-    for(let i=0;i<3;i++){if(!validateMentorStep(i))return;}
-    if(!Object.values(d).some(v=>String(v||'').trim())){toast('请至少填写一项服务者资料');return;}
-    saveMentor({...d,updatedAt:new Date().toISOString(),declared:true});
+    for(let i=0;i<3;i++){if(!validateMentorStep(i)){mentorStep=i;try{localStorage.setItem(STEP_KEY,String(i));}catch(_){}render();return;}}
+    if(!d.educationProof||!d.educationProof.name){
+      toast('请先在「学历与入营」步骤上传学历证明');
+      mentorStep=1;try{localStorage.setItem(STEP_KEY,'1');}catch(_){}
+      render();
+      return;
+    }
+    const wasRegistered=!!d.registered;
+    const caps=Array.isArray(d.capabilities)?d.capabilities:[];
+    const servicesText=String(d.services||'').trim()||caps.join('、');
+    if(!saveMentor({...d,services:servicesText,updatedAt:new Date().toISOString(),declared:true,registered:true}))return;
     syncDraftMbti();
-    toast('服务者资料已保存为个人申报');
-    go('#/mentorMe');
+    toast(wasRegistered?'服务者资料已更新':'服务者注册资料已保存');
+    go(wasRegistered?'#/mentorMe':'#/messages');
+  };
+  window.tlV8ApplyParsedMentor=function(silent){
+    if(!window.__TLV5||!window.__TLV5.getState)return;
+    const st=window.__TLV5.getState().mentor;
+    const f=st&&st.fields||{};
+    const d=draft();
+    const patch={};
+    ['name','mbti','school','major','destination','summerCamp','preAdmission','specialty','certificates','services','servedTypes','served','results','experience','cases'].forEach(k=>{
+      if(f[k]&&!String(d[k]||'').trim())patch[k]=String(f[k]).slice(0,k==='experience'||k==='cases'||k==='results'||k==='services'||k==='servedTypes'||k==='summerCamp'||k==='preAdmission'||k==='certificates'?1000:150);
+    });
+    if(f.achievements&&!String(d.achievements||'').trim())patch.achievements=String(f.achievements).slice(0,1000);
+    const bio=[f.achievements,f.experience].filter(Boolean).join('；');
+    if(bio&&!String(d.bio||'').trim())patch.bio=bio.slice(0,300);
+    if(!Object.keys(patch).length){if(!silent)toast('暂未识别出可填入的资料，请手动填写');return;}
+    saveMentor(patch);
+    if(!silent){render();toast('已将识别结果填入资料步骤，请检查并修改');}
   };
   window.tlV8ImportMentor=function(){
     const box=document.getElementById('v5-mentor-text');
     if(box&&box.value&&window.v5KeepText)window.v5KeepText('mentor',box.value);
-    if(!window.v5Analyze||!window.__TLV5){toast('资料整理模块尚未加载');return;}
+    if(!window.v5Analyze||!window.__TLV5){toast('暂时无法整理资料，请刷新页面后重试');return;}
     window.v5Analyze('mentor',{silent:true});
-    const st=window.__TLV5.getState().mentor;
-    const f=st&&st.fields||{};
-    const patch={};
-    ['name','mbti','school','major','destination','services','servedTypes','served','results','experience','cases'].forEach(k=>{if(f[k])patch[k]=String(f[k]).slice(0,k==='experience'||k==='cases'||k==='results'||k==='services'||k==='servedTypes'?1000:150);});
-    if(f.achievements)patch.achievements=String(f.achievements).slice(0,1000);
-    const bio=[f.achievements,f.experience].filter(Boolean).join('；');
-    if(bio)patch.bio=bio.slice(0,300);
-    if(!Object.keys(patch).length){toast('暂未识别出可填入的资料，请补充文字或简历');return;}
-    saveMentor(patch);render();toast('已将识别结果填入资料步骤，请检查并修改');
+    window.tlV8ApplyParsedMentor(false);
   };
   PAGES.mentorProfile=mentorWizard;
 
@@ -166,7 +300,7 @@
   window.tlV8ScrollPlan=function(){
     const cards=[...document.querySelectorAll('.tl-v3-card')];
     const target=cards.find(el=>/MY ROADMAP|我的行动时间线/.test(el.textContent||''))||document.querySelector('.tl-v3-empty-plan');
-    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});else toast('请先完善个人 BG，生成行动计划');
+    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});else toast('请先完善个人个人资料，生成行动计划');
   };
   PAGES.me=function(){
     let html=oldMe();
@@ -174,7 +308,7 @@
     const bg=T.bg||{}, goals=Array.isArray(bg.goals)?bg.goals:[];
     const consultations=consults().length;
     const ready=!!(T.profileReady&&T.profileReady());
-    const banner='<section class="v8-profile-banner"><div class="v8-profile-avatar">同</div><div class="v8-profile-copy"><b>学生个人档案</b><small>'+esc([bg.grade,...goals].filter(Boolean).join(' · ')||'完善 BG，开启个性化服务')+'</small><span class="v8-profile-state '+(ready?'ready':'')+'">'+(ready?'资料已确认':'资料待完善')+'</span></div><button onclick="go(\'#/profile\')">编辑 ›</button></section>';
+    const banner='<section class="v8-profile-banner"><div class="v8-profile-avatar">同</div><div class="v8-profile-copy"><b>学生个人档案</b><small>'+esc([bg.grade,...goals].filter(Boolean).join(' · ')||'完善个人资料，开启个性化服务')+'</small><span class="v8-profile-state '+(ready?'ready':'')+'">'+(ready?'资料已确认':'资料待完善')+'</span></div><button onclick="go(\'#/profile\')">编辑 ›</button></section>';
     const shortcuts='<section class="v8-my-shortcuts-wrap"><div class="v8-shortcuts-title"><b>常用功能</b><small>个人申请与服务入口</small></div><div class="v8-my-shortcuts">'+
       '<button onclick="go(\'#/messages\')"><span class="v8-shortcut-icon">✉</span><b>消息中心</b><small>'+consultations+' 个咨询会话</small></button>'+
       '<button onclick="tlV8ScrollPlan()"><span class="v8-shortcut-icon">▤</span><b>行动计划</b><small>查看成长任务</small></button>'+
@@ -186,20 +320,8 @@
     else html=html.replace('<div class="page tl-v2-page tl-v3-my">','<div class="page tl-v2-page tl-v3-my">'+banner+shortcuts);
     return html;
   };
-  const oldMentorMe=PAGES.mentorMe;
-  PAGES.mentorMe=function(){
-    let html=oldMentorMe();
-    if(T.role!=='mentor')return html;
-    const d=draft();
-    const shortcuts='<section class="v8-my-shortcuts mentor"><button onclick="go(\'#/messages\')"><span class="v8-shortcut-icon">✉</span><b>消息中心</b><small>查看咨询消息</small></button><button onclick="go(\'#/mentorDemands\')"><span class="v8-shortcut-icon">⌕</span><b>学生需求</b><small>浏览适配需求</small></button><button onclick="go(\'#/workbench\')"><span class="v8-shortcut-icon">▤</span><b>服务工作台</b><small>查看服务管理</small></button><button onclick="S.providerView=\'saved\';go(\'#/providers\')"><span class="v8-shortcut-icon">♡</span><b>服务者收藏</b><small>已收藏同行</small></button></section>';
-    html=html.replace(new RegExp("<button class=\"tl-v2-link-row\" onclick=\"go\\('#/messages'\\)\">消息中心 <span>暂未接入真实咨询 ›</span></button>"),"");
-    const marker='<p class="tl-v2-sub">服务者也可以浏览其他同行的公开资料；收藏不会影响排序。</p>';
-    if(html.includes(marker))html=html.replace(marker,marker+'<div class="v8-mentor-summary"><b>'+esc(d.name||'完善你的服务者资料')+'</b><small>'+esc([d.school,d.major,d.destination,d.mbti].filter(Boolean).join(' · ')||'个人履历尚未完善')+'</small><button onclick="go(\'#/mentorProfile\')">编辑资料 ›</button></div>'+shortcuts);
-    return html;
-  };
-
   /* 微信 / 闲鱼式聊天：会话按服务者区分；本机保存，不伪装为真实发送。 */
-  window.openTongluConversation=function(id){const c=consults().find(x=>x.id===id);if(!c){toast('没有找到该会话');return;}setActive(id);go('#/conversation');};
+  window.openTongluConversation=function(id){const c=consults().find(x=>x.id===id&&canReadChat(x));if(!c){toast('没有找到该会话');return;}setActive(id);go('#/conversation');};
   window.startTongluConsult=function(providerId){
     if(T.role!=='student'){toast('请以学生身份开始咨询');return;}
     const p=getProvider(providerId);if(!p){toast('没有找到该服务者');return;}
@@ -220,52 +342,69 @@
   };
   window.tlV8Appointment=function(){
     const c=currentChat(),p=c&&getProvider(c.providerId);
-    if(!p){toast('服务者信息不存在');return;}
+    if(c?.skuId){go('#/sku/'+encodeURIComponent(c.skuId));return;}
+    if(!p){toast('暂时找不到这位服务者，请返回集市重新选择');return;}
     if(typeof remain==='function'&&remain(p)===0){toast('该服务者当前名额已满');return;}
-    if(!p.services||!p.services.length){toast('该服务者暂未配置可预约项目');return;}
-    if(typeof v4Book==='function')v4Book(p.id,0);else toast('预约页面暂不可用');
+    if(!p.services||!p.services.length){toast('这位服务者暂未发布可预约服务，可以先查看其他服务');return;}
+    go('#/providers');toast('请在同路集市查看当前在售服务');
   };
-  window.tlV8Phone=function(){
+  window.tlV8Remind=function(){
     const c=currentChat(),p=c&&getProvider(c.providerId);
-    if(!p){toast('服务者信息不存在');return;}
-    if(p.phone){location.href='tel:'+String(p.phone).replace(/[^0-9+]/g,'');return;}
-    toast('该服务者暂未公开电话，请先通过预约服务确认沟通方式');
+    if(!c||!p){toast('暂时找不到这位服务者，请返回集市重新选择');return;}
+    const now=Date.now();
+    if(c.lastRemindedAt&&(now-Number(c.lastRemindedAt))<15000){
+      toast('已记录提醒，请稍后查看会话');
+      return;
+    }
+    c.entries=Array.isArray(c.entries)?c.entries:[];
+    c.entries.push({text:'已记录提醒：希望 '+p.name+' 尽快回复你的消息',who:'system',at:new Date().toISOString()});
+    c.lastRemindedAt=now;
+    c.updatedAt=new Date().toISOString();
+    if(persistChats()){
+      toast('提醒已保存在此设备，暂未发送给对方');
+      render();
+      const log=document.querySelector('.v8-chat-log');
+      if(log)log.scrollTop=log.scrollHeight;
+    }
   };
+  window.tlV8Phone=window.tlV8Remind;
   PAGES.messages=function(){
-    const list=consults().slice().sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
+    const list=consults().filter(canReadChat).slice().sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
     if(T.role==='mentor'){
       const threads=list.map(c=>{
         const p=getProvider(c.providerId),last=(c.entries||[]).slice(-1)[0];
-        return '<button class="v8-thread" onclick="openTongluConversation(\''+esc(c.id)+'\')"><span class="v8-thread-avatar">学</span><span class="v8-thread-main"><b>学生咨询 · '+esc(p&&p.name||'服务者')+'</b><small>'+esc(last&&last.text||'已建立本机演示会话')+'</small></span><span class="v8-thread-meta"><small>'+(c.entries||[]).length+' 条</small>›</span></button>';
+        return '<button class="v8-thread" onclick="openTongluConversation(\''+esc(c.id)+'\')"><span class="v8-thread-avatar">学</span><span class="v8-thread-main"><b>学生咨询 · '+esc(p&&p.name||'服务者')+'</b><small>'+esc(last&&last.text||'发起了新的咨询')+'</small></span><span class="v8-thread-meta"><small>'+(c.entries||[]).length+' 条</small>›</span></button>';
       }).join('');
-      return '<div class="page tl-v2-page v8-message-page"><div class="v4-kicker">MESSAGES</div><h1 class="v4-h1">消息中心</h1><p class="v4-sub">查看学生发起的咨询。当前仅展示同一浏览器中的本机演示会话。</p>'+(threads?'<div class="v8-thread-list">'+threads+'</div>':'<div class="v8-empty"><b>暂时没有学生咨询</b><p>正式上线后，学生发起咨询并授权后，消息会同步到服务者账号。</p><button onclick="go(\'#/mentorDemands\')">查看学生需求 ›</button></div>')+'<p class="v8-footnote">当前没有连接真实消息后台，不能跨设备接收消息或向真实学生发送内容。</p></div>';
+      return '<div class="page tl-v2-page v8-message-page"><div class="v4-kicker">MESSAGES</div><h1 class="v4-h1">消息中心</h1><p class="v4-sub">查看学生咨询，记录沟通与服务安排。</p>'+(threads?'<div class="v8-thread-list">'+threads+'</div>':'<div class="v8-empty"><b>暂时没有学生咨询</b><p>有学生向你发起咨询后，会话会显示在这里。</p><button onclick="go(\'#/mentorDemands\')">查看学生需求 ›</button></div>')+'</div>';
     }
     const tab=window.__tlV8MsgTab||'咨询';
     const tabs=['咨询','订单','系统'];
     const body=tab==='咨询'?(list.length?list.map(c=>{
       const p=getProvider(c.providerId),last=(c.entries||[]).slice(-1)[0];
       return '<button class="v8-thread" onclick="openTongluConversation(\''+esc(c.id)+'\')"><span class="v8-thread-avatar">'+esc((p&&p.name||'服').slice(0,1))+'</span><span class="v8-thread-main"><b>'+esc(p&&p.name||'服务者')+'</b><small>'+esc(last&&last.text||'已建立咨询会话')+'</small></span><span class="v8-thread-meta"><small>'+(c.entries||[]).length+' 条</small>›</span></button>';
-    }).join(''):'<div class="v8-empty"><b>还没有咨询消息</b><p>进入服务者详情，点击咨询即可开始一段独立会话。</p><button onclick="go(\'#/providers\')">去找服务者 ›</button></div>'):'<div class="v8-empty"><b>'+ (tab==='订单'?'暂无订单消息':'暂无系统消息')+'</b><p>正式消息和订单通知需要后端服务支持。</p></div>';
-    return '<div class="page tl-v2-page v8-message-page"><div class="v4-kicker">MESSAGES</div><h1 class="v4-h1">消息中心</h1><p class="v4-sub">咨询、订单与系统通知集中在这里。</p><div class="v8-message-tabs">'+tabs.map(t=>'<button class="'+(tab===t?'active':'')+'" onclick="tlV8MessageTab(\''+t+'\')">'+t+'</button>').join('')+'</div><div class="v8-thread-list">'+body+'</div><p class="v8-footnote">当前为本机交互原型，消息仅保存在当前浏览器，不会发送给真实服务者。</p></div>';
+    }).join(''):'<div class="v8-empty"><b>还没有咨询记录</b><p>进入服务者详情，点击咨询即可开始沟通。</p><button onclick="go(\'#/providers\')">逛同路集市 ›</button></div>'):'<div class="v8-empty"><b>'+ (tab==='订单'?'暂无订单消息':'暂无系统消息')+'</b><p>相关记录会显示在这里，你也可以先浏览服务或查看已有咨询。</p></div>';
+    return '<div class="page tl-v2-page v8-message-page"><div class="v4-kicker">MESSAGES</div><h1 class="v4-h1">消息中心</h1><p class="v4-sub">咨询、订单与系统通知集中在这里。</p><div class="v8-message-tabs">'+tabs.map(t=>'<button class="'+(tab===t?'active':'')+'" onclick="tlV8MessageTab(\''+t+'\')">'+t+'</button>').join('')+'</div><div class="v8-thread-list">'+body+'</div></div>';
   };
   window.tlV8MessageTab=function(tab){window.__tlV8MsgTab=['咨询','订单','系统'].includes(tab)?tab:'咨询';render();};
   PAGES.conversation=function(){
     const c=currentChat();
     if(!c)return '<div class="page tl-v2-page v8-chat-page"><div class="v8-empty"><b>没有找到这段会话</b><button onclick="go(\'#/messages\')">返回消息中心</button></div></div>';
-    const p=getProvider(c.providerId),name=T.role==='mentor'?'学生咨询':(p&&p.name||'服务者'),brief=T.role==='mentor'?'来自学生的咨询 · 本机演示':(p&&p.brief||'同路服务者');
+    const p=getProvider(c.providerId),name=T.role==='mentor'?'学生咨询':(p&&p.name||'服务者'),brief=T.role==='mentor'?'来自学生的咨询':(p&&p.brief||'同路服务者');
     const entries=(c.entries||[]).map(e=>{
-      const incoming=T.role==='mentor'?(e.who!=='mentor'):(e.who==='mentor'||e.from==='mentor');
       const time=e.at?new Date(e.at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}):'';
+      if(e.who==='system'){
+        return '<div class="v8-chat-system"><span>'+esc(e.text)+(time?' · '+esc(time):'')+'</span></div>';
+      }
+      const incoming=T.role==='mentor'?(e.who!=='mentor'):(e.who==='mentor'||e.from==='mentor');
       const avatar=T.role==='mentor'?'学':name.slice(0,1);
       return '<div class="v8-chat-row '+(incoming?'incoming':'outgoing')+'">'+(!incoming?'<span class="v8-chat-bubble">'+esc(e.text)+'<small class="v8-chat-time">'+esc(time)+'</small></span>':'<span class="v8-chat-avatar">'+esc(avatar)+'</span><span class="v8-chat-bubble">'+esc(e.text)+'<small class="v8-chat-time">'+esc(time)+'</small></span>')+'</div>';
     }).join('');
-    const actions=T.role==='mentor'?'':'<div class="v8-chat-actions"><button onclick="tlV8Appointment()">▣ 立即预约服务</button><button onclick="tlV8Phone()">☎ 电话咨询</button></div>';
-    const note=T.role==='mentor'?'当前为本机双身份演示会话，回复仅保存在本机，不会发送给真实学生。':'当前为本地聊天演示。发送内容仅保存在本机，尚未送达服务者。';
+    const actions=T.role==='mentor'?'':'<div class="v8-chat-actions"><button type="button" onclick="tlV8Appointment()">查看服务详情</button><button type="button" onclick="tlV8Remind()">提醒回复</button></div>';
     const placeholder=T.role==='mentor'?'回复学生消息…':'发送消息…';
-    return '<div class="page tl-v2-page v8-chat-page"><header class="v8-chat-header"><button class="v8-chat-back" onclick="go(\'#/messages\')" aria-label="返回">‹</button><span class="v8-thread-avatar">'+esc(T.role==='mentor'?'学':name.slice(0,1))+'</span><span class="v8-chat-person"><b>'+esc(name)+'</b><small>'+esc(brief)+'</small></span>'+(T.role==='mentor'?'':'<button class="v8-chat-more" onclick="tlV8Phone()">电话</button>')+'</header>'+
+    return '<div class="page tl-v2-page v8-chat-page"><header class="v8-chat-header"><button class="v8-chat-back" onclick="go(\'#/messages\')" aria-label="返回">‹</button><span class="v8-thread-avatar">'+esc(T.role==='mentor'?'学':name.slice(0,1))+'</span><span class="v8-chat-person"><b>'+esc(name)+'</b><small>'+esc(brief)+'</small></span></header>'+
+      (c.skuSnapshot?'<section class="v9-provider"><small>咨询的服务</small><b>'+esc(c.skuSnapshot.title)+'</b><p>¥'+esc(c.skuSnapshot.price)+' · '+esc(c.skuSnapshot.deliveryCycle)+'</p></section>':'')+
       actions+
-      '<div class="v8-chat-note">'+note+'</div>'+
-      '<div class="v8-chat-log">'+(entries||'<div class="v8-chat-empty">你好，可以在这里记录想向 '+esc(name)+' 咨询的问题。<br>你也可以先预约服务，或使用电话咨询入口。</div>')+'</div>'+
+      '<div class="v8-chat-log">'+(entries||'<div class="v8-chat-empty">可以记录你希望了解的问题，也可以点击上方查看服务详情。消息保存在此设备，暂不支持跨设备发送。</div>')+'</div>'+
       '<form class="v8-chat-compose" onsubmit="tlV8SendMessage(event)"><textarea name="message" rows="1" maxlength="500" placeholder="'+placeholder+'" aria-label="发送消息" oninput="this.style.height=&quot;auto&quot;;this.style.height=Math.min(this.scrollHeight,110)+&quot;px&quot;" required></textarea><button type="submit" aria-label="发送">↑</button></form></div>';
   };
 

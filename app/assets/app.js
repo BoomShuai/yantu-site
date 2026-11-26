@@ -52,6 +52,7 @@ const ICON = {
   home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.8 9.2V20h12.4V9.2"/><path d="M9.8 20v-5.6h4.4V20"/></svg>',
   school: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.4l9 4.4 9-4.4L12 3Z"/><path d="M5.8 10.2v5.3c0 1.4 2.8 2.5 6.2 2.5s6.2-1.1 6.2-2.5v-5.3"/><path d="M21 7.4v5"/></svg>',
   users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3"/><path d="M2 20c.4-3.4 3-5.6 7-5.6 4 0 6.6 2.2 7 5.6"/><path d="M16 5.3a3 3 0 0 1 0 5.7M18.5 14.5c2 .7 3.2 2.4 3.5 5.5"/></svg>',
+  messages: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v11H9l-5 3v-14Z"/><path d="M8 9h8M8 13h5"/></svg>',
   me: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8.4" r="3.5"/><path d="M4.9 19.8c.7-3.4 3.5-5.2 7.1-5.2s6.4 1.8 7.1 5.2"/></svg>'
 };
 
@@ -79,7 +80,7 @@ const NAV = {
   profile: { title: "建立定位档案" },
   diagnosis: { title: "定位结果" },
   provider: { title: "服务者详情" },
-  providers: { title: "同路市集" },
+  providers: { title: "同路集市" },
   presale: { title: "售前沟通" },
   proposal: { title: "服务方案" },
   checkout: { title: "付款与订单" },
@@ -458,14 +459,14 @@ function pageCheckout() {
         <span class="price" style="font-size:30px">¥${price}</span>
         <span class="badge gray">材料诊断 · v2</span>
       </div>
-      <div class="tiny dim mt8">取自服务端方案快照 v2 · 不可修改</div>
+      <div class="tiny dim mt8">方案金额已固定，请核对服务内容后继续</div>
     </div>
 
     <div class="alert danger mt12"><span class="ico">!</span>
       <span><b>名额刚刚被占用，暂不可付款。</b>推荐时有名额，不等于付款时仍有名额。</span></div>
 
     <div class="card mt12">
-      <div class="kv"><span class="k">占位有效期</span><span class="v">未取得占位</span></div>
+      <div class="kv"><span class="k">预约保留时间</span><span class="v">尚未保留名额</span></div>
       <div class="kv"><span class="k">支付状态</span><span class="v">未发起</span></div>
       <div class="kv"><span class="k">方案版本</span><span class="v">v2 · 双方已确认</span></div>
       <div class="kv"><span class="k">服务者</span><span class="v">陈老师 · 3/3 满额</span></div>
@@ -627,7 +628,7 @@ function schoolRecordsView(){return `<div class="tl-section-kicker">APPLICATION 
   <div class="tl-small-cap">已记录 ${TL.applications.length} 条</div>
   ${TL.applications.length?TL.applications.map(a=>`<div class="tl-application"><div class="row between"><div class="grow"><b>${escapeTL(a.school)}</b><div class="tiny dim mt6">${escapeTL(a.program)} · ${a.date?escapeTL(a.date):'日期未填写'}</div></div><button class="tl-delete" onclick="deleteApplication('${a.id}')">删除</button></div>
     <div class="tl-apply-status">进度：<select aria-label="更改投递状态" onchange="changeApplicationStatus('${a.id}',this.value)">${['准备中','已投递','审核中','进入面试','已录取','未通过'].map(v=>`<option ${a.status===v?'selected':''}>${v}</option>`).join('')}</select></div></div>`).join(''):'<div class="tl-empty">还没有投递记录，先添加一所目标院校吧。</div>'}
-  <div class="tl-disclaimer">记录仅在本地浏览器保存，不会自动向任何院校提交申请，也不会跨设备同步。</div>`;}
+  <div class="tl-disclaimer">记录保存在当前设备，不会代你向院校提交申请。更换设备前请保留需要的记录。</div>`;}
 function pageSchool(){
   const tabs=[['notices','全部公告'],['saved','院校收藏'],['records','投递记录本']];
   return `<div class="tl-school-tabs">${tabs.map(([k,v])=>`<button class="${S.schoolView===k?'on':''}" onclick="setSchoolView('${k}')">${v}</button>`).join('')}</div>`+
@@ -702,7 +703,7 @@ function pageQuota() {
 
     <div class="alert mt12"><span class="ico">⚠</span>
       <span>额度上限不可绕过；用量与恢复时间可在「我的」中查看。</span></div>
-    <div class="tiny dim center mt16">额度为示意值，实际由后台配置（D02）</div>
+    <div class="tiny dim center mt16">当前次数与恢复时间仅用于流程体验</div>
   </div>`;
 }
 
@@ -794,13 +795,13 @@ function actionbar(name) {
     case "school":
       return "";
     case "providers":
-      return `<button class="btn line" onclick="setProviderView('saved')">我的收藏</button><button class="btn primary wide" onclick="go('#/profile')">完善 BG 档案</button>`;
+      return `<button class="btn line" onclick="setProviderView('saved')">我的收藏</button><button class="btn primary wide" onclick="go('#/profile')">完善个人资料档案</button>`;
     case "quota":
       return `<button class="btn line" onclick="go('#/school')">去逛资讯</button>
               <button class="btn primary wide" onclick="go('#/home')">明天再来</button>`;
     case "nocandidate":
       return `<button class="btn line" onclick="go('#/profile')">调整条件</button>
-              <button class="btn primary wide" onclick="toast('已订阅：名额释放后站内通知')">留下需求</button>`;
+              <button class="btn primary wide" onclick="toast('已记录关注意向，暂不发送名额提醒')">留下需求</button>`;
     case "me":
       return `<button class="btn line" onclick="go('#/quota')">额度与恢复</button>
               <button class="btn primary wide" onclick="go('#/profile')">更新档案</button>`;
@@ -846,7 +847,7 @@ function upgradeV2() { S.proposalVer = "v2"; render(); toast("方案已更新为
 function switchProvider() { S.activeProvider = "wang"; go("#/provider"); render(); }
 function confirmV2() { S.proposalVer = "v2"; go("#/checkout"); }
 function releaseSeat() {
-  toast("名额已释放，支付成功后进入交付");
+  toast("即将查看交付流程，不会产生真实扣款");
   S.deliveryState = 0;
   setTimeout(() => go("#/delivery"), 900);
 }
@@ -903,7 +904,7 @@ function renderNav(name) {
   nav.className = "navbar";
   const capsule = `<img class="nav-logo-mark" src="assets/tonglu-logo.svg" alt="同路图标" />`;
   nav.innerHTML = cfg.brand
-    ? `<span class="brand-lockup"><img src="assets/tonglu-logo.svg" class="brand-logo" alt="同路 Logo" /><span class="nav-brand">同路<small>AI 保研服务</small></span></span><span class="nav-end-tag">与你同路</span>`
+    ? `<span class="brand-lockup"><img src="assets/tonglu-logo.svg" class="brand-logo" alt="同路 Logo" /><span class="nav-brand">同路<small>保研服务</small></span></span><span class="nav-end-tag">与你同路</span>`
     : `<button class="nav-back" onclick="back()">${ICON.back}</button><span class="nav-title">${cfg.title || ""}</span>${capsule}`;
 }
 
@@ -1113,12 +1114,12 @@ function pageWorkbench() {
       </div>
       <div class="divider"></div>
       <div class="row" style="text-align:center">
-        <div class="grow"><div class="bold num" style="font-size:18px">${w.capacity.u}</div><div class="xs dim">上限 U</div></div>
-        <div class="grow"><div class="bold num" style="font-size:18px">${w.capacity.l}</div><div class="xs dim">已付费 L</div></div>
-        <div class="grow"><div class="bold num" style="font-size:18px">${w.capacity.h}</div><div class="xs dim">占位 H</div></div>
+        <div class="grow"><div class="bold num" style="font-size:18px">${w.capacity.u}</div><div class="xs dim">接待上限</div></div>
+        <div class="grow"><div class="bold num" style="font-size:18px">${w.capacity.l}</div><div class="xs dim">已确认服务</div></div>
+        <div class="grow"><div class="bold num" style="font-size:18px">${w.capacity.h}</div><div class="xs dim">预约名额</div></div>
         <div class="grow"><div class="bold num" style="font-size:18px;color:var(--accent)">${rest}</div><div class="xs dim">剩余</div></div>
       </div>
-      <div class="tiny dim mt10">剩余 = max(0, U − L − H)</div>
+      <div class="tiny dim mt10">剩余名额随已确认服务与预约安排更新</div>
     </div>
 
     <div class="sec-head"><h3><span class="sec-num">19</span>今日排班</h3><span class="link">3 项</span></div>
@@ -1150,11 +1151,11 @@ function pageWorkbench() {
     <div class="card">
       <div class="kv"><span class="k">本月已结算</span><span class="v num">¥${w.income.month.toLocaleString()}</span></div>
       <div class="kv"><span class="k">待结算（服务中）</span><span class="v num">¥${w.income.pending}</span></div>
-      <div class="kv"><span class="k">提现规则</span><span class="v" style="font-weight:400">T+1 · 待定（D07）</span></div>
+      <div class="kv"><span class="k">提现规则</span><span class="v" style="font-weight:400">当前不提供实际提现</span></div>
     </div>
 
     <div class="alert mt12"><span class="ico">⚠</span>
-      <span>暂停接单后不生成新推荐与新占位；已确认订单按原约定继续。</span></div>
+      <span>暂停接单后不再新增预约，已确认的服务按原约定继续。</span></div>
   </div>`;
 }
 

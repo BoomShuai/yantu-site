@@ -18,7 +18,7 @@
   const E=v=>escapeTL(String(v==null?'':v));
   const $=id=>document.getElementById(id);
   const clip=(v,n=400)=>String(v||'').trim().slice(0,n);
-  function persist(){try{localStorage.setItem(STORE,JSON.stringify(state));return true;}catch(e){toast('本地存储不可用，内容可能不会保留');return false;}}
+  function persist(){try{localStorage.setItem(STORE,JSON.stringify(state));return true;}catch(e){toast('内容暂时无法保存，请检查设备存储空间后重试');return false;}}
   function read(id){const e=$(id);return e?String(e.value||''):'';}
   function getText(k){return read('v5-'+k+'-text')||state[k].text;}
   function one(text,regex){const m=String(text).match(regex);return m?clip(m[1],90):'';}
@@ -112,13 +112,19 @@
     return out;
   }
   function parseMentor(text){
+    const base=window.TongluResumeFields?window.TongluResumeFields.parseStudent(text):{};
+    const baseAchieve=[base.research,base.contest].filter(Boolean).join('；').slice(0,220);
     return {
-      name:val(one(text,/(?:称呼|姓名|我叫)\s*[：:\s]*([^，,。；;\n]{2,14})/)),
-      school:val(one(text,/(?:本科(?:院校|学校|毕业于)|毕业于)\s*[：:\s]*([\u4e00-\u9fa5]{2,18}?(?:大学|学院))/))||val(guessSchool(text)),
-      major:val(one(text,/本科专业\s*[：:\s]*([^，,。；;\n]{2,30})/))||val(one(text,/(?:大学|学院)([\u4e00-\u9fa5]{2,18}?)(?:专业|系)/)),
-      destination:val(one(text,/(?:保研到|升学去向|就读于|考入)\s*[：:\s]*([^，,。；;\n]{2,38})/)),
-      achievements:excerpt(text,/论文|竞赛|国奖|省奖|获奖|科研|SCI|SSCI/i),
-      services:val(one(text,/(?:擅长|服务方向|辅导方向|提供)\s*[：:\s]*([^，,。；;\n]{2,80})/))||excerpt(text,/材料诊断|院校规划|科研辅导|面试辅导|申请指导/),
+      name:base.name||val(one(text,/(?:称呼|姓名|我叫)\s*[：:\s]*([^，,。；;\n]{2,14})/)),
+      school:base.school||val(one(text,/(?:本科(?:院校|学校|毕业于)|毕业于)\s*[：:\s]*([\u4e00-\u9fa5]{2,18}?(?:大学|学院))/))||val(guessSchool(text)),
+      major:base.major||val(one(text,/本科专业\s*[：:\s]*([^，,。；;\n]{2,30})/))||val(one(text,/(?:大学|学院)([\u4e00-\u9fa5]{2,18}?)(?:专业|系)/)),
+      destination:val(one(text,/(?:保研到|升学去向|拟录取|考入|现就读于|硕士就读于|博士就读于)\s*[：:\s]*([^，,。；;\n]{2,38})/))||val(one(text,/就读于\s*[：:\s]*([^，,。；;\n]{2,38})/)),
+      summerCamp:excerpt(text,/夏令营|优营|优秀营员/),
+      preAdmission:excerpt(text,/预推免|推免入营|拟录取|推免复试/),
+      specialty:val(one(text,/(?:个人特长|特长|擅长方向)\s*[：:\s]*([^。；;\n]{2,100})/))||excerpt(text,/特长|擅长|熟练掌握/),
+      certificates:excerpt(text,/证书|雅思|托福|六级|四级|国奖|奖学金|CCF|计算机二级|资格证/i),
+      achievements:excerpt(text,/论文|竞赛|国奖|省奖|获奖|科研|SCI|SSCI/i)||baseAchieve,
+      services:val(one(text,/(?:擅长|服务方向|辅导方向|提供)\s*[：:\s]*([^，,。；;\n]{2,80})/))||excerpt(text,/简历润色|面试模拟|材料诊断|院校规划|科研辅导|竞赛辅导|面试辅导|保研辅导|申请指导/),
       served:one(text,/(?:辅导过|服务过|指导过|辅导)\s*(\d+\s*(?:位|名|人)\s*(?:学生|同学)?)/),
       results:excerpt(text,/录取|上岸|去向|最终结果|保研成功/),
       experience:one(text,/(?:个人经验(?:是)?|我的经验(?:是)?|经验是)\s*[：:\s]*([^。；;\n]{2,120})/)||excerpt(text,/个人经验|方法|策略|心得|经验|复盘/),
@@ -130,7 +136,7 @@
     mentor:[['name','展示姓名或称呼'],['school','本科院校'],['major','本科专业'],['destination','升学去向'],['achievements','科研 / 竞赛成果'],['services','可提供的服务'],['served','历史辅导人数（个人申报）'],['results','历史辅导结果（个人申报）'],['experience','个人辅导经验'],['cases','典型服务案例（需脱敏）']]
   };
   const large=new Set(['research','contest','goals','achievements','services','results','experience','cases']);
-  // 旧档案只作初始回填；卡片里的修改仍需确认后才写入正式 BG。
+  // 旧档案只作初始回填；卡片里的修改仍需确认后才写入正式个人资料。
   const prior=parseStudent(T.bg.raw||'');
   let targets={};
   try{targets=JSON.parse(localStorage.getItem('tonglu-v4-supplement')||'{}').targets||{};}catch(_){}
@@ -167,29 +173,56 @@
     }
     return '<label class="v5-field"><span>'+E(label)+'</span>'+control+'</label>';
   }
+  const RESUME_ACCEPT='.pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown';
   let lastStudentStep=0;
-  function studentStep(){const id=location.hash.split('/')[2]||'basic';return Math.max(0,STUDENT_CARDS.findIndex(c=>c.id===id));}
+  function isUploadLanding(){
+    const seg=location.hash.split('/')[2]||'';
+    return !seg||seg==='upload';
+  }
+  function studentStep(){let id=location.hash.split('/')[2]||'basic';if(id==='research_ext')id='research';return Math.max(0,STUDENT_CARDS.findIndex(c=>c.id===id));}
+  function studentUploadLanding(){
+    const s=state.student, busy=uploading.student, hasFile=s.files.length>0;
+    const label='上传个人简历';
+    return '<div class="page tl-v2-page v5-student-intake v5-upload-landing" id="v5-intake">'+
+      '<div class="v5-upload-landing-head"><h1 tabindex="-1">个人简历</h1><p class="v5-intake-intro">选择简历后自动整理个人情况，识别结果可逐项核对。</p></div>'+
+      '<div class="v5-resume-entry"><label class="v5-upload v5-student-upload'+(busy?' is-busy':'')+'"><span class="v5-upload-icon" aria-hidden="true">'+(busy?'◌':'↑')+'</span><b>'+label+'</b><small>PDF / DOCX / TXT / MD · 最大 8 MB<br>QQ 文件可先保存到设备后选择。</small><input type="file" aria-label="'+label+'" title="上传个人简历" accept="'+RESUME_ACCEPT+'"'+(busy?' disabled':'')+' onclick="v5PickResume(event)" onchange="v5ChooseFiles(\'student\',event)" /></label>'+
+      (busy?'<p role="status">正在识别简历，请稍候…</p>':'')+
+      s.files.map((f,i)=>'<div class="v5-file"><div><b>'+E(f.name)+'</b><small id="v5-file-status-student-'+i+'">'+E(f.status)+'</small></div></div>').join('')+
+      '<button class="v5-no-resume-link" type="button" onclick="go(\'#/profile/basic\')">'+(hasFile?'查看或填写个人情况':'没有简历？试试填写个人情况')+'</button></div></div>';
+  }
+  window.v5PickResume=async function(event){
+    const importer=window.TongluAdapters?.fileImport;
+    if(!importer?.canUseChat())return;
+    event.preventDefault();
+    if(uploading.student)return;
+    try{const files=await importer.chooseResume();if(files.length)await window.v5ChooseFiles('student',{target:{files,value:''}});}
+    catch(error){if(!/cancel/i.test(error.errMsg||error.message||''))toast(error.message||'文件导入失败');}
+  };
   function studentIntake(){
+    if(isUploadLanding())return studentUploadLanding();
     const s=state.student, index=studentStep(), card=STUDENT_CARDS[index];
     const direction=index<lastStudentStep?'back':'forward';lastStudentStep=index;
     const busy=uploading.student;
+    const hasOk=s.files.some(f=>f.ok);
     const steps=STUDENT_CARDS.map((c,i)=>'<button type="button" class="v5-step-tab '+(i===index?'active':i<index?'done':'')+'"'+(i===index?' aria-current="step"':'')+' onclick="v5GoStep('+i+')"><span>'+(i<index?'✓':'0'+(i+1))+'</span><small>'+c.title+'</small></button>').join('');
-    const upload='<div class="v5-resume-entry">'+
-      '<label class="v5-upload v5-student-upload'+(busy?' is-busy':'')+'"><span class="v5-upload-icon" aria-hidden="true">'+(busy?'◌':'↑')+'</span><b>'+(busy?'正在识别简历…':s.files.some(f=>f.ok)?'更换个人简历':'上传个人简历')+'</b><small>支持 PDF（含扫描版） / Word（.docx） / TXT / MD · 单份最大 8 MB</small><span class="v5-upload-action">'+(busy?'请稍候，正在读取文件':'点击选择简历')+'</span><input type="file" aria-label="上传个人简历" accept=".pdf,.docx,.txt,.md"'+(busy?' disabled':'')+' onchange="v5ChooseFiles(\'student\',event)" /></label>'+
-      '<button class="v5-manual-fallback" type="button" onclick="v5ShowManualStudentFields()">上传不了简历？试试填写个人信息 <span aria-hidden="true">→</span></button>'+
-      (s.files.length?'<div class="v5-student-files">'+fileRows('student')+'</div>':'')+
-      (s.text?'<details class="v5-source"><summary>查看识别原文</summary><pre>'+E(s.text)+'</pre></details>':'')+'</div>';
+    const resumeBar=index===0
+      ?(hasOk
+        ?'<button class="v5-resume-bar is-ok" type="button" onclick="go(\'#/profile\')"><span>✓ 已从简历识别信息</span><em>上传个人简历 ›</em></button>'+(s.text?'<details class="v5-source"><summary>查看识别原文</summary><pre>'+E(s.text)+'</pre></details>':'')
+        :'<button class="v5-resume-bar" type="button" onclick="go(\'#/profile\')"><span>有现成简历？上传后可自动填充</span><em>上传个人简历 ›</em></button>')
+      :(hasOk?'<button class="v5-resume-chip" type="button" onclick="go(\'#/profile\')">上传个人简历</button>':'');
     return '<div class="page tl-v2-page v5-student-intake" id="v5-intake"><nav class="v5-stepper" aria-label="资料填写步骤">'+steps+'</nav>'+
-      '<div class="v5-step-panel" data-direction="'+direction+'"><div class="v5-step-heading"><h1 tabindex="-1">'+(index===0&&T.bg.raw?'修改个人信息':card.title)+'</h1><span>0'+(index+1)+' / 04</span></div>'+
-      (index===0?'<p class="v5-intake-intro">'+(T.bg.raw?'可以在这里修改已整理的个人背景，保存后返回 AI 对话确认最新信息。':'上传简历可帮助你快速整理保研背景，也可以选择手动填写。')+'</p>'+upload:(s.files.some(f=>f.ok)?'<button class="v5-resume-chip" type="button" onclick="v5OpenResumeAssist()">✓ 简历已识别 · 查看或更换</button>':''))+
+      '<div class="v5-step-panel" data-direction="'+direction+'"><div class="v5-step-heading"><h1 tabindex="-1">'+(index===0&&T.bg.raw?'修改个人情况':card.title)+'</h1><span>0'+(index+1)+' / 04</span></div>'+
+      (index===0?'<p class="v5-intake-intro">'+(hasOk?'已根据简历预填以下信息，请核对或补充。':'填写基本情况，完成后可获得针对性的规划与推荐。')+'</p>':'')+
+      resumeBar+
       '<form id="v5-student-form" onsubmit="v5SubmitStudent(event)"><section class="v5-step-fields" id="v5-student-manual-fields" aria-label="'+card.title+'">'+card.fields.map(studentField).join('')+'</section>'+
       '<div class="v5-wizard-actions">'+(index>0?'<button type="button" class="v5-btn v5-wizard-back" onclick="v5GoStep('+(index-1)+')">上一步</button>':'')+
       '<button type="submit" class="v5-btn v5-primary v5-student-continue"'+(busy?' disabled':'')+'>'+(index===3?'保存并进入同路':'下一步')+' <span aria-hidden="true">→</span></button></div></form>'+
       '<button type="button" class="v5-student-skip" onclick="go(\'#/home\')">稍后填写</button>'+
       (index===0?'<p class="v5-student-privacy">填写内容自动保存为草稿。</p>':'')+'</div></div>';
   }
-  window.v5OpenResumeAssist=function(){v5GoStep(0);};
+  window.v5OpenResumeAssist=function(){go('#/profile');};
   window.v5ShowManualStudentFields=function(){
+    if(isUploadLanding()){go('#/profile/basic');return;}
     const fields=$('v5-student-manual-fields');
     if(!fields)return;
     fields.scrollIntoView({behavior:'smooth',block:'center'});
@@ -227,7 +260,7 @@
       return '科研、竞赛或排名有需要补充的细节吗？你也可以直接确认当前档案。';
     }
     if(!fields.school||!fields.destination)return '请补充本科院校、专业和实际升学去向。';
-    if(!fields.services)return '你能提供哪些具体服务？例如简历润色、面试模拟、竞赛科研辅导或保研辅导，请结合真实经历说明。';
+    if(!fields.services)return '你能提供哪些具体服务？例如简历润色、面试模拟、科研竞赛规划（保研延伸）或保研辅导，请结合真实经历说明。';
     if(!fields.experience)return '你有哪些亲身经验或常用的辅导方法？';
     if(fields.served&&!fields.cases)return '辅导人数是个人申报，可否补充一项经过授权且去标识化的真实案例？';
     return '如果有证明材料可以后续申请核验；无法证明的成果仍保留“个人申报”。';
@@ -240,33 +273,33 @@
       return '<label class="v5-field"><span>'+E(label)+'</span>'+(large.has(id)?'<textarea id="v5-'+k+'-'+id+'" rows="2" maxlength="420">'+E(value)+'</textarea>':'<input id="v5-'+k+'-'+id+'" maxlength="150" value="'+E(value)+'" placeholder="未识别，可自行补充">')+'</label>';
     }).join('');
     return '<section class="v5-preview"><div class="v5-section-head"><b>资料草稿</b><span>确认后保存</span></div>'+
-      '<p class="v5-sub">'+E(s.source?('来源：'+s.source+'。'):'')+'下面是本地规则识别出的字段，逐项核对或改写，确认后才写入档案。识别不到的字段留空即可，不会替你编造。</p>'+
+      '<p class="v5-sub">'+E(s.source?('来源：'+s.source+'。'):'')+'已整理出以下信息，请核对后保存；未识别的内容可稍后补充。</p>'+
       '<div class="v5-preview-fields">'+body+'</div>'+
       '<div class="v5-followup"><b>建议补充追问</b><p>'+E(missingQuestion(k,s.fields))+'</p></div>'+
       (k==='mentor'?'<div class="v5-trust"><b>信息状态：</b>个人申报 / 待平台核验。AI 自动整理 ≠ 证书、学历、服务结果核验。平台完成服务次数：—（未来从真实订单自动统计）。</div>':'')+
       (k==='mentor'?'<button type="button" class="v5-btn v5-secondary" onclick="v5MakeIntro()">根据已填写事实生成服务者介绍</button>'+(s.intro?'<div class="v5-intro"><b>介绍草稿 · 可人工编辑</b><textarea id="v5-mentor-intro" rows="4" maxlength="600">'+E(s.intro)+'</textarea><small>仅根据已填写资料生成，不添加虚构荣誉或服务结果。</small></div>':''):'')+
-      '<button type="button" class="v5-btn v5-primary" onclick="v5Confirm(\''+k+'\')">确认资料并保存到'+(k==='student'?'学生 BG':'服务者档案')+'</button>'+
+      '<button type="button" class="v5-btn v5-primary" onclick="v5Confirm(\''+k+'\')">确认资料并保存到'+(k==='student'?'学生个人资料':'服务者档案')+'</button>'+
       '<p class="v5-sub">资料不完整也可保存草稿。学生端只有确认年级、背景和诉求后才会开启个性化推荐与时间轴。</p></section>';
   }
   function fileRows(k){
     const files=state[k].files;
-    if(!files.length)return '<p class="v5-sub">还没有选择简历。上传后会在本机读出正文并自动整理字段，也可以用文字描述。</p>';
-    return files.map((f,i)=>'<div class="v5-file'+(f.ok?' v5-file-ok':'')+'"><span>'+(f.ok?'✓':'▤')+'</span><div><b>'+E(f.name)+'</b><small id="v5-file-status-'+k+'-'+i+'" role="status">'+E(f.status)+'</small></div><button type="button"'+(uploading[k]?' disabled':'')+' onclick="v5RemoveFile(\''+k+'\','+i+')">移除</button></div>').join('');
+    if(!files.length)return '<p class="v5-sub">还没有选择简历。上传后可自动填写个人资料，也可以直接手动填写。</p>';
+    return files.map((f,i)=>'<div class="v5-file'+(f.ok?' v5-file-ok':f.err?' v5-file-err':'')+'"><span>'+(f.ok?'✓':f.err?'!':'▤')+'</span><div><b>'+E(f.name)+'</b><small id="v5-file-status-'+k+'-'+i+'" role="status">'+E(f.status)+'</small></div><button type="button"'+(uploading[k]?' disabled':'')+' onclick="v5RemoveFile(\''+k+'\','+i+')">移除</button></div>').join('');
   }
   function intakeCard(k){
     const s=state[k], mentor=k==='mentor';
     const guide=mentor?'可以写：本科院校与专业、升学去向、科研成果、可提供的服务、曾服务对象的类型、具体帮助、结果和个人经验。不要提交其他学生的实名资料。':'可以写：本科院校、专业、年级、排名、科研竞赛、目标院校及你最希望解决的问题，不要求按固定顺序。';
-    return '<div class="v5-card" id="v5-intake"><div class="v5-eyebrow">AI PROFILE STUDIO · 本地体验</div><h2>'+(mentor?'智能完善服务者资料':'用你习惯的方式完善 BG')+'</h2>'+
+    return '<div class="v5-card" id="v5-intake"><div class="v5-eyebrow">个人资料整理</div><h2>'+(mentor?'智能完善服务者资料':'用你习惯的方式完善个人资料')+'</h2>'+
       '<p class="v5-sub">上传 PDF / Word / TXT 简历后，会在本机浏览器里读出正文并自动识别院校、专业、年级、排名、科研竞赛等信息，识别结果可直接核对修改。规范表单仍保留在下方。</p>'+
       '<div class="v5-input-modes"><span><b>01</b> 自由描述</span><span><b>02</b> 上传简历</span><span><b>03</b> 语音口述</span></div>'+
       '<label class="v5-field"><span>自由输入 · 想写什么都可以</span><textarea id="v5-'+k+'-text" rows="5" maxlength="12000" placeholder="'+E(guide)+'" oninput="v5KeepText(\''+k+'\',this.value)">'+E(s.text)+'</textarea></label>'+
       '<div class="v5-voicebar"><button type="button" class="v5-btn v5-secondary" onclick="v5Voice(\''+k+'\')">语音转文字</button><span id="v5-'+k+'-voice-status">支持情况取决于手机浏览器，必要时可直接打字</span></div>'+
-      '<label class="v5-upload"><b>上传简历，自动识别信息</b><small>PDF / Word(.docx) / TXT / MD，最多 5 份，单份不超过 8 MB</small><input type="file" accept=".pdf,.docx,.txt,.md" multiple onchange="v5ChooseFiles(\''+k+'\',event)" /></label>'+
+      '<label class="v5-upload"><b>上传简历，自动识别信息</b><small>PDF / Word(.docx) / TXT / MD，最多 5 份，单份不超过 8 MB</small><input type="file" accept="'+RESUME_ACCEPT+'" multiple onchange="v5ChooseFiles(\''+k+'\',event)" /></label>'+
       fileRows(k)+
       '<div class="v5-local">隐私提示：简历只在你自己的浏览器里解析，不上传服务器、不联网发送。扫描版 PDF 会自动进行中英文图片文字识别；旧版 .doc 请另存为 .docx。语音识别由浏览器提供，请勿输入身份证号等敏感信息。</div>'+
       '<button type="button" class="v5-btn v5-primary" onclick="v5Analyze(\''+k+'\')">识别并整理上面这段文字</button>'+
       formatPreview(k)+
-      '<div class="v5-bottom-note"><b>本地解析说明：</b>浏览器端读取正文 → 规则识别字段 → 缺失项追问 → 你确认 → 存到本机。识别结果可能不完整，一律以你核对后的内容为准；未经平台核验的信息不会显示认证标识。</div></div>';
+      '<div class="v5-bottom-note"><b>识别小提示：</b>识别后请核对姓名、院校和经历，确认无误后再保存。当前资料仅保存在此设备。</div></div>';
   }
   function syncFields(k){
     if(k!=='student'&&!state[k].preview)return;
@@ -281,19 +314,26 @@
     if(k==='student'&&!state[k].files.length){state[k].text='';state[k].source='';}
     persist();render();if(k==='student')toast('简历已移除，已填写的信息仍保留');
   };
+  function isSupportedResumeFile(f){
+    const name=String(f&&f.name||'');
+    const mime=String(f&&f.type||'').toLowerCase();
+    if(/\.(pdf|docx|doc|txt|md)$/i.test(name))return true;
+    if(mime==='application/pdf'||mime.includes('wordprocessingml')||mime==='application/msword'||mime==='text/plain'||mime==='text/markdown')return true;
+    return !/\.[a-z0-9]{1,8}$/i.test(name);
+  }
   window.v5ChooseFiles=async function(k,event){
     if(uploading[k])return;
     const input=event.target, selected=Array.from(input.files||[]).slice(0,k==='student'?1:5);
     if(!selected.length)return;
-    const X=window.TongluExtract;if(!X){toast('文件解析脚本未加载，请刷新后重试');return;}
+    const X=window.TongluExtract;if(!X){toast('暂时无法读取简历，请刷新重试或手动填写');return;}
     syncFields(k);uploading[k]=true;
-    let read=0, added=0;
+    let read=0, added=0, lastErr='';
     try {
       for(const f of selected){
         if(k!=='student'&&state[k].files.length>=5){toast('最多保留 5 份文件');break;}
         if(f.size>8*1024*1024){toast(f.name+' 超过 8 MB，请压缩后再试');continue;}
-        if(!/\.(pdf|docx|doc|txt|md)$/i.test(f.name)){toast('请选择 PDF、Word(.docx)、TXT 或 MD');continue;}
-        const row={name:clip(f.name,100),status:'正在读取简历…',ok:false,chars:0};
+        if(!isSupportedResumeFile(f)){toast('请选择 PDF、Word(.docx)、TXT 或 MD');continue;}
+        const row={name:clip(f.name||'未命名简历',100),status:'正在读取简历…',ok:false,err:false,chars:0};
         if(k==='student')state[k].files=[row];else state[k].files.push(row);
         const rowIndex=state[k].files.length-1;added++;persist();render();
         try {
@@ -302,18 +342,31 @@
             const el=$('v5-file-status-'+k+'-'+rowIndex);if(el)el.textContent=info.message;
           }});
           row.status='已识别 '+(res.pages?res.pages+' 页 · ':'')+res.text.replace(/\s/g,'').length+' 字'+(res.ocrPages?' · 扫描页文字已提取':'');
-          row.ok=true;row.chars=res.text.replace(/\s/g,'').length;row.kind=res.kind;
+          row.ok=true;row.err=false;row.chars=res.text.replace(/\s/g,'').length;row.kind=res.kind;
           state[k].text=clip(k==='student'?res.text:[state[k].text,res.text].filter(Boolean).join('\n'),50000);
+          if(k==='student')state[k].edited=[];
           read++;
           v5Analyze(k,{silent:true,replace:k==='student'});
-        } catch(err) {row.status=(err&&err.message)||'识别失败，请重试';}
+          if(k==='mentor'&&typeof window.tlV8ApplyParsedMentor==='function')window.tlV8ApplyParsedMentor(true);
+        } catch(err) {
+          lastErr=window.TongluUI?.errorMessage(err,'暂时无法读取这份简历，请重新选择文件或手动填写。')||(err&&err.message)||'识别失败，请重试';
+          row.status=lastErr;
+          row.err=true;
+        }
         persist();render();
       }
     } finally {
       uploading[k]=false;try{input.value='';}catch(_){}persist();render();
     }
-    if(read)toast(k==='student'?'简历已更新，核对后点击下一步':'简历已识别，请核对资料');
-    else if(added)toast('简历未识别成功，已保留你原来填写的资料');
+    if(read){
+      if(k==='student'){
+        toast('简历已识别，请核对个人情况');
+        if(isUploadLanding())go('#/profile/basic');
+      } else {
+        toast('简历已识别，请核对资料');
+      }
+    }
+    else if(added)toast(lastErr||'简历未识别成功，已保留你原来填写的资料');
   };
   function countFields(k){const f=state[k].fields||{};return Object.keys(f).filter(x=>f[x]).length;}
   window.v5Voice=function(k){
@@ -335,7 +388,7 @@
     state[k].fields={...existing};
     Object.keys(parsed).forEach(field=>{if((parsed[field]||(opts&&opts.replace))&&!(k==='student'&&(state[k].edited||[]).includes(field)))state[k].fields[field]=parsed[field]||'';});
     state[k].preview=true;state[k].confirmed=false;state[k].intro='';
-    state[k].source=state[k].files.some(f=>f.ok)?'简历正文（本地解析）':'自由文字 / 语音转写';
+    state[k].source=state[k].files.some(f=>f.ok)?'简历识别':'自由文字 / 语音转写';
     state[k].question=missingQuestion(k,state[k].fields);persist();render();
     if(opts&&opts.silent)return;
     const el=$('v5-intake');if(el)el.scrollIntoView({block:'start',behavior:'smooth'});
@@ -375,7 +428,7 @@
       st.degree=f.degree||'未定';st.cross=f.cross||'考虑中';
       V4.persist();
       state.student.confirmed=true;persist();render();
-      toast(bg.confirmed?'BG 已确认，推荐与时间轴已解锁':'草稿已保存，补充年级与目标后可解锁个性化内容');
+      toast(bg.confirmed?'个人资料已保存，可以查看建议与行动计划':'草稿已保存，补充年级与目标后可解锁个性化内容');
     } else {
       const basic={name:clip(f.name,120),school:clip(f.school,120),major:clip(f.major,120),destination:clip(f.destination,120),services:clip(f.services,120),bio:clip([f.achievements,f.experience].filter(Boolean).join('；'),300)};
       if(!Object.values(basic).some(Boolean)){toast('请至少补充一项服务者资料');return;}
@@ -399,7 +452,7 @@
     if(T.role!=='mentor')return html;
     return html.replace('<form class="tl-v2-profile-form"',intakeCard('mentor')+'<div class="v5-manual-heading"><b>规范化表单 · 手动核对与修改</b><small>与上方智能录入互为补充</small></div><form class="tl-v2-profile-form"');
   };
-  /* 继承 V4 的完整筛选与收藏，只恢复“确认 BG 后顶部 3 位优先推荐”区域。 */
+  /* 继承 V4 的完整筛选与收藏，只恢复“确认个人资料后顶部 3 位优先推荐”区域。 */
   const oldProviders=PAGES.providers;
   PAGES.providers=function(){
     const html=oldProviders();
@@ -411,13 +464,14 @@
       return available||T.recommendationWeight(b)-T.recommendationWeight(a);
     }).slice(0,3);
     if(!picks.length)return html;
-    const rec='<div class="v5-recommended v4-card flat"><div class="v4-head"><h3>'+(ready?'优先为你推荐':'可以先看这几位')+'</h3><span class="v4-count">'+picks.length+' 位 · 本地规则排序</span></div>'+
-      '<p class="v5-sub">'+(ready?'基于你确认的 BG 和服务方向做关键词排序。':'还没确认档案，先按年级与目标的关键词做粗排；补齐 BG 后顺序会跟着变。')+'不代表录取概率、正式匹配度或服务者核验结果。</p>'+
+    const rec='<div class="v5-recommended v4-card flat"><div class="v4-head"><h3>'+(ready?'优先为你推荐':'可以先看这几位')+'</h3><span class="v4-count">'+picks.length+' 位 · 供你参考</span></div>'+
+      '<p class="v5-sub">'+(ready?'基于你确认的个人资料和服务方向做关键词排序。':'还没确认档案，先按年级与目标的关键词做粗排；补齐个人资料后顺序会跟着变。')+'不代表录取概率、正式匹配度或服务者核验结果。</p>'+
       picks.map(p=>'<button type="button" class="v5-pick" onclick="v4Open(\''+p.id+'\')"><span class="v5-avatar">'+E(p.name.slice(0,1))+'</span><span><b>'+E(p.name)+'</b><small>'+E(T.recommendationReason(p))+'</small></span><strong>详情 ›</strong></button>').join('')+'</div>';
     return html.replace('<div class="tl-switch">',rec+'<div class="tl-switch">');
   };
   const oldMe=PAGES.me;
-  PAGES.me=function(){return oldMe().replace('补充资料与申请目标','个人资料 · 简历与资料卡');};
+  PAGES.me=function(){return oldMe().replace('补充资料与申请目标','个人资料· 简历与资料卡');};
   NAV.profile={title:'学生资料'};
-  NAV.mentorProfile={title:'服务者智能建档'};
+  NAV.mentorProfile={title:'服务者注册与资料'};
+  window.__TLV5={getState:()=>state,isUploading:k=>!!uploading[k],persist};
 })();

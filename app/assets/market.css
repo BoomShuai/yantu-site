@@ -1,0 +1,26 @@
+/* 沿用 V9 的白卡、紫色主操作与原有表单组件。 */
+.tl-market-page h1 { margin: 0 0 10px; font-size: 25px; }
+.tl-market-filters { margin: 16px 0; }
+.tl-market-filters > b { display: block; margin: 12px 0 6px; font-size: 12px; color: var(--text, #372c45); }
+.tl-sku-meta, .tl-sku-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.tl-sku-meta { color: #7854ab; font-size: 11px; }
+.tl-sku-meta small { color: #8a8195; }
+.tl-sku-card h2 { font-size: 17px; line-height: 1.5; margin: 10px 0 7px; overflow-wrap: anywhere; }
+.tl-sku-card p { color: #82778e; font-size: 12px; line-height: 1.7; white-space: pre-wrap; }
+.tl-sku-delivery { color: #8a8195; font-size: 10px; line-height: 1.6; }
+.tl-sku-provider { color: #756582; font-size: 11px; margin: 10px 0; }
+.tl-sku-footer b { font-size: 22px; color: #7047a6; }
+.tl-sku-footer small { color: #887d91; font-size: 11px; }
+.tl-market-wide { display: block; width: 100%; margin: 14px 0; padding: 11px !important; }
+.tl-market-page .v9-provider-actions { margin-top: 12px; }
+.tl-mentor-core { margin-top: 18px; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tl-mentor-core > button { min-height: 100px; padding: 18px 12px; border: 1px solid #eee6f5; border-radius: 16px; background: #fff; text-align: left; }
+.tl-mentor-core b { font-size: 15px; }
+.tl-mentor-core small { display: block; margin-top: 8px; font-size: 11px; line-height: 1.6; color: #8b8097; }
+.tl-mentor-core > button b, .tl-mentor-core > button small { white-space: normal; overflow: visible; text-overflow: clip; }
+.tl-demand-sort { display: inline-flex; align-items: center; gap: 6px; margin: 10px 6px 0 0; font-size: 11px; }
+.tl-demand-sort select { max-width: 150px; border: 1px solid #e6dced; border-radius: 8px; padding: 6px; background: #fff; }
+.v5-upload-landing .v5-file { padding: 12px; overflow-wrap: anywhere; }
+.v5-upload-landing .v5-file small { display: block; margin-top: 6px; color: #8b8097; }
+.tl-market-page button:disabled { opacity: .55; cursor: default; }
+[data-theme="dark"] .tl-mentor-core > button, [data-theme="dark"] .tl-demand-sort select { background: #21192e; border-color: #42344e; color: #f2eafa; }

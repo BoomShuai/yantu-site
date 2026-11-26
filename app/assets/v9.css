@@ -128,3 +128,16 @@
 @media(prefers-reduced-motion:reduce){.v9-service-card{transition:none}}
 
 .v9-market-footnote{font-size:9px;line-height:1.8;color:#9a8da3;margin:14px 2px 0;padding-top:10px;border-top:1px solid #f0eaf5}
+
+/* 同路市集：收藏切换、收藏按钮与「没有喜欢的老师？发布你的需求」入口 */
+.v9-market-view-switch{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;margin:0 0 12px;border-radius:12px;background:#f2edf8}
+.v9-market-view-switch button{border:0;border-radius:9px;padding:8px 6px;background:transparent;color:#827494;font-size:11.5px;font-weight:600}
+.v9-market-view-switch button.active{background:#fff;color:#6c4da3;font-weight:750;box-shadow:0 2px 8px rgba(77,59,98,.08)}
+.v9-provider-actions .v9-fav-btn.is-saved{border-color:#d8c4ef;background:#f6effd;color:#7853ad;font-weight:700}
+.v9-demand-cta{margin:16px 0 6px;padding:16px 14px;border:1px solid #e6d8f2;border-radius:17px;background:linear-gradient(135deg,#fbf8ff 0%,#fffcf5 100%);box-shadow:0 5px 16px rgba(84,60,120,.05)}
+.v9-demand-cta-eyebrow{display:inline-block;font-size:9px;font-weight:750;letter-spacing:1.1px;color:#9a7bba;margin-bottom:5px}
+.v9-demand-cta-copy b{display:block;font-size:14px;color:#47355d;line-height:1.4}
+.v9-demand-cta-copy p{margin:5px 0 0;font-size:11px;line-height:1.65;color:#847692}
+.v9-demand-cta-actions{display:flex;gap:8px;margin-top:12px}
+.v9-demand-cta-primary{flex:1;border:0;border-radius:11px;padding:10px 12px;background:linear-gradient(120deg,#7e5db3,#9e80cb);color:#fff;font-size:12px;font-weight:700}
+.v9-demand-cta-secondary{flex:none;border:1px solid #e4d8ef;border-radius:11px;padding:10px 13px;background:#fff;color:#7456a1;font-size:11.5px;font-weight:650}
