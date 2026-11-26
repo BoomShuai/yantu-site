@@ -181,14 +181,7 @@
   }
   function studentStep(){let id=location.hash.split('/')[2]||'basic';if(id==='research_ext')id='research';return Math.max(0,STUDENT_CARDS.findIndex(c=>c.id===id));}
   function studentUploadLanding(){
-    const s=state.student, busy=uploading.student, hasFile=s.files.length>0;
-    const label='上传个人简历';
-    return '<div class="page tl-v2-page v5-student-intake v5-upload-landing" id="v5-intake">'+
-      '<div class="v5-upload-landing-head"><h1 tabindex="-1">个人简历</h1><p class="v5-intake-intro">选择简历后自动整理个人情况，识别结果可逐项核对。</p></div>'+
-      '<div class="v5-resume-entry"><label class="v5-upload v5-student-upload'+(busy?' is-busy':'')+'"><span class="v5-upload-icon" aria-hidden="true">'+(busy?'◌':'↑')+'</span><b>'+label+'</b><small>PDF / DOCX / TXT / MD · 最大 8 MB<br>QQ 文件可先保存到设备后选择。</small><input type="file" aria-label="'+label+'" title="上传个人简历" accept="'+RESUME_ACCEPT+'"'+(busy?' disabled':'')+' onclick="v5PickResume(event)" onchange="v5ChooseFiles(\'student\',event)" /></label>'+
-      (busy?'<p role="status">正在识别简历，请稍候…</p>':'')+
-      s.files.map((f,i)=>'<div class="v5-file"><div><b>'+E(f.name)+'</b><small id="v5-file-status-student-'+i+'">'+E(f.status)+'</small></div></div>').join('')+
-      '<button class="v5-no-resume-link" type="button" onclick="go(\'#/profile/basic\')">'+(hasFile?'查看或填写个人情况':'没有简历？试试填写个人情况')+'</button></div></div>';
+    return window.TongluRegistration.uploadPage('student',state.student,uploading.student);
   }
   window.v5PickResume=async function(event){
     const importer=window.TongluAdapters?.fileImport;
@@ -204,21 +197,15 @@
     const direction=index<lastStudentStep?'back':'forward';lastStudentStep=index;
     const busy=uploading.student;
     const hasOk=s.files.some(f=>f.ok);
-    const steps=STUDENT_CARDS.map((c,i)=>'<button type="button" class="v5-step-tab '+(i===index?'active':i<index?'done':'')+'"'+(i===index?' aria-current="step"':'')+' onclick="v5GoStep('+i+')"><span>'+(i<index?'✓':'0'+(i+1))+'</span><small>'+c.title+'</small></button>').join('');
-    const resumeBar=index===0
-      ?(hasOk
-        ?'<button class="v5-resume-bar is-ok" type="button" onclick="go(\'#/profile\')"><span>✓ 已从简历识别信息</span><em>上传个人简历 ›</em></button>'+(s.text?'<details class="v5-source"><summary>查看识别原文</summary><pre>'+E(s.text)+'</pre></details>':'')
-        :'<button class="v5-resume-bar" type="button" onclick="go(\'#/profile\')"><span>有现成简历？上传后可自动填充</span><em>上传个人简历 ›</em></button>')
-      :(hasOk?'<button class="v5-resume-chip" type="button" onclick="go(\'#/profile\')">上传个人简历</button>':'');
-    return '<div class="page tl-v2-page v5-student-intake" id="v5-intake"><nav class="v5-stepper" aria-label="资料填写步骤">'+steps+'</nav>'+
-      '<div class="v5-step-panel" data-direction="'+direction+'"><div class="v5-step-heading"><h1 tabindex="-1">'+(index===0&&T.bg.raw?'修改个人情况':card.title)+'</h1><span>0'+(index+1)+' / 04</span></div>'+
-      (index===0?'<p class="v5-intake-intro">'+(hasOk?'已根据简历预填以下信息，请核对或补充。':'填写基本情况，完成后可获得针对性的规划与推荐。')+'</p>':'')+
-      resumeBar+
-      '<form id="v5-student-form" onsubmit="v5SubmitStudent(event)"><section class="v5-step-fields" id="v5-student-manual-fields" aria-label="'+card.title+'">'+card.fields.map(studentField).join('')+'</section>'+
-      '<div class="v5-wizard-actions">'+(index>0?'<button type="button" class="v5-btn v5-wizard-back" onclick="v5GoStep('+(index-1)+')">上一步</button>':'')+
-      '<button type="submit" class="v5-btn v5-primary v5-student-continue"'+(busy?' disabled':'')+'>'+(index===3?'保存并进入同路':'下一步')+' <span aria-hidden="true">→</span></button></div></form>'+
+    const steps=window.TongluRegistration.stepper(STUDENT_CARDS,index,'v5GoStep');
+    const resumeBar=index===0?window.TongluRegistration.resumeBar('student',hasOk,state.student.text):'';
+    return '<div class="page tl-v2-page v5-student-intake tl-registration tl-reg-wizard" id="v5-intake">'+steps+
+      '<section class="v5-step-panel tl-reg-panel" data-direction="'+direction+'">'+window.TongluRegistration.heading(index===0&&T.bg.raw?'修改个人情况':card.title,index,index===0?'填写基本情况，完成后可获得针对性的规划与推荐。':card.hint)+resumeBar+
+      '<form id="v5-student-form" onsubmit="v5SubmitStudent(event)"><section class="v5-step-fields tl-reg-fields" id="v5-student-manual-fields" aria-label="'+card.title+'">'+card.fields.map(studentField).join('')+'</section>'+
+      '<div class="v5-wizard-actions tl-reg-actions">'+'<button type="button" class="v5-btn v5-wizard-back tl-reg-secondary" onclick="'+(index>0?'v5GoStep('+(index-1)+')':"go(\'#/profile\')")+'">上一步</button>'+
+      '<button type="submit" class="v5-btn v5-primary v5-student-continue tl-reg-primary"'+(busy?' disabled':'')+'>'+(index===3?'保存并进入同路':'下一步')+' <span aria-hidden="true">→</span></button></div></form>'+
       '<button type="button" class="v5-student-skip" onclick="go(\'#/home\')">稍后填写</button>'+
-      (index===0?'<p class="v5-student-privacy">填写内容自动保存为草稿。</p>':'')+'</div></div>';
+      (index===0?'<p class="v5-student-privacy">填写内容自动保存为草稿。</p>':'')+'</section></div>';
   }
   window.v5OpenResumeAssist=function(){go('#/profile');};
   window.v5ShowManualStudentFields=function(){
@@ -233,7 +220,7 @@
     if(index<0||index>=STUDENT_CARDS.length)return;
     syncFields('student');const path='#/profile/'+STUDENT_CARDS[index].id;
     if(location.hash===path)return;
-    window.addEventListener('hashchange',()=>document.querySelector('.v5-step-heading h1')?.focus({preventScroll:true}),{once:true});
+    window.addEventListener('hashchange',()=>document.querySelector('.tl-reg-heading h1')?.focus({preventScroll:true}),{once:true});
     go(path);
   };
   const beforeWizardBack=back;

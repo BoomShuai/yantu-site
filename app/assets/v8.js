@@ -92,18 +92,6 @@
     if(bytes<1024*1024)return (bytes/1024).toFixed(0)+' KB';
     return (bytes/1024/1024).toFixed(1)+' MB';
   }
-  function mentorResumeBox(){
-    const st=window.__TLV5&&window.__TLV5.getState?window.__TLV5.getState().mentor:null;
-    const busy=window.__TLV5&&window.__TLV5.isUploading?window.__TLV5.isUploading('mentor'):false;
-    const files=st&&Array.isArray(st.files)?st.files:[];
-    const hasOk=files.some(f=>f.ok);
-    const fileList=files.length?'<div class="v8-uploaded-list">'+files.map((f,i)=>'<div class="v8-uploaded-item"><span>'+(f.ok?'✓':'▤')+'</span><div><b>'+esc(f.name)+'</b><small id="v5-file-status-mentor-'+i+'">'+esc(f.status||'已添加')+'</small></div><button type="button"'+(busy?' disabled':'')+' onclick="v5RemoveFile(\'mentor\','+i+')">移除</button></div>').join('')+'</div>':'';
-    return '<div class="v5-resume-entry v8-mentor-resume-entry">'+
-      '<label class="v5-upload v5-student-upload'+(busy?' is-busy':'')+'"><span class="v5-upload-icon" aria-hidden="true">'+(busy?'◌':'↑')+'</span><b>'+(busy?'正在识别个人简历…':'上传个人简历')+'</b><small>PDF / DOCX / TXT / MD · 最大 8 MB</small><span class="v5-upload-action">'+(busy?'请稍候，正在读取文件':'选择简历')+'</span><input type="file" aria-label="上传服务者个人简历" title="上传个人简历" accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"'+(busy?' disabled':'')+' onchange="v5ChooseFiles(\'mentor\',event)" /></label>'+
-      '<button class="v5-no-resume-link" type="button" onclick="tlV8FocusMentorManual()">没有简历？试试填写个人情况</button>'+
-      fileList+
-    '</div>';
-  }
   function proofUploadControl(d){
     const proof=d.educationProof&&d.educationProof.name?d.educationProof:null;
     const preview=proof?'<div class="v8-proof-card">'+(proof.preview?'<img class="v8-proof-thumb" src="'+proof.preview+'" alt="学历证明预览" />':'<span class="v8-proof-badge">PDF</span>')+'<div class="v8-proof-meta"><b>'+esc(proof.name)+'</b><small>'+esc(formatFileSize(proof.size))+' · 已上传 · 待审核</small></div><button type="button" class="v8-proof-remove" onclick="tlV8RemoveEduProof()">移除</button></div>':'';
@@ -154,19 +142,18 @@
   function mentorWizard(){
     if(T.role!=='mentor')return '<div class="page tl-v2-page"><p>请切换到服务者身份后完善资料。</p></div>';
     const d=draft(), step=mentorSteps[mentorStep]||mentorSteps[0];
-    const progress=mentorSteps.map((x,i)=>'<span class="'+(i<mentorStep?'done':i===mentorStep?'active':'')+'"></span>').join('');
-    const tabs=mentorSteps.map((x,i)=>'<button type="button" class="'+(i===mentorStep?'active':i<mentorStep?'done':'')+'" onclick="tlV8MentorGo('+i+')"><b>'+(i<mentorStep?'✓':'0'+(i+1))+'</b><small>'+x.title+'</small></button>').join('');
+    const registration=window.TongluRegistration;
     const intro=mentorStep===3?'<div class="v8-declaration">请确保学历、入营经历、荣誉证书与辅导经验真实准确；涉及过往辅导案例时请做好隐私脱敏。</div>':'';
-    return '<div class="page tl-v2-page v8-mentor-wizard"><div class="v4-kicker">MENTOR REGISTRATION</div>'+
-      '<h1 class="v4-h1">'+(d.registered?'编辑服务者资料':'服务者注册与资料完善')+'</h1><p class="v4-sub">上传简历或填写个人情况、学历证明、入营经历与服务能力。</p>'+
-      '<div class="v8-step-progress">'+progress+'</div><nav class="v8-step-tabs" aria-label="服务者注册步骤">'+tabs+'</nav>'+
-      '<section class="v8-step-card"><div class="v8-step-title"><div><small>STEP 0'+(mentorStep+1)+' / 04</small><h2>'+step.title+'</h2><p>'+step.sub+'</p></div><span>'+(mentorStep+1)+'/4</span></div>'+
-      (mentorStep===0?mentorResumeBox():'')+
-      '<div class="v8-step-fields" id="v8-mentor-manual-fields">'+step.fields.map(id=>mentorControl(id,d)).join('')+'</div>'+intro+
-      '<div class="v8-step-actions">'+(mentorStep>0?'<button type="button" class="v8-btn secondary" onclick="tlV8MentorGo('+(mentorStep-1)+')">上一步</button>':'<button type="button" class="v8-btn secondary" onclick="go(\'#/choose\')">返回身份选择</button>')+
-      (mentorStep<3?'<button type="button" class="v8-btn primary" onclick="tlV8MentorGo('+(mentorStep+1)+')">下一步 →</button>':'<button type="button" class="v8-btn primary" onclick="tlV8MentorSave()">'+(d.registered?'保存修改':'完成注册并进入')+'</button>')+'</div></section>'+
-      '<p class="v8-footnote">提交后将进行资料审核，当前记录提交信息，认证以实际审核结果为准。</p></div>';
+    const files=window.__TLV5?.getState().mentor.files||[];
+    return '<div class="page tl-v2-page v8-mentor-wizard tl-registration tl-reg-wizard">'+registration.stepper(mentorSteps,mentorStep,'tlV8MentorGo')+
+      '<section class="tl-reg-panel">'+registration.heading(step.title,mentorStep,step.sub)+
+      (mentorStep===0?registration.resumeBar('mentor',files.some(file=>file.ok),window.__TLV5?.getState().mentor.text):'')+
+      '<div class="v8-step-fields tl-reg-fields" id="v8-mentor-manual-fields">'+step.fields.map(id=>mentorControl(id,d)).join('')+'</div>'+intro+
+      '<div class="v8-step-actions tl-reg-actions"><button type="button" class="v8-btn secondary tl-reg-secondary" onclick="'+(mentorStep>0?'tlV8MentorGo('+(mentorStep-1)+')':"go(\'#/mentorAuth\')")+'">上一步</button>'+
+      (mentorStep<3?'<button type="button" class="v8-btn primary tl-reg-primary" onclick="tlV8MentorGo('+(mentorStep+1)+')">下一步 →</button>':'<button type="button" class="v8-btn primary tl-reg-primary" onclick="tlV8MentorSave()">'+(d.registered?'保存修改':'完成注册并进入')+'</button>')+'</div>'+
+      '<button type="button" class="tl-reg-manual" onclick="go(\'#/choose\')">返回身份选择</button><p class="tl-reg-footnote">请填写真实资料，认证状态以实际审核结果为准。</p></section></div>';
   }
+
   window.tlV8FocusMentorManual=function(){
     const box=document.getElementById('v8-mentor-manual-fields');
     if(!box)return;
@@ -251,6 +238,7 @@
     if(n>mentorStep){for(let i=mentorStep;i<n;i++){if(!validateMentorStep(i)){mentorStep=i;render();return;}}}
     mentorStep=n;try{localStorage.setItem(STEP_KEY,String(n));}catch(_){}
     render();
+    document.querySelector('.tl-reg-heading h1')?.focus({preventScroll:true});
   };
   window.tlV8ResetMentorStep=function(){mentorStep=0;try{localStorage.setItem(STEP_KEY,'0');}catch(_){}};
   window.tlV8MentorSave=function(){

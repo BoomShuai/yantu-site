@@ -43,7 +43,7 @@
       return originalPersist(value);
     }catch(error){toast(error.message||'资料保存失败');return false;}
   };
-  PAGES.mentorAuth=function(){return registrationPage();};
+  PAGES.mentorAuth=function(){return window.TongluRegistration.uploadPage('mentor',window.__TLV5.getState().mentor,window.__TLV5.isUploading('mentor'));};
   window.tlMentorLogout=function(){store.signOut();loadedMentorId='';window.__TLMentorReturn='';hydrateProfile();go('#/mentorAuth');};
   const icons = {
     messages: '<path d="M4 5.5h16v11H9l-5 3v-14Z"/><path d="M8 9h8M8 13h5"/>',
@@ -106,10 +106,11 @@
   };
   window.tlCompleteOrder=function(orderId){try{store.completeOrder(orderId);render();toast('交付状态已更新');}catch(error){toast(error.message);}};
   PAGES.mentorPeers=window.tlPeerFavoritesPage;
-  NAV.mentorAuth={title:'服务者注册'};NAV.mentorDemands={title:'学生需求'};NAV.mentorMe={title:'个人中心'};NAV.mentorPeers={title:'同行收藏'};NAV.mentorOrders={title:'订单管理'};
+  NAV.mentorAuth={title:'个人简历'};NAV.mentorDemands={title:'学生需求'};NAV.mentorMe={title:'个人中心'};NAV.mentorPeers={title:'同行收藏'};NAV.mentorOrders={title:'订单管理'};
   actionbar=function(name){if(mentorRole())return '';return originalActionbar(name);};
   render=function(){
     if(mentorRole())hydrateProfile();
+    if(T.role==='student')NAV.profile={title:!location.hash.split('/')[2]||location.hash.split('/')[2]==='upload'?'个人简历':'学生资料'};
     NAV.experience=mentorRole()?{title:'培训中心'}:{...studentExperienceNav};
     NAV.conversation=mentorRole()?{title:'消息详情'}:{...studentConversationNav};
     NAV.workbench=mentorRole()?{title:'服务工作台'}:{...studentWorkbenchNav};

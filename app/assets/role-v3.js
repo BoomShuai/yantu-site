@@ -603,7 +603,7 @@
     if(role==='mentor'&&key!=='choose'&&window.TongluMarket){
       let auth=null,registered=false;
       try{auth=window.TongluMarket.auth();registered=!!window.TongluMarket.profile().registered;}catch(_){}
-      const target=!auth?'mentorAuth':!registered&&key!=='mentorAuth'?'mentorProfile':key;
+      const target=!auth?(['mentorAuth','mentorProfile'].includes(key)?key:'mentorAuth'):!registered&&key!=='mentorAuth'?'mentorProfile':key;
       if(target!==key){
         if(!['mentorAuth','mentorProfile'].includes(key))window.__TLMentorReturn=location.hash;
         history.replaceState(null,'',location.pathname+location.search+'#/'+target);key=target;
