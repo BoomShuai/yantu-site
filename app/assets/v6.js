@@ -16,7 +16,7 @@
   const persist=()=>{try{localStorage.setItem(STORAGE,JSON.stringify(store));return true;}catch(e){toast('未能保存本次修改，请检查设备存储空间后重试');return false;}};
   function route(key){go('#/'+key)}
   function note(text){return '<p class="v6-note">'+text+'</p>';}
-  const exampleCases=[
+  const exampleCases=[...(window.TL_PUBLIC_GUIDES||[]),
     {id:'demo-ai-01',title:'计算机 / AI · 项目经历如何描述',direction:'人工智能',stage:'材料准备',year:'准备建议',tags:['人工智能','计算机','科研','竞赛','保研'],q:'项目很多但不知道如何证明个人贡献',a:'把每个项目整理成背景、你的行动、可核验成果；面试中使用实际代码或研究笔记说明方法。',source:'通用准备建议，请结合自身经历使用'},
     {id:'demo-stat-02',title:'数学统计 · 竞赛成果整理',direction:'统计与数学',stage:'规划',year:'准备建议',tags:['统计','数学','竞赛','保研','材料'],q:'建模比赛成果和申请目标联系不明确',a:'按建模问题、个人负责内容、验证过程与复盘经验整理成结构化清单。',source:'通用准备建议，请结合申请要求使用'},
     {id:'demo-fin-03',title:'金融商科 · 面试准备路径',direction:'金融与商科',stage:'面试',year:'准备建议',tags:['金融','商科','面试','保研'],q:'对面试中的项目追问准备不足',a:'针对每一段研究或实习经历准备事实、方法、结果、局限性四个部分，避免编造。',source:'通用面试准备建议，不代表录取结果'},
@@ -25,10 +25,11 @@
   let expFilter='全部', expQuery='', expOpen='';
   function scoreCase(x){const context=T.profileReady()?T.bg.raw+' '+(T.bg.goals||[]).join(' '):'';let score=0;for(const tag of x.tags)if(context.includes(tag))score++;return score;}
   function casesFiltered(){const q=(expQuery||'').toLowerCase();return exampleCases.filter(c=>(expFilter==='全部'||c.tags.includes(expFilter))&&(!q||[c.title,c.direction,c.q,c.a,...c.tags].join(' ').toLowerCase().includes(q))).sort((a,b)=>scoreCase(b)-scoreCase(a));}
+  function sourceLink(item){try{const url=new URL(item.sourceUrl);if(url.protocol==='https:')return '<a class="v6-source-link" href="'+H(url.href)+'" target="_blank" rel="noopener noreferrer">查看官方来源 ↗</a>';}catch(_){}return '';}
   function experiencePage(){
     if(T.role==='guest')return '<div class="page tl-v2-page v4-page"><div class="v4-kicker">CASE LIBRARY</div><h1 class="v4-h1">保研经验库</h1><div class="v6-card"><b>游客可预览经验库的内容结构</b><p>完整检索、收藏与个性化问答将在账号系统上线后开放。</p><button class="v6-primary" onclick="go(\'#/choose\')">选择身份体验 ›</button></div></div>';
-    const cards=casesFiltered().map(c=>'<article class="v6-case"><div class="v6-case-top"><span class="v6-pill">'+H(c.direction)+'</span><span class="v6-muted">'+H(c.year)+'</span></div><h3>'+H(c.title)+'</h3><p>关注问题：'+H(c.q)+'</p><div class="v6-case-foot"><span>'+H(c.stage)+'</span><button type="button" onclick="v6OpenExperience(\''+c.id+'\')">'+(expOpen===c.id?'收起':'查看经验摘要')+' ›</button></div>'+(expOpen===c.id?'<div class="v6-extract"><b>内容摘要</b><p>'+H(c.a)+'</p><small>'+H(c.source)+'</small></div>':'')+'</article>').join('');
-    return '<div class="page tl-v2-page v4-page"><div class="v4-kicker">EXPERIENCE INDEX</div><h1 class="v4-h1">保研经验库</h1><p class="v4-sub">按方向查找准备建议，结合自己的经历规划下一步。</p>'+note('以下内容为通用准备指南，不代表个人申请结果。')+
+    const cards=casesFiltered().map(c=>'<article class="v6-case"><div class="v6-case-top"><span class="v6-pill">'+H(c.direction)+'</span><span class="v6-muted">'+H(c.year)+'</span></div><h3>'+H(c.title)+'</h3><p>关注问题：'+H(c.q)+'</p><div class="v6-case-foot"><span>'+H(c.stage)+'</span><button type="button" onclick="v6OpenExperience(\''+c.id+'\')">'+(expOpen===c.id?'收起':'查看经验摘要')+' ›</button></div>'+(expOpen===c.id?'<div class="v6-extract"><b>内容摘要</b><p>'+H(c.a)+'</p><small>'+H(c.source)+'</small>'+sourceLink(c)+'</div>':'')+'</article>').join('');
+    return '<div class="page tl-v2-page v4-page"><div class="v4-kicker">EXPERIENCE INDEX</div><h1 class="v4-h1">保研经验库</h1><p class="v4-sub">按方向查找准备建议，结合自己的经历规划下一步。</p>'+note('以下含官方要求整理与通用准备指南，不代表个人申请结果。历史批次仅作参考。')+
       '<div class="v6-card"><b>查找相关经验</b><label class="v6-field">关键词<input id="v6-experience-query" value="'+H(expQuery)+'" placeholder="例如：人工智能 项目 竞赛" maxlength="80" /></label><button class="v6-primary" onclick="v6SearchExperience()">查找内容</button><div class="v6-filters">'+['全部','保研','竞赛','科研','面试','材料'].map(f=>'<button class="'+(expFilter===f?'active':'')+'" onclick="v6FilterExperience(\''+f+'\')">'+f+'</button>').join('')+'</div><div class="v6-inline">'+(T.profileReady()?'已结合你的资料整理相关主题。':'完善个人资料后，可以优先查看相关主题。')+'</div></div>'+
       '<div class="v6-card v6-soft"><b>如何使用这些建议</b><p>先找到相关主题，再核对自己的准备情况；报名条件与日期以院校官网为准。</p><div class="v6-placeholder">这些指南不包含个人录取概率。</div></div>'+
       '<h2 class="v6-section-heading">'+(expQuery?'检索结果':'精选主题')+' · '+casesFiltered().length+' 条</h2>'+(cards||'<div class="v6-empty">未找到相关主题。可以尝试更短的关键词，或切换「全部」。</div>')+'</div>';

@@ -160,6 +160,7 @@
       <div class="tl-role-identity"><img src="assets/tonglu-logo.svg" alt="同路 Logo" /><span>同 路</span><small>与你并肩，走向理想院校</small></div>
       <h1>选择你的身份</h1><p>请选择适合你的入口进入同路</p>
       ${[['student','学生','完善个人档案 · 保研规划与服务对接','graduation-cap'],['mentor','服务者','发布个人服务 · 查看学生需求','users']].map(([r,n,d,i])=>`<button class="tl-role-card" onclick="selectTongluRole('${r}')"><span class="tl-role-icon">${r==='student'?'✦':'◇'}</span><span><b>${n}</b><small>${d}</small></span><span class="tl-role-arrow">›</span></button>`).join('')}
+      <a class="tl-data-preview-link" href="?preview=1&amp;role=student#/providers">查看有数据的演示 ›</a>
     </section>`;
   }
 
