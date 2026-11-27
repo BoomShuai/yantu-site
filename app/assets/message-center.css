@@ -1,0 +1,33 @@
+/* 系统两行置顶 + 好友会话列表，两端共用同一布局与原紫色主题。 */
+#app > .tl-inbox-page { padding:12px 0 28px; }
+.tl-message-pinned { position:sticky; top:0; z-index:5; overflow:hidden; border:1px solid var(--line); border-radius:16px; background:var(--card); box-shadow:0 3px 14px rgba(66,45,92,.035); }
+.tl-inbox-page .tl-message-row { display:flex; align-items:center; gap:12px; width:100%; min-height:88px; margin:0; padding:16px 14px; border:0; border-bottom:1px solid var(--line); border-radius:0; background:var(--card); color:var(--ink); text-align:left; }
+.tl-inbox-page .tl-message-row:last-child { border-bottom:0; }
+.tl-message-avatar { display:grid; place-items:center; flex:none; width:46px; height:46px; border-radius:50%; color:var(--brand); background:linear-gradient(145deg,var(--brand-soft),var(--bg)); font-size:20px; font-weight:700; }
+.tl-message-system-icon { background:var(--brand-soft); }
+.tl-message-system-icon svg { width:24px; height:24px; }
+.tl-message-main { display:flex; flex-direction:column; flex:1; gap:6px; min-width:0; }
+.tl-message-main b { display:block; overflow:hidden; color:var(--ink); font-size:15px; font-weight:650; line-height:1.5; white-space:nowrap; text-overflow:ellipsis; }
+.tl-message-main small { display:block; overflow:hidden; color:var(--ink-2); font-size:12px; line-height:1.6; white-space:nowrap; text-overflow:ellipsis; }
+.tl-message-tail { display:flex; align-self:stretch; flex:none; flex-direction:column; align-items:flex-end; justify-content:space-between; gap:6px; min-width:32px; padding:2px 0; }
+.tl-message-tail time { color:var(--ink-3); font-size:11px; line-height:1.6; white-space:nowrap; }
+.tl-message-chevron { color:var(--ink-3); font-size:19px; line-height:1; }
+.tl-message-unread { display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:var(--brand); color:#fff; font-size:10px; font-weight:600; line-height:1; }
+.tl-message-friends { margin-top:20px; }
+.tl-message-friends h2 { margin:0 0 10px; padding:0 2px; color:var(--ink-2); font-size:13px; font-weight:600; }
+.tl-message-friend-list { overflow:hidden; border:1px solid var(--line); border-radius:16px; background:var(--card); }
+.tl-message-empty { padding:30px 18px; color:var(--ink-2); font-size:13px; line-height:1.8; text-align:center; }
+.tl-message-empty b { color:var(--ink); font-size:14px; }
+.tl-message-empty p { margin:8px 0 14px; font-size:12px; }
+.tl-message-empty button,.tl-message-back { min-height:44px; padding:10px 14px; border-radius:12px; color:var(--brand); background:var(--brand-soft); font-size:13px; }
+.tl-message-notice { margin:14px 0; padding:18px 16px; border:1px solid var(--line); border-radius:16px; background:var(--card); }
+.tl-message-notice > div { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.tl-message-notice h2 { margin:0; color:var(--ink); font-size:16px; line-height:1.6; }
+.tl-message-notice time { flex:none; padding-top:3px; color:var(--ink-3); font-size:11px; }
+.tl-message-notice p { margin:12px 0 0; color:var(--ink-2); font-size:13px; line-height:1.9; white-space:pre-wrap; overflow-wrap:anywhere; }
+.tl-message-notice > small { display:block; margin-top:10px; color:var(--ink-3); font-size:12px; line-height:1.7; }
+.tl-message-notice button { min-height:40px; margin-top:12px; padding:8px 0; color:var(--brand); font-size:13px; }
+.tl-student-order-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; font-size:12px; }
+.tl-student-order-heading small { color:var(--ink-2); }
+.tl-student-order-heading span { flex:none; color:var(--brand); }
+@media(max-width:360px) { .tl-inbox-page .tl-message-row { gap:10px; padding-inline:12px; } .tl-message-avatar { width:42px; height:42px; } }

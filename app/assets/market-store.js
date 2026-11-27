@@ -1,7 +1,7 @@
 /* 双端服务数据契约。当前存储限定于同源浏览器；生产环境由鉴权后端实现同一接口。 */
 (function () {
   'use strict';
-  const KEYS = { skus: 'tonglu-sync-market-skus-v1', demands: 'tonglu-student-demands-v1', orders: 'tonglu-mentor-orders-v1', auth: 'tonglu-mentor-auth-v1', accounts: 'tonglu-mentor-accounts-v1', registrationDraft: 'tonglu-mentor-registration-draft-v1', profileIdentity: 'tonglu-mentor-profile-identity-v1', workbench: 'tonglu-mentor-workbench-v1', peerFavorites: 'tonglu-mentor-peer-favorites-v1' };
+  const KEYS = { skus: 'tonglu-sync-market-skus-v1', demands: 'tonglu-student-demands-v1', orders: 'tonglu-mentor-orders-v1', auth: 'tonglu-mentor-auth-v1', accounts: 'tonglu-mentor-accounts-v1', registrationDraft: 'tonglu-mentor-registration-draft-v1', profileIdentity: 'tonglu-mentor-profile-identity-v1', workbench: 'tonglu-mentor-workbench-v1', peerFavorites: 'tonglu-mentor-peer-favorites-v1', messages: 'tonglu-message-center-v1' };
   const categories = [
     { id: 'resume', label: '简历润色' }, { id: 'interview', label: '面试模拟' },
     { id: 'guidance', label: '保研规划辅导' }, { id: 'research_ext', label: '科研竞赛规划（保研延伸）' }
@@ -101,6 +101,11 @@
   }
   const demands = () => list(KEYS.demands).map(x => ({ ...x, discipline: x.discipline || '通用学科', acceptStatus: x.acceptStatus || 'open', acceptedBy: x.acceptedBy || null }));
   const orders = () => { const a = requireMentor(false); return list(KEYS.orders).filter(x => x.mentorId === a.mentorId); };
+  function studentOrders() {
+    const own=new Map(demands().map(item=>[item.id,item]));
+    return list(KEYS.orders).filter(item=>item.sourceType==='demand'&&item.mentorId&&own.get(item.sourceId)?.acceptedBy?.mentorId===item.mentorId)
+      .map(item=>({...item,providerName:own.get(item.sourceId).acceptedBy.mentorName||'服务者'}));
+  }
   function workbench() {
     const a=requireMentor(true), rows=read(KEYS.workbench,{});
     return {accepting:true,slots:[],...rows[a.mentorId]};
@@ -160,5 +165,5 @@
     if (row.sourceType === 'demand' && d?.acceptedBy?.mentorId === a.mentorId) { d.acceptStatus = 'completed'; d.updatedAt = now(); }
     commitDemands(items, allOrders);
   }
-  window.TongluMarket = { KEYS, categories, disciplines, complianceNote, auth, requireMentor, profile, saveProfile, registrationProfile, registerProfile, signIn, signOut, skus, upsertSku, demands, orders, acceptDemand, completeOrder, workbench, setAccepting, providerAccepting, addSlot, removeSlot, workbenchSummary, peerFavorites, togglePeerFavorite };
+  window.TongluMarket = { KEYS, categories, disciplines, complianceNote, auth, requireMentor, profile, saveProfile, registrationProfile, registerProfile, signIn, signOut, skus, upsertSku, demands, orders, studentOrders, acceptDemand, completeOrder, workbench, setAccepting, providerAccepting, addSlot, removeSlot, workbenchSummary, peerFavorites, togglePeerFavorite };
 })();

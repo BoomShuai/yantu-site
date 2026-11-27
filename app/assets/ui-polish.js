@@ -24,7 +24,7 @@
     document.body.dataset.uiRoute=route;
     const app=document.getElementById('app');
     if(!app)return;
-    const mentorLayout=window.__TL?.role==='mentor'&&['messages','experience'].includes(route);
+    const mentorLayout=window.__TL?.role==='mentor'&&route==='experience';
     if(mentorLayout)app.firstElementChild?.classList.add('tl-mentor-legacy-page');
     const notice=notices[route];
     if(notice&&!app.querySelector('[data-ui-footnote]')){
@@ -39,7 +39,7 @@
     const tabbar=document.getElementById('tabbar');
     if(app.querySelector('.tl-registration')){tabbar?.classList.add('hidden');tabbar?.setAttribute('aria-hidden','true');}
     else tabbar?.removeAttribute('aria-hidden');
-    const studentTab={profile:'me',diagnosis:'me',experience:'me',dataCenter:'me',about:'me',privacy:'me',feedback:'me',reviews:'providers',quota:'me',nocandidate:'providers',studentDemand:'home',studentDemandList:'home'};
+    const studentTab={profile:'me',diagnosis:'me',experience:'me',dataCenter:'me',about:'me',privacy:'me',feedback:'me',reviews:'providers',quota:'me',nocandidate:'providers',studentDemand:'home',studentDemandList:'home',studentOrders:'me',messageNotice:'messages'};
     if(window.__TL?.role==='student'&&studentTab[route]){
       tabbar?.querySelectorAll('.tab').forEach(node=>node.classList.toggle('active',node.getAttribute('onclick')?.match(/#\/([^'"\s)]+)/)?.[1]===studentTab[route]));
     }

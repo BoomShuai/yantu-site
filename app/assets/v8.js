@@ -309,12 +309,12 @@
     return html;
   };
   /* 微信 / 闲鱼式聊天：会话按服务者区分；本机保存，不伪装为真实发送。 */
-  window.openTongluConversation=function(id){const c=consults().find(x=>x.id===id&&canReadChat(x));if(!c){toast('没有找到该会话');return;}setActive(id);go('#/conversation');};
+  window.openTongluConversation=function(id){const c=consults().find(x=>x.id===id&&canReadChat(x));if(!c){toast('没有找到该会话');return;}window.TongluMessages?.readChat(id);setActive(id);go('#/conversation');};
   window.startTongluConsult=function(providerId){
     if(T.role!=='student'){toast('请以学生身份开始咨询');return;}
     const p=getProvider(providerId);if(!p){toast('没有找到该服务者');return;}
     let c=consults().find(x=>x.providerId===providerId);
-    if(!c){c={id:'chat-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),providerId,entries:[],updatedAt:new Date().toISOString()};consults().unshift(c);}
+    if(!c){c={id:'chat-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),providerId,studentName:T.bg.name||'同路同学',entries:[],updatedAt:new Date().toISOString()};consults().unshift(c);}
     setActive(c.id);persistChats();go('#/conversation');
   };
   window.tlV8SendMessage=function(event){
@@ -356,28 +356,12 @@
     }
   };
   window.tlV8Phone=window.tlV8Remind;
-  PAGES.messages=function(){
-    const list=consults().filter(canReadChat).slice().sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
-    if(T.role==='mentor'){
-      const threads=list.map(c=>{
-        const p=getProvider(c.providerId),last=(c.entries||[]).slice(-1)[0];
-        return '<button class="v8-thread" onclick="openTongluConversation(\''+esc(c.id)+'\')"><span class="v8-thread-avatar">学</span><span class="v8-thread-main"><b>学生咨询 · '+esc(p&&p.name||'服务者')+'</b><small>'+esc(last&&last.text||'发起了新的咨询')+'</small></span><span class="v8-thread-meta"><small>'+(c.entries||[]).length+' 条</small>›</span></button>';
-      }).join('');
-      return '<div class="page tl-v2-page v8-message-page"><div class="v4-kicker">MESSAGES</div><h1 class="v4-h1">消息中心</h1><p class="v4-sub">查看学生咨询，记录沟通与服务安排。</p>'+(threads?'<div class="v8-thread-list">'+threads+'</div>':'<div class="v8-empty"><b>暂时没有学生咨询</b><p>有学生向你发起咨询后，会话会显示在这里。</p><button onclick="go(\'#/mentorDemands\')">查看学生需求 ›</button></div>')+'</div>';
-    }
-    const tab=window.__tlV8MsgTab||'咨询';
-    const tabs=['咨询','订单','系统'];
-    const body=tab==='咨询'?(list.length?list.map(c=>{
-      const p=getProvider(c.providerId),last=(c.entries||[]).slice(-1)[0];
-      return '<button class="v8-thread" onclick="openTongluConversation(\''+esc(c.id)+'\')"><span class="v8-thread-avatar">'+esc((p&&p.name||'服').slice(0,1))+'</span><span class="v8-thread-main"><b>'+esc(p&&p.name||'服务者')+'</b><small>'+esc(last&&last.text||'已建立咨询会话')+'</small></span><span class="v8-thread-meta"><small>'+(c.entries||[]).length+' 条</small>›</span></button>';
-    }).join(''):'<div class="v8-empty"><b>还没有咨询记录</b><p>进入服务者详情，点击咨询即可开始沟通。</p><button onclick="go(\'#/providers\')">逛同路集市 ›</button></div>'):'<div class="v8-empty"><b>'+ (tab==='订单'?'暂无订单消息':'暂无系统消息')+'</b><p>相关记录会显示在这里，你也可以先浏览服务或查看已有咨询。</p></div>';
-    return '<div class="page tl-v2-page v8-message-page"><div class="v4-kicker">MESSAGES</div><h1 class="v4-h1">消息中心</h1><p class="v4-sub">咨询、订单与系统通知集中在这里。</p><div class="v8-message-tabs">'+tabs.map(t=>'<button class="'+(tab===t?'active':'')+'" onclick="tlV8MessageTab(\''+t+'\')">'+t+'</button>').join('')+'</div><div class="v8-thread-list">'+body+'</div></div>';
-  };
-  window.tlV8MessageTab=function(tab){window.__tlV8MsgTab=['咨询','订单','系统'].includes(tab)?tab:'咨询';render();};
+  PAGES.messages=function(){return window.TongluMessages?window.TongluMessages.page():'<div class="page"><p role="status">正在载入消息…</p></div>';};
   PAGES.conversation=function(){
     const c=currentChat();
     if(!c)return '<div class="page tl-v2-page v8-chat-page"><div class="v8-empty"><b>没有找到这段会话</b><button onclick="go(\'#/messages\')">返回消息中心</button></div></div>';
-    const p=getProvider(c.providerId),name=T.role==='mentor'?'学生咨询':(p&&p.name||'服务者'),brief=T.role==='mentor'?'来自学生的咨询':(p&&p.brief||'同路服务者');
+    window.TongluMessages?.readChat(c.id);
+    const p=getProvider(c.providerId),name=T.role==='mentor'?(c.studentName||'学生咨询'):(p&&p.name||'服务者'),brief=T.role==='mentor'?'来自学生的咨询':(p&&p.brief||'同路服务者');
     const entries=(c.entries||[]).map(e=>{
       const time=e.at?new Date(e.at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}):'';
       if(e.who==='system'){

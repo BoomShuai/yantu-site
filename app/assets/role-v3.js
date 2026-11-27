@@ -398,6 +398,7 @@
       <section class="tl-my-group">
         <div class="tl-my-section-title"><h2>我的服务</h2><span>咨询与辅导</span></div>
         <button class="tl-my-row" onclick="go('#/messages')"><span class="tl-my-row-icon">${myIcon('message')}</span><span class="tl-my-row-copy"><b>消息与咨询</b><small>查看服务者咨询会话与系统消息</small></span><span class="tl-my-row-count">${consults.length}</span><span class="tl-my-row-arrow">›</span></button>
+        <button class="tl-my-row" onclick="go('#/studentOrders')"><span class="tl-my-row-icon">${myIcon('work')}</span><span class="tl-my-row-copy"><b>订单管理</b><small>查看已承接需求的服务进度</small></span><span class="tl-my-row-count">${window.TongluMarket?.studentOrders().length||0}</span><span class="tl-my-row-arrow">›</span></button>
         <button class="tl-my-row" onclick="S.providerView='saved';go('#/providers')"><span class="tl-my-row-icon">${myIcon('heart')}</span><span class="tl-my-row-copy"><b>收藏的服务者</b><small>查看已收藏的学长学姐</small></span><span class="tl-my-row-count">${savedMentors}</span><span class="tl-my-row-arrow">›</span></button>
       </section>
 
@@ -578,7 +579,7 @@
   };
 
   const allowedGuest=new Set(['choose','guestHome','guestSchools','guestProviders','guestMe','experience','dataCenter']);
-  const allowedMentor=new Set(['choose','mentorAuth','mentorMarket','mentorSku','mentorPeers','mentorOrders','mentorHome','mentorDemands','mentorProfile','mentorMe','school','providers','provider','sku','noticeDetail','workbench','admin','messages','conversation','experience','dataCenter']);
+  const allowedMentor=new Set(['choose','mentorAuth','mentorMarket','mentorSku','mentorPeers','mentorOrders','mentorHome','mentorDemands','mentorProfile','mentorMe','school','providers','provider','sku','noticeDetail','workbench','admin','messages','messageNotice','conversation','experience','dataCenter']);
   const studentForbidden=new Set(['mentorAuth','mentorMarket','mentorSku','mentorPeers','mentorOrders','mentorHome','mentorDemands','mentorProfile','mentorMe','guestHome','guestSchools','guestProviders','guestMe']);
   const mentorTabs=[['首页','mentorHome',ICON.home],['院校资讯','school',ICON.school],['同路集市','providers',ICON.users],['我的','mentorMe',ICON.me]];
   const guestTabs=[['首页','guestHome',ICON.home],['院校资讯','guestSchools',ICON.school],['同路集市','guestProviders',ICON.users],['登录','guestMe',ICON.me]];
