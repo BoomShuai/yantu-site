@@ -552,6 +552,7 @@
   PAGES.about = function () {
     return '<div class="page tl-v2-page v4-page">' +
       '<div class="v4-kicker">ABOUT TONGLU</div><h1 class="v4-h1">同路能为你提供什么</h1>' +
+      (window.TongluPreview?.enabled ? '<p class="v4-sub">当前展示的人物、服务与交易记录为界面样例。</p>' : '') +
       '<p class="v4-sub">把保研里最耗时间的三件事做得更清楚：定位、材料、找人。</p>' +
       '<div class="v4-card"><div class="v4-head"><h3>四件具体的事</h3></div>' +
       [["定位参考", "按你的个人资料、排名、英语与目标，给出三个层级的院校清单，并写清依据、差距与待核实事项。"],

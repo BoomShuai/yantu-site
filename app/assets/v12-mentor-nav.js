@@ -136,7 +136,7 @@
     }
     return originalBack();
   };
-  window.selectTongluRole=function(role){originalSelectRole(role);if(role==='mentor'){hydrateProfile();go(store.auth()?(store.profile().registered?'#/messages':'#/mentorProfile'):'#/mentorAuth');}};
+  window.selectTongluRole=function(role){originalSelectRole(role);if(role==='student'&&window.TongluPreview?.enabled)go('#/home');if(role==='mentor'){hydrateProfile();go(store.auth()?(store.profile().registered?'#/messages':'#/mentorProfile'):'#/mentorAuth');}};
   window.addEventListener('storage',event=>{if(Object.values(store.KEYS).includes(event.key)||event.key===null){loadedMentorId='';render();}});
   if(mentorRole())render();
 })();

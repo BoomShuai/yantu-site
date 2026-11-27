@@ -22,3 +22,5 @@
 .v6-source{border:1px solid #e6daf1;background:#fff;border-radius:12px;padding:10px;margin:10px 0}.v6-source summary{font-size:11px;color:#674c88;font-weight:750;cursor:pointer}.v6-source pre{font:11px/1.75 inherit;white-space:pre-wrap;word-break:break-word;color:#766487;max-height:220px;overflow:auto;margin:10px 0 0}.v6-source small{display:block;margin-top:6px;color:#9585a1;font-size:9px}
 @media(max-width:350px){.v6-card{padding:12px 10px}.v6-ai-helper{gap:5px;padding:7px}.v6-ai-helper button{padding:8px 7px;font-size:9px}.v6-trust-row{flex-wrap:wrap}.v6-trust-row small{text-align:left}}
 @media(prefers-reduced-motion:reduce){.v6-ai-helper{transition:none}}
+
+.v6-source-link { display:inline-block; margin-top:10px; padding:8px 0; color:var(--brand); font-size:12px; }
